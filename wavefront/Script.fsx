@@ -1,4 +1,5 @@
-﻿#load "Values.fs"
+﻿#load "Keys.fs"
+#load "Values.fs"
 
 open wavefront
 
@@ -9,3 +10,8 @@ let ab =
 
 ab.Get<int> "A"
 ab.Get<string> "B"
+
+let abKeys =
+    Keys.empty
+    |> Keys.add<int>("A")
+    |> Keys.add<string>("B")

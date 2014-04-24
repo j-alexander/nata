@@ -39,6 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Keys.fs" />
     <Compile Include="Values.fs" />
     <Compile Include="Script.fsx" />
   </ItemGroup>
