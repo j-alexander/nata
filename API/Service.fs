@@ -22,6 +22,6 @@ module Service =
             app.UseWebApi(configuration) |> ignore
             //app.UseErrorPage() |> ignore
 
-    let defaultEndpoint = "http://localhost:8887"
+    let defaultEndpoint = "http://+:8887"
 
     let start (endpoint:string) : IDisposable = WebApp.Start<Startup>(endpoint)
