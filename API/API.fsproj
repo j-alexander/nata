@@ -35,6 +35,13 @@
     <None Include="packages.config" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TimeController.fs" />
+    <Compile Include="List.fs" />
+    <Compile Include="Path.fs" />
+    <Compile Include="Value.fs" />
+    <Compile Include="Write.fs" />
+    <Compile Include="Listen.fs" />
+    <Compile Include="Listeners.fs" />
+    <Compile Include="Node.fs" />
     <Compile Include="Model.fs" />
     <Compile Include="ModelController.fs" />
     <Compile Include="Format.fs" />

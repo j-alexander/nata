@@ -4,7 +4,7 @@ open System
 open System.Web.Http
 open FSharp.Data
 
-module Path =
+module ModelPath =
     let split (path : string) =
         match path with
         | null -> []
@@ -17,9 +17,9 @@ type ModelController() =
 
     [<HttpPost; Route("model/{*path}")>]
     member x.Post(path : string, json : JsonValue) =
-        model <- model |> Model.update (path |> Path.split) json
+        model <- model |> Model.update (path |> ModelPath.split) json
         model
 
     [<HttpGet; Route("model/{*path}")>]
     member x.Get(path : string) =
-        model |> Model.read (path |> Path.split)
+        model |> Model.read (path |> ModelPath.split)
