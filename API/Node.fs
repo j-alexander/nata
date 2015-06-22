@@ -72,11 +72,11 @@ module Node =
 
 
     let private fromJsonArray =
-        Seq.mapi (fun i (json:JsonValue) -> i.ToString(), json)
+        Seq.mapi (fun i (json:JsonValue) -> i.ToString(), json) >> Seq.toList
 
 
     let private fromJsonRecord =
-        Seq.map (fun (key:string,json:JsonValue) -> key, json)
+        Seq.map (fun (key:string,json:JsonValue) -> key, json) >> Seq.toList
 
 
     // create a new node with the specified name
@@ -84,18 +84,54 @@ module Node =
 
         let createChild (tick:int64)
                         (state:State)
-                        (key:string,json:JsonValue) : State =
-            // create the child and update the state's children
-            let child = create key
-            let children = Map.add key child state.children
+                        (key:string,json:JsonValue) : Async<State> =
+            async {
+                // create the child and update the state's children
+                let child = create key
+                let children = Map.add key child state.children
 
-            // write the data to the node
-            { path = []
-              tick = tick
-              json = json } |> Write |> child.Post
+                { path = []
+                  writer = None
+                  tick = tick
+                  json = json } |> Write |> child.Post
 
-            // attach listeners to the node
-            { state with children = children } |> attach key
+
+                // attach listeners to the node
+                return { state with children = children } |> attach key
+            }
+
+        let rec createChildren (tick:int64) (state:State) =
+            function 
+            | [] ->
+                async {
+                    return state
+                }
+            | x :: xs ->
+                async {
+                    let! state = createChild tick state x
+                    return! createChildren tick state xs
+                }
+
+        let mergeChildren (tick:int64) (state:State) (incoming, existing) =
+            async {
+                let existing = existing |> Seq.map fst |> Set.ofSeq
+                let incoming = incoming |> Seq.map fst |> Set.ofSeq
+
+                if existing = incoming then
+                    // merge with reply
+                    // Async.Parallel join with max tick (or zip)
+                    return state
+
+                else
+                    // merge full async
+
+                    let create = Set.difference incoming existing
+                    let remove = Set.difference existing incoming
+                    let update = Set.union existing incoming
+
+
+                    return state
+            }
 
         MailboxProcessor.Start(fun inbox ->
 
@@ -107,51 +143,76 @@ module Node =
                     match message with
 
                     // the message is for this specific node
-                    | Write { Write.path=[]; json=json; tick=tick } ->
+                    | Write { Write.path=[]; writer=writer; json=json; tick=tick } ->
 
-                        let state =
+                        let! state =
                             match state.value.json, json with
 
                             // absorb equivalent data without incrementing tick 
                             // or notifiying listeners
-                            | JsonValue.Boolean s, JsonValue.Boolean w when (s = w) -> state
-                            | JsonValue.String s, JsonValue.String w when (s = w) -> state
-                            | JsonValue.Number s, JsonValue.Number w when (s = w) -> state
-                            | JsonValue.Float s, JsonValue.Float w when (s = w) -> state
-                            | JsonValue.Record s, JsonValue.Record w when (s = w) -> state
-                            | JsonValue.Array s, JsonValue.Array w when (s = w) -> state
-                            | JsonValue.Null, JsonValue.Null -> state
+                            | JsonValue.Boolean s, JsonValue.Boolean w when (s = w) ->
+                                async {
+                                    return state
+                                }
+                            | JsonValue.String s, JsonValue.String w when (s = w) ->
+                                async {
+                                    return state
+                                }
+                            | JsonValue.Number s, JsonValue.Number w when (s = w) ->
+                                async {
+                                    return state
+                                }
+                            | JsonValue.Float s, JsonValue.Float w when (s = w) ->
+                                async {
+                                    return state
+                                }
+                            | JsonValue.Null, JsonValue.Null ->
+                                async {
+                                    return state
+                                }
 
                             // merge child nodes
                             | JsonValue.Record s, JsonValue.Record w ->
-                                state
+                                async {
+                                    let existing = s |> fromJsonRecord
+                                    let incoming = w |> fromJsonRecord
+
+                                    return! mergeChildren tick state (existing, incoming)
+                                }
                             // merge child indices
                             | JsonValue.Array s, JsonValue.Array w ->
-                                state
+                                async {
+                                    let existing = s |> fromJsonArray
+                                    let incoming = w |> fromJsonArray
+
+                                    return! mergeChildren tick state (existing, incoming)
+                                }
 
                             // create child nodes (replacing a primitive)
                             | _, JsonValue.Record w ->
-                                fromJsonRecord w
-                                |> Seq.fold (createChild tick) (state |> clear)
-                                |> write json tick
+                                async {
+                                    let! state = createChildren tick (state |> clear) (fromJsonRecord w)
+                                    return state |> write json tick
+                                }
 
                             // create child indices (replacing a primitive)
                             | _, JsonValue.Array w ->
-                                fromJsonArray w
-                                |> Seq.fold (createChild tick) (state |> clear)
-                                |> write json tick
+                                async {
+                                    let! state = createChildren tick (state |> clear) (fromJsonArray w)
+                                    return state |> write json tick
+                                }
 
                             // nullify child nodes
                             | JsonValue.Record s, _ ->
-                                state
-                                |> clear
-                                |> write json tick
+                                async {
+                                    return state |> clear |> write json tick
+                                }
 
                             // nullify child indices
                             | JsonValue.Array s, _ ->
-                                state
-                                |> clear
-                                |> write json tick
+                                async {
+                                    return state |> clear |> write json tick
+                                }
 
                             // not replacing a record:
                             // update primitive data, and notify listeners
@@ -160,17 +221,23 @@ module Node =
                             | _, JsonValue.Number _
                             | _, JsonValue.Float _
                             | _, JsonValue.Null _ ->
-                                state
-                                |> write json tick
+                                async {
+                                    return state |> write json tick
+                                }
 
                         // if the data was changed, notifier listeners
-                        if state.value.tick = tick then
+                        if state.value.tick >= tick then
                             notify state
+
+                        // notify the writer of the outcome, if needed
+                        match writer with
+                        | Some writer -> writer.Reply(state.value)
+                        | None -> ()
 
                         return! loop state
 
                     // the message is for a child node
-                    | Write { Write.path=name::tail; json=json; tick=tick } ->
+                    | Write { Write.path=name::tail; writer=writer; json=json; tick=tick } ->
 
                         let state =
                             match state.value.json with
