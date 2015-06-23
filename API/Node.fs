@@ -122,26 +122,45 @@ module Node =
             { state with children = children } |> attach key
 
 
+        let updateChild (tick:int64) (state:State) (key, json) =
+            // update the child
+            match state.children |> Map.tryFind key with
+            | None -> ()
+            | Some child ->
+                { path = []
+                  writer = None
+                  tick = tick
+                  json = json } |> Write |> child.Post
+
+            // return the current state
+            state
+
+
         let removeChild (state:State) (key:string) : State =
             // stop the child
             match state.children |> Map.tryFind key with
-            | None -> () | Some child -> Stop |> child.Post
+            | None -> ()
+            | Some child -> Stop |> child.Post
              
             // remove the child
             { state with children = state.children |> Map.remove key }
 
 
+
         let mergeChild (tick:int64) (state:State) =
             function
-            | Some existing, Some incoming ->
-                // update existing
-               state
-            | Some existing, None ->
-                // remove existing
-                state
             | None, Some incoming ->
                 // create incoming
-                state
+                createChild tick state incoming
+
+            | Some existing, Some incoming ->
+                // update existing
+                updateChild tick state incoming
+
+            | Some existing, None ->
+                // remove existing
+                removeChild state (fst existing)
+
             | None, None ->
                 state
 
@@ -175,7 +194,9 @@ module Node =
                             | JsonValue.Record s, JsonValue.Record w ->
                                 let existing = s |> fromJsonRecord
                                 let incoming = w |> fromJsonRecord
-                                join existing incoming |> List.fold (mergeChild tick) state
+
+                                join existing incoming
+                                |> List.fold (mergeChild tick) state
 
                             // merge child indices
                             | JsonValue.Array s, JsonValue.Array w ->
