@@ -1,17 +1,34 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project("{f2a71f9b-5d33-465a-a702-920d77279786}") = "API", "API\API.fsproj", "{9498B7A0-2022-4185-9D06-4C740F74B3DF}"
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO", "Nata.IO\Nata.IO.fsproj", "{05933D30-393B-4A8E-8418-B6A141D70040}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.CEP", "Nata.CEP\Nata.CEP.fsproj", "{9498B7A0-2022-4185-9D06-4C740F74B3DF}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.EventStore", "Nata.EventStore\Nata.EventStore.fsproj", "{B5F580E2-3957-41C3-9F14-F9F8CF636B7E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x86 = Debug|x86
-		Release|x86 = Release|x86
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9498B7A0-2022-4185-9D06-4C740F74B3DF}.Debug|x86.ActiveCfg = Debug|x86
-		{9498B7A0-2022-4185-9D06-4C740F74B3DF}.Debug|x86.Build.0 = Debug|x86
-		{9498B7A0-2022-4185-9D06-4C740F74B3DF}.Release|x86.ActiveCfg = Release|x86
-		{9498B7A0-2022-4185-9D06-4C740F74B3DF}.Release|x86.Build.0 = Release|x86
+		{05933D30-393B-4A8E-8418-B6A141D70040}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05933D30-393B-4A8E-8418-B6A141D70040}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05933D30-393B-4A8E-8418-B6A141D70040}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05933D30-393B-4A8E-8418-B6A141D70040}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9498B7A0-2022-4185-9D06-4C740F74B3DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9498B7A0-2022-4185-9D06-4C740F74B3DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9498B7A0-2022-4185-9D06-4C740F74B3DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9498B7A0-2022-4185-9D06-4C740F74B3DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5F580E2-3957-41C3-9F14-F9F8CF636B7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5F580E2-3957-41C3-9F14-F9F8CF636B7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5F580E2-3957-41C3-9F14-F9F8CF636B7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5F580E2-3957-41C3-9F14-F9F8CF636B7E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
