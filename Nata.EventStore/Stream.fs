@@ -37,6 +37,7 @@ module Stream =
         }
 
     let private write (connection : IEventStoreConnection)
+                      (targetStream : string)
                       (targetVersion : int)
                       (event : Event) : Index =
         let eventId = Guid.NewGuid()
@@ -46,7 +47,7 @@ module Stream =
             | version -> version
         let eventData = new EventData(eventId, event.Type, true, event.Data, event.Metadata)
         let result =
-            connection.AppendToStreamAsync(event.Stream, eventPosition, eventData)
+            connection.AppendToStreamAsync(targetStream, eventPosition, eventData)
             |> Async.AwaitTask
             |> Async.RunSynchronously
         result.NextExpectedVersion
@@ -56,14 +57,14 @@ module Stream =
         Client.connect >> (fun connection stream ->
             [   
                 Nata.IO.Capability.Reader <| fun () ->
-                    read connection stream ExpectedVersion.Any |> Seq.map fst
+                    read connection stream 0 |> Seq.map fst
 
                 Nata.IO.Capability.ReaderFrom <|
                     read connection stream
 
                 Nata.IO.Capability.Writer <| fun event ->
-                    write connection ExpectedVersion.Any event |> ignore
+                    write connection stream ExpectedVersion.Any event |> ignore
 
                 Nata.IO.Capability.WriterTo <|
-                    write connection
+                    write connection stream
             ])
