@@ -20,15 +20,18 @@ type StreamTests() =
                    Password = "changeit" } }
 
     let connect() =
-        let name = Guid.NewGuid().ToString("n")
-        let connector = settings |> Stream.connect
-        connector name
-
-    let writer, writerTo, reader, readerFrom =
-        List.pick (function Writer x -> Some x | _ -> None),
-        List.pick (function WriterTo x -> Some x | _ -> None),
+        let stream = Guid.NewGuid().ToString("n")
+        Stream.connect settings stream
+        
+    let reader, readerFrom =
         List.pick (function Reader x -> Some x | _ -> None),
         List.pick (function ReaderFrom x -> Some x | _ -> None)
+    let writer, writerTo =
+        List.pick (function Writer x -> Some x | _ -> None),
+        List.pick (function WriterTo x -> Some x | _ -> None)
+    let subscriber, subscriberFrom =
+        List.pick (function Subscriber x -> Some x | _ -> None),
+        List.pick (function SubscriberFrom x -> Some x | _ -> None)
 
     let event(fn) =
         { Data =
@@ -114,3 +117,81 @@ type StreamTests() =
         event "StreamTests.TestWriteToShouldFailWithIndexTooHigh-1" |> writeTo 0 |> ignore
         event "StreamTests.TestWriteToShouldFailWithIndexTooHigh-2" |> writeTo 2 |> ignore
         
+    [<Test; Timeout(15000)>]
+    member x.TestLiveSubscription() =
+        let write, subscribe =
+            let connection= connect()
+            writer connection, subscriber connection
+        let results = subscribe()
+        let expected =
+            [ event "StreamTests.TestLiveSubscription-0"
+              event "StreamTests.TestLiveSubscription-1"
+              event "StreamTests.TestLiveSubscription-2" ]
+        for event in expected do
+            write event
+        results
+        |> Seq.take 3
+        |> Seq.toList
+        |> List.zip expected
+        |> List.iter(fun (expected, actual) ->
+            Assert.AreEqual(expected.Type, actual.Type)
+            Assert.AreEqual(expected.Data, actual.Data)
+            Assert.AreEqual(expected.Metadata, actual.Metadata))
+            
+    [<Test; Timeout(15000)>]
+    member x.TestLateSubscription() =
+        let write, subscribe =
+            let connection= connect()
+            writer connection, subscriber connection
+        let expected =
+            [ event "StreamTests.TestLateSubscription-0"
+              event "StreamTests.TestLateSubscription-1"
+              event "StreamTests.TestLateSubscription-2" ]
+        for event in expected do
+            write event
+        subscribe()
+        |> Seq.take 3
+        |> Seq.toList
+        |> List.zip expected
+        |> List.iter(fun (expected, actual) ->
+            Assert.AreEqual(expected.Type, actual.Type)
+            Assert.AreEqual(expected.Data, actual.Data)
+            Assert.AreEqual(expected.Metadata, actual.Metadata))
+            
+    [<Test; Timeout(15000)>]
+    member x.TestSubscriptionFromIndex() =
+        let write, subscribeFrom =
+            let connection= connect()
+            writer connection, subscriberFrom connection
+        let expected =
+            [| event "StreamTests.TestLateSubscription-0"
+               event "StreamTests.TestLateSubscription-1"
+               event "StreamTests.TestLateSubscription-2" |]
+        for event in expected do
+            write event
+        subscribeFrom 0
+        |> Seq.take 3
+        |> Seq.toArray
+        |> Array.zip expected
+        |> Array.iter(fun (expected, (actual, index)) ->
+            Assert.AreEqual(expected.Type, actual.Type)
+            Assert.AreEqual(expected.Data, actual.Data)
+            Assert.AreEqual(expected.Metadata, actual.Metadata))
+        subscribeFrom 1
+        |> Seq.take 2
+        |> Seq.toArray
+        |> Array.zip (expected.[1..2])
+        |> Array.iter(fun (expected, (actual, index)) ->
+            Assert.AreEqual(expected.Type, actual.Type)
+            Assert.AreEqual(expected.Data, actual.Data)
+            Assert.AreEqual(expected.Metadata, actual.Metadata))
+        subscribeFrom 2
+        |> Seq.take 1
+        |> Seq.toArray
+        |> Array.zip (expected.[2..2])
+        |> Array.iter(fun (expected, (actual, index)) ->
+            Assert.AreEqual(expected.Type, actual.Type)
+            Assert.AreEqual(expected.Data, actual.Data)
+            Assert.AreEqual(expected.Metadata, actual.Metadata))
+
+    
