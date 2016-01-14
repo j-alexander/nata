@@ -16,6 +16,12 @@ module Codec =
     let reverse ((encode,decode):Codec<'In,'Out>) : Codec<'Out,'In> =
         decode,encode
 
+    let concatenate (bc:Codec<'B,'C>)
+                    (ab:Codec<'A,'B>) : Codec<'A,'C> =
+        let ac = (encoder ab) >> (encoder bc)
+        let ca = (decoder bc) >> (decoder ab)
+        ac,ca
+
     let Identity : Codec<'a,'a> =
         id, id
     
