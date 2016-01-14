@@ -8,6 +8,7 @@ open NUnit.Framework
 open EventStore.ClientAPI
 
 open Nata.IO
+open Nata.IO.Capability
 open Nata.EventStore
 
 [<TestFixture>]
@@ -22,16 +23,6 @@ type StreamTests() =
     let connect() =
         let stream = Guid.NewGuid().ToString("n")
         Stream.connect settings stream
-        
-    let reader, readerFrom =
-        List.pick (function Reader x -> Some x | _ -> None),
-        List.pick (function ReaderFrom x -> Some x | _ -> None)
-    let writer, writerTo =
-        List.pick (function Writer x -> Some x | _ -> None),
-        List.pick (function WriterTo x -> Some x | _ -> None)
-    let subscriber, subscriberFrom =
-        List.pick (function Subscriber x -> Some x | _ -> None),
-        List.pick (function SubscriberFrom x -> Some x | _ -> None)
 
     let event(fn) =
         { Data =

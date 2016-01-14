@@ -51,10 +51,21 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="JsonValue.fs" />
-    <Compile Include="Events.fs" />
     <Content Include="packages.config" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Seq.fs" />
+    <Compile Include="Codec.fs" />
+    <Compile Include="JsonValue.fs" />
+    <Compile Include="Event.fs" />
+    <Compile Include="Writer.fs" />
+    <Compile Include="WriterTo.fs" />
+    <Compile Include="Reader.fs" />
+    <Compile Include="ReaderFrom.fs" />
+    <Compile Include="Subscriber.fs" />
+    <Compile Include="SubscriberFrom.fs" />
+    <Compile Include="Capability.fs" />
+    <Compile Include="Source.fs" />
+    <Compile Include="Connector.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Data">
