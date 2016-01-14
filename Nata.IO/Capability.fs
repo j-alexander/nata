@@ -34,14 +34,15 @@ module Capability =
 
     let map ((encodeData,decodeData):Codec<'DataIn,'DataOut>)
             ((encodeMetadata,decodeMetadata):Codec<'MetadataIn,'MetadataOut>)
-            (capability:Capability<'DataOut,'MetadataOut,'Index>) : Capability<'DataIn,'MetadataIn,'Index> =
+            ((encodeIndex,decodeIndex):Codec<'IndexIn,'IndexOut>)
+            (capability:Capability<'DataOut,'MetadataOut,'IndexOut>) : Capability<'DataIn,'MetadataIn,'IndexIn> =
         match capability with
         | Writer x ->         x |> Writer.map encodeData encodeMetadata |> Writer
-        | WriterTo x ->       x |> WriterTo.map encodeData encodeMetadata |> WriterTo
+        | WriterTo x ->       x |> WriterTo.map encodeData encodeMetadata (encodeIndex,decodeIndex) |> WriterTo
         | Reader x ->         x |> Reader.map decodeData decodeMetadata |> Reader
-        | ReaderFrom x ->     x |> ReaderFrom.map decodeData decodeMetadata |> ReaderFrom
+        | ReaderFrom x ->     x |> ReaderFrom.map decodeData decodeMetadata (decodeIndex,encodeIndex) |> ReaderFrom
         | Subscriber x ->     x |> Subscriber.map decodeData decodeMetadata |> Subscriber
-        | SubscriberFrom x -> x |> SubscriberFrom.map decodeData decodeMetadata |> SubscriberFrom
+        | SubscriberFrom x -> x |> SubscriberFrom.map decodeData decodeMetadata (decodeIndex,encodeIndex) |> SubscriberFrom
 
     let tryReader (capabilities:Capability<'Data,'Metadata,'Index> list) : Reader<'Data,'Metadata> option =
         capabilities |> List.tryPick (function Reader x -> Some x | _ -> None)

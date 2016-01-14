@@ -13,7 +13,11 @@ module SubscriberFrom =
                     (subscriberFrom:SubscriberFrom<'Data,'MetadataIn,'Index>) : SubscriberFrom<'Data,'MetadataOut,'Index> =
         subscriberFrom >> Seq.mapFst (Event.mapMetadata fn)
 
+    let mapIndex ((encode,decode):Codec<'IndexIn,'IndexOut>)
+                 (subscriberFrom:SubscriberFrom<'Data,'Metadata,'IndexIn>) : SubscriberFrom<'Data,'Metadata,'IndexOut> =
+        decode >> subscriberFrom >> Seq.mapSnd encode
+
     let map (dataFn:'DataIn->'DataOut)
             (metadataFn:'MetadataIn->'MetadataOut)
-            (subscriberFrom:SubscriberFrom<'DataIn,'MetadataIn,'Index>) : SubscriberFrom<'DataOut,'MetadataOut,'Index> = 
-        subscriberFrom >> Seq.mapFst (Event.mapData dataFn >> Event.mapMetadata metadataFn)
+            (indexCodec:Codec<'IndexIn,'IndexOut>) = 
+        mapData dataFn >> mapMetadata metadataFn >> mapIndex indexCodec

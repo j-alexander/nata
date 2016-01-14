@@ -15,8 +15,12 @@ module WriterTo =
         fun index ->
             Event.mapMetadata fn >> writerTo index
 
+    let mapIndex ((encode,decode):Codec<'IndexIn,'IndexOut>)
+                 (writerTo:WriterTo<'Data,'Metadata,'IndexOut>) : WriterTo<'Data,'Metadata,'IndexIn> =
+        fun index ->
+            writerTo (encode index) >> decode
+
     let map (dataFn:'DataIn->'DataOut)
             (metadataFn:'MetadataIn->'MetadataOut)
-            (writerTo:WriterTo<'DataOut,'MetadataOut,'Index>) : WriterTo<'DataIn,'MetadataIn,'Index> = 
-        fun index ->
-            Event.mapData dataFn >> Event.mapMetadata metadataFn >> writerTo index
+            (indexCodec:Codec<'IndexIn,'IndexOut>) =
+        mapData dataFn >> mapMetadata metadataFn >> mapIndex indexCodec
