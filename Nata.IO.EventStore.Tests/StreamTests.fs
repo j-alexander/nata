@@ -1,4 +1,4 @@
-﻿namespace Nata.EventStore.Tests
+﻿namespace Nata.IO.EventStore.Tests
 
 open System
 open System.Reflection
@@ -9,7 +9,7 @@ open EventStore.ClientAPI
 
 open Nata.IO
 open Nata.IO.Capability
-open Nata.EventStore
+open Nata.IO.EventStore
 
 [<TestFixture>]
 type StreamTests() = 

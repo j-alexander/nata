@@ -1,4 +1,4 @@
-﻿namespace Nata.EventStore
+﻿namespace Nata.IO.EventStore
 
 type User = {
     Name : string
