@@ -5,14 +5,14 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>b5f580e2-3957-41c3-9f14-f9f8cf636b7e</ProjectGuid>
+    <ProjectGuid>a308b0d1-8460-46bb-b52e-b87e994a0fc6</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Nata.EventStore</RootNamespace>
-    <AssemblyName>Nata.EventStore</AssemblyName>
+    <RootNamespace>Nata.IO.EventStore.Tests</RootNamespace>
+    <AssemblyName>Nata.IO.EventStore.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.3.1.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Name>Nata.EventStore</Name>
+    <Name>Nata.IO.EventStore.Tests</Name>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -23,7 +23,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Debug\Nata.EventStore.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\Nata.IO.EventStore.Tests.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,7 +32,7 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Release\Nata.EventStore.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Nata.IO.EventStore.Tests.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
@@ -52,13 +52,9 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Content Include="packages.config" />
+    <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Logging.fs" />
-    <Compile Include="User.fs" />
-    <Compile Include="Server.fs" />
-    <Compile Include="Settings.fs" />
-    <Compile Include="Client.fs" />
-    <Compile Include="Stream.fs" />
+    <Compile Include="StreamTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="EventStore.ClientAPI">
@@ -85,9 +81,34 @@
       <HintPath>..\packages\NLog.FSharp.3.2.1\lib\net40\NLog.FSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="nunit.core">
+      <HintPath>..\packages\NUnitTestAdapter.WithFramework.2.0.0\lib\nunit.core.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="nunit.core.interfaces">
+      <HintPath>..\packages\NUnitTestAdapter.WithFramework.2.0.0\lib\nunit.core.interfaces.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnitTestAdapter.WithFramework.2.0.0\lib\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="nunit.util">
+      <HintPath>..\packages\NUnitTestAdapter.WithFramework.2.0.0\lib\nunit.util.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="NUnit.VisualStudio.TestAdapter">
+      <HintPath>..\packages\NUnitTestAdapter.WithFramework.2.0.0\lib\NUnit.VisualStudio.TestAdapter.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
+    <ProjectReference Include="..\Nata.IO.EventStore\Nata.IO.EventStore.fsproj">
+      <Name>Nata.IO.EventStore</Name>
+      <Project>{b5f580e2-3957-41c3-9f14-f9f8cf636b7e}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Nata.IO\Nata.IO.fsproj">
       <Name>Nata.IO</Name>
       <Project>{05933d30-393b-4a8e-8418-b6a141d70040}</Project>

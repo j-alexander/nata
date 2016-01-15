@@ -7,9 +7,9 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO", "Nata.IO\Nata.IO.
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.CEP", "Nata.CEP\Nata.CEP.fsproj", "{9498B7A0-2022-4185-9D06-4C740F74B3DF}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.EventStore", "Nata.EventStore\Nata.EventStore.fsproj", "{B5F580E2-3957-41C3-9F14-F9F8CF636B7E}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.EventStore", "Nata.IO.EventStore\Nata.IO.EventStore.fsproj", "{B5F580E2-3957-41C3-9F14-F9F8CF636B7E}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.EventStore.Tests", "Nata.EventStore.Tests\Nata.EventStore.Tests.fsproj", "{A308B0D1-8460-46BB-B52E-B87E994A0FC6}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.EventStore.Tests", "Nata.IO.EventStore.Tests\Nata.IO.EventStore.Tests.fsproj", "{A308B0D1-8460-46BB-B52E-B87E994A0FC6}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Tests", "Nata.IO.Tests\Nata.IO.Tests.fsproj", "{B58419F9-0387-4780-99D7-70CA2938DA00}"
 EndProject
