@@ -54,7 +54,7 @@
     <Content Include="packages.config" />
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="ActorQueue.fs" />
+    <Compile Include="Stream.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Data">
