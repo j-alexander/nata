@@ -1,6 +1,7 @@
 ﻿namespace Nata.IO.File.Tests
 
 open System
+open System.IO
 open System.Collections.Concurrent
 open System.Threading
 open System.Threading.Tasks
@@ -12,36 +13,30 @@ open Nata.IO
 type StreamTests() =
 
     [<Test>]
-    member x.TestFiles2() =
+    member x.TestConcurrency() =
 
-        let path = Guid.NewGuid().ToString("n") |> sprintf @"c:\users\jonathan\desktop\%s.txt" 
-        let read,write,close = File.Stream.create path
-        
-        let messages = new BlockingCollection<string>()
-        
+        let read,write,close = File.Stream.create (Path.GetTempFileName())
         let format = sprintf "written line %d completed" 
+           
+        let work =
+            seq {
+                yield async {
+                    [1..100000] |> Seq.iter (format >> write)
+                    return 0
+                }
+                for reader in 1..40 -> async {
+                    do! Async.Sleep(10*reader)
+                    return
+                        read()
+                        |> Seq.mapi(fun i line -> Assert.AreEqual(format (1+i), line))
+                        |> Seq.length
+                }
+            }
 
-        Task.Run(fun _ ->
-            [1..1000000]
-            |> Seq.iter (format >> write)
-            messages.Add("Writer done!")) |> ignore
-        [1..75]
-        |> Seq.iter (fun worker ->
-            Thread.Sleep(10)
-            Task.Run(fun _ ->
-                let count = ref 0
-                for i, line in read() |> Seq.mapi(fun i x -> i+1,x) do
-                    count := 1 + !count
-                    if format i <> line then
-                        messages.Add(sprintf "Worker %d finds #%d '%s' <> '%s'" worker i (format i) line)
-
-
-                !count
-                |> sprintf "Worker %d read %d" worker
-                |> messages.Add)
-            |> ignore)
-
-        for i in [ 1 .. 76 ] do
-            messages.Take() |> printfn "%s"
+        let results =
+            Async.Parallel work
+            |> Async.RunSynchronously
+            |> Seq.sum
 
         close()
+        Assert.Greater(results, 0, "should read some valid data")
