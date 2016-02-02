@@ -79,3 +79,9 @@ module Capability =
 
     let subscriberFrom (capabilities:Capability<'Data,'Metadata,'Index> list) =
         capabilities |> trySubscriberFrom |> Option.get
+
+    let read (capabilities:Capability<'Data,'Metadata,'Index> list) =
+        reader capabilities ()
+
+    let subscribe (capabilities:Capability<'Data,'Metadata,'Index> list) =
+        subscriber capabilities ()

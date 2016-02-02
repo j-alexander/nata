@@ -56,8 +56,14 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="CodecTests.fs" />
     <Compile Include="JsonValueTests.fs" />
+    <Compile Include="EventTests.fs" />
     <Compile Include="WriterTests.fs" />
+    <Compile Include="WriterToTests.fs" />
     <Compile Include="ReaderTests.fs" />
+    <Compile Include="ReaderFromTests.fs" />
+    <Compile Include="SubscriberTests.fs" />
+    <Compile Include="SubscriberFromTests.fs" />
+    <Compile Include="SourceTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Data">
