@@ -10,6 +10,21 @@ open EventStore.ClientAPI
 open Nata.IO
 open Nata.IO.Capability
 open Nata.IO.EventStore
+open Nata.IO.JsonValue.Codec
+
+type DataType = {
+    case : string
+    at : DateTime
+} with
+    static member ToBytes : Codec<DataType,byte[]> = createTypeToBytes()
+    static member OfBytes : Codec<byte[],DataType> = createBytesToType()
+
+type MetadataType = {
+    from : string
+} with
+    static member ToBytes : Codec<MetadataType,byte[]> = createTypeToBytes()
+    static member OfBytes : Codec<byte[],MetadataType> = createBytesToType()
+
 
 [<TestFixture>]
 type StreamTests() = 
@@ -185,4 +200,31 @@ type StreamTests() =
             Assert.AreEqual(expected.Data, actual.Data)
             Assert.AreEqual(expected.Metadata, actual.Metadata))
 
-    
+    [<Test>]
+    member x.TestSerializationCodecs() =
+        let connection =
+            Stream.connect settings
+            |> Source.map DataType.ToBytes MetadataType.ToBytes
+        
+        let write, read =
+            let stream = connection (Guid.NewGuid().ToString("n"))
+            writer stream,
+            reader stream
+
+        let events =
+            [ for i in 0..10 ->
+                { Data =
+                    { DataType.case = sprintf "Event-%d" i
+                      DataType.at = DateTime.Now }
+                  Metadata =
+                    { MetadataType.from = Assembly.GetExecutingAssembly().FullName }
+                  Date = DateTime.UtcNow
+                  Stream = null
+                  Type = "StreamTests.AutomaticSerialization" } ]
+
+        for event in events do
+            write event
+
+        for (event, result) in read() |> Seq.zip events do
+            Assert.AreEqual(event.Data.case, result.Data.case)
+            Assert.AreEqual(event.Metadata.from, result.Metadata.from)

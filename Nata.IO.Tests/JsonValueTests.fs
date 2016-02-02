@@ -4,6 +4,12 @@ open System.Text
 open FSharp.Data
 open NUnit.Framework
 open Nata.IO
+open Nata.IO.JsonValue
+
+type RecordType = {
+    Index : int
+    Value : string
+}
 
 [<TestFixture>]
 type JsonValueTests() = 
@@ -81,3 +87,27 @@ type JsonValueTests() =
     [<Test>]
     member x.TestBytesOfStringOfJson() =
         Assert.AreEqual(data, json |> Codec.decoder bytesToStringToJson)
+        
+    [<Test>]
+    member x.TestRecordToBytesToRecord() =
+        let codec : Codec<RecordType,RecordType> =
+            Codec.createTypeToBytes() |> Codec.concatenate (Codec.createBytesToType())
+        for index in 1..3 do
+            let record = { Index=index; Value = (index*index).ToString() }
+            Assert.AreEqual(record, record |> Codec.decoder codec)
+        
+    [<Test>]
+    member x.TestRecordToStringToRecord() =
+        let codec : Codec<RecordType,RecordType> =
+            Codec.createTypeToString() |> Codec.concatenate (Codec.createStringToType())
+        for index in 1..3 do
+            let record = { Index=index; Value = (index*index).ToString() }
+            Assert.AreEqual(record, record |> Codec.decoder codec)
+        
+    [<Test>]
+    member x.TestRecordToJsonValueToRecord() =
+        let codec : Codec<RecordType,RecordType> =
+            Codec.createTypeToJsonValue() |> Codec.concatenate (Codec.createJsonValueToType())
+        for index in 1..3 do
+            let record = { Index=index; Value = (index*index).ToString() }
+            Assert.AreEqual(record, record |> Codec.decoder codec)
