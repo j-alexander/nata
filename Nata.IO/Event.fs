@@ -1,6 +1,7 @@
 ﻿namespace Nata.IO
 
 open System
+open FSharp.Data
 
 type Event<'Data,'Metadata> = {
     Type : string
@@ -43,3 +44,27 @@ module Event =
           Date = e.Date
           Data = dataFn e.Data
           Metadata = metadataFn e.Metadata }
+          
+    let toJsonValue (event:Event<JsonValue,JsonValue>) =
+        JsonValue.Record [|
+            "type",     JsonValue.String event.Type
+            "stream",   JsonValue.String event.Stream
+            "date",     DateTime.toJsonValue event.Date
+            "data",     event.Data
+            "metadata", event.Metadata 
+        |]
+        
+    let ofJsonValue (json:JsonValue) =
+        { Event.Type =     json.["type"].AsString()
+          Event.Stream =   json.["stream"].AsString()
+          Event.Date =     json.["date"] |> DateTime.ofJsonValue
+          Event.Data =     json.["data"]
+          Event.Metadata = json.["metadata"] }
+
+    module Codec =
+            
+        let EventToJson : Codec<Event<JsonValue,JsonValue>,JsonValue> = toJsonValue, ofJsonValue
+        let JsonToEvent : Codec<JsonValue,Event<JsonValue,JsonValue>> = ofJsonValue, toJsonValue
+
+        let EventToString = EventToJson |> Codec.concatenate JsonValue.Codec.JsonValueToString
+        let StringToEvent = EventToString |> Codec.reverse

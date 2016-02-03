@@ -1,8 +1,10 @@
 ﻿namespace Nata.IO.File
 
 open System
+open System.Collections.Concurrent
 open System.IO
 open System.Threading
+open FSharp.Data
 open Nata.IO
 
 module Stream =
@@ -10,9 +12,14 @@ module Stream =
     type Settings = unit
     type Index = int
     type Path = string
-
-    type private Message = AsyncReplyChannel<unit> * string option
     
+    let [<Literal>] Empty = -1
+    
+    type private Result = Success of Index | Failure
+    type private Message =
+        | Close of AsyncReplyChannel<unit>
+        | Write of AsyncReplyChannel<Result> * Event<JsonValue,JsonValue> * Position<Index>
+
     let create (path:Path) =
     
         let openStream() =
@@ -23,47 +30,104 @@ module Stream =
 
         let writer = new StreamWriter(openStream())
 
+        let encode, decode = Event.Codec.EventToString
+        let tryDecode line =
+            try Some (decode line)
+            with _ -> None
+
         let count() =
             seq {
                 use reader = new StreamReader(openStream())
                 while (not reader.EndOfStream) do
                     yield reader.ReadLine()
-            } |> Seq.length
+            } |> Seq.choose tryDecode
+              |> Seq.length
 
         let lines = ref (count())
 
         let actor = MailboxProcessor<Message>.Start <| fun inbox ->
             let rec loop() =
                 async {
-                    let! sender, input = inbox.Receive()
-                    match input with
-                    | None ->
+                    let! message = inbox.Receive()
+                    match message with
+                    | Close sender->
                         writer.Close()
                         sender.Reply()
-                        return ()
-                    | Some line ->
-                        writer.WriteLine(line)
-                        writer.Flush()
-                        Interlocked.Increment(&lines.contents) |> ignore
-                        sender.Reply()
+                        return()
+                    | Write (sender, event, position) ->
+
+                        let insert() =
+                            writer.WriteLine(encode event)
+                            writer.Flush()
+                            Interlocked.Increment(&lines.contents) |> ignore
+                            sender.Reply(Success(!lines))
+                        let fail() =
+                            sender.Reply(Failure)
+
+                        match position with
+                        | End ->                          insert()
+                        | Start when 0 = !lines ->        insert()
+                        | At last when last+1 = !lines -> insert()
+                        | _ ->                            fail()
+                            
                         return! loop()
                 }
             loop()
 
-        let write(line)=
-            actor.PostAndReply(fun sender -> sender, Some line)
+        let writeTo index event =
+            match actor.PostAndReply(fun sender -> Write (sender, event, Position.At index)) with
+            | Success index -> index
+            | Failure -> raise (InvalidPosition(path,Position.At index))
+
+        let write event =
+            match actor.PostAndReply(fun sender -> Write (sender, event, Position.End)) with
+            | Success index -> ()
+            | Failure -> raise (InvalidPosition(path,Position.End))
 
         let close() =
-            actor.PostAndReply(fun sender -> sender, None)
+            actor.PostAndReply(fun sender -> Close (sender))
 
-        let read() =
+        let readFrom(index:Index) =
             seq {
-                use stream = openStream()
-                use reader = new StreamReader(stream)
-                
-                let i = ref 0
+                use reader = new StreamReader(openStream())
+                let i = ref -1
                 while (!i < !lines && not reader.EndOfStream) do
-                    yield reader.ReadLine()
+                    match reader.ReadLine() |> tryDecode with
+                    | None -> ()
+                    | Some event ->
+                        i := 1 + !i
+                        if !i >= index then
+                            yield event, !i
             }
 
-        read,write,close
+        let read() =
+            readFrom 0 |> Seq.map fst
+        
+        [   
+            Nata.IO.Capability.Reader
+                read
+
+            Nata.IO.Capability.ReaderFrom
+                readFrom
+
+            Nata.IO.Capability.Writer
+                write
+
+            Nata.IO.Capability.WriterTo
+                writeTo
+
+//            Nata.IO.Capability.Subscriber <| fun () ->
+//                listenFrom 0 |> Seq.map fst
+//
+//            Nata.IO.Capability.SubscriberFrom <| fun index ->
+//                listenFrom (Math.Max(index,0))
+        ]
+           
+
+
+    let connect : Nata.IO.Connector<Settings,Path,JsonValue,JsonValue,Index> =
+        
+        fun settings ->
+            let index = new ConcurrentDictionary<Path, Nata.IO.Capability<JsonValue,JsonValue,Index> list>()
+            fun name ->
+                index.GetOrAdd(name, create)

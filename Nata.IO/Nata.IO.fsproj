@@ -56,7 +56,9 @@
     <Compile Include="Seq.fs" />
     <Compile Include="Codec.fs" />
     <Compile Include="JsonValue.fs" />
+    <Compile Include="DateTime.fs" />
     <Compile Include="Event.fs" />
+    <Compile Include="Position.fs" />
     <Compile Include="Writer.fs" />
     <Compile Include="WriterTo.fs" />
     <Compile Include="Reader.fs" />

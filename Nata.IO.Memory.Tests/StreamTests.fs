@@ -86,7 +86,7 @@ type StreamTests() =
         event "StreamTests.TestWriteTo-1" |> writeTo 0 |> ignore
         event "StreamTests.TestWriteTo-2" |> writeTo 1 |> ignore
 
-    [<Test; ExpectedException(typeof<InvalidPosition<string>>)>]
+    [<Test; ExpectedException(typeof<InvalidPosition<string,Index>>)>]
     member x.TestWriteToShouldFailWithIndexTooLow() =
         let writeTo, readFrom =
             let connection = connect()
@@ -95,7 +95,7 @@ type StreamTests() =
         event "StreamTests.TestWriteToShouldFailWithIndexTooLow-1" |> writeTo 0 |> ignore
         event "StreamTests.TestWriteToShouldFailWithIndexTooLow-2" |> writeTo 0 |> ignore
 
-    [<Test; ExpectedException(typeof<InvalidPosition<string>>)>]
+    [<Test; ExpectedException(typeof<InvalidPosition<string,Index>>)>]
     member x.TestWriteToShouldFailWithIndexTooHigh() =
         let writeTo, readFrom =
             let connection = connect()

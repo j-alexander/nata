@@ -12,19 +12,9 @@ module Stream =
     
     let [<Literal>] Empty = -1
 
-    type Position =
-        | Start
-        | At of Index
-        | Any
-
-    type InvalidPosition<'Name>(stream:'Name,position:Position) =
-        inherit Exception(sprintf "Invalid Position %A" position)
-        member x.Stream = stream
-        member x.Position = position
-
     type private Result = Success of Index | Failure
     type private Sender = AsyncReplyChannel<Result>
-    type private Message<'Data,'Metadata> = Sender*Event<'Data,'Metadata>*Position
+    type private Message<'Data,'Metadata> = Sender*Event<'Data,'Metadata>*Position<Index>
 
     let create (name:'Name) =
 
@@ -49,7 +39,7 @@ module Stream =
 
                 return!
                     match position with
-                    | Any ->                       insert()
+                    | End ->                       insert()
                     | Start when count=0 ->        insert()
                     | At last when last=count-1 -> insert()
                     | _ ->                         fail()
@@ -92,7 +82,7 @@ module Stream =
                 readFrom (Math.Max(index,0))
 
             Nata.IO.Capability.Writer
-                (writeTo Position.Any >> ignore)
+                (writeTo Position.End >> ignore)
 
             Nata.IO.Capability.WriterTo <| fun index ->
                 (writeTo (Position.At index))
