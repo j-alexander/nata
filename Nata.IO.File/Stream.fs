@@ -3,6 +3,7 @@
 open System
 open System.Collections.Concurrent
 open System.IO
+open System.Text
 open System.Threading
 open FSharp.Data
 open Nata.IO
@@ -102,6 +103,31 @@ module Stream =
 
         let read() =
             readFrom 0 |> Seq.map fst
+
+        let listenFrom(index) =
+            seq {
+                use stream = openStream()
+                let builder = new StringBuilder()
+                let i = ref -1
+                while true do
+                    if stream.Position = stream.Length then
+                        Thread.Sleep(1)
+                    else
+                        let x = stream.ReadByte()
+                        if x = int '\n' then
+                            match builder.ToString() |> tryDecode with
+                            | None -> ()
+                            | Some event ->
+                                i := 1 + !i
+                                if !i >= index then
+                                    yield event, !i
+                            builder.Clear() |> ignore
+                        else
+                            builder.Append(char x) |> ignore
+            }
+
+        let listen() =
+            listenFrom 0 |> Seq.map fst
         
         [   
             Nata.IO.Capability.Reader
@@ -116,11 +142,11 @@ module Stream =
             Nata.IO.Capability.WriterTo
                 writeTo
 
-//            Nata.IO.Capability.Subscriber <| fun () ->
-//                listenFrom 0 |> Seq.map fst
-//
-//            Nata.IO.Capability.SubscriberFrom <| fun index ->
-//                listenFrom (Math.Max(index,0))
+            Nata.IO.Capability.Subscriber
+                listen
+
+            Nata.IO.Capability.SubscriberFrom
+                listenFrom
         ]
            
 
