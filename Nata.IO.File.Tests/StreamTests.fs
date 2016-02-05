@@ -31,14 +31,25 @@ type StreamTests() =
     [<Test>]
     member x.TestConcurrency() =
         let stream = connect()
-        let read,write =
+        let read,write,listen =
             Nata.IO.Capability.reader stream,
-            Nata.IO.Capability.writer stream
+            Nata.IO.Capability.writer stream,
+            Nata.IO.Capability.subscriber stream
              
         let format = event "StreamTests.TestConcurrency"
            
         let work =
             seq {
+                yield async {
+                    Assert.AreEqual(10000,
+                        listen()
+                        |> Seq.mapi(fun i actual ->
+                            let expected = i |> decimal |> (+) 1m |> format
+                            Assert.AreEqual(expected, actual))
+                        |> Seq.take 10000
+                        |> Seq.length)
+                    return 0
+                }
                 yield async {
                     [1m..10000m] |> Seq.iter (format >> write)
                     return 0
