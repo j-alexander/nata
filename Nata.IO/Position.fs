@@ -12,3 +12,12 @@ type InvalidPosition<'Name,'Index>(stream:'Name,position:Position<'Index>) =
 
     member x.Stream = stream
     member x.Position = position
+
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+module Position =
+
+    let map (fn:'IndexIn->'IndexOut) = function
+        | Position.Start -> Position.Start
+        | Position.At index -> index |> fn |> Position.At
+        | Position.End -> Position.End
+        

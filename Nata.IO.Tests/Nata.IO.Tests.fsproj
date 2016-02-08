@@ -57,6 +57,7 @@
     <Compile Include="CodecTests.fs" />
     <Compile Include="JsonValueTests.fs" />
     <Compile Include="EventTests.fs" />
+    <Compile Include="PositionTests.fs" />
     <Compile Include="WriterTests.fs" />
     <Compile Include="WriterToTests.fs" />
     <Compile Include="ReaderTests.fs" />
