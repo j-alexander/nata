@@ -1,4 +1,4 @@
-﻿namespace Nata.IO.EventStore.Tests
+﻿namespace Nata.IO.Memory.Tests
 
 open System
 open System.Reflection

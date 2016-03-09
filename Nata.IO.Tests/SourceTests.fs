@@ -7,7 +7,7 @@ open NUnit.Framework
 open Nata.IO
 open Nata.IO.Capability
 
-[<TestFixture>]
+[<TestFixture; AbstractClass>]
 type SourceTests() =
 
     let date = DateTime.Now
@@ -24,7 +24,9 @@ type SourceTests() =
           Data = "data:1"
           Metadata = "metaD:2" }
 
-    let createChannels() =
+    abstract member Connect : unit -> Source<string,string,string,int>
+
+    member private x.CreateChannels() =
         let dataCodec : Codec<int,string> =
             (fun (above:int) -> sprintf "data:%d" above),
             (fun (below:string) -> below.Substring(5) |> Int32.Parse)
@@ -32,17 +34,16 @@ type SourceTests() =
             (fun (above:int) -> sprintf "metaD:%d" above),
             (fun (below:string) -> below.Substring(6) |> Int32.Parse)
 
-        let underlying : Source<string,string,string,int> = Memory.Stream.connect()
+        let underlying : Source<string,string,string,int> = x.Connect()
         let overlaying : Source<string,int,int,int> =
             Source.map dataCodec metadataCodec underlying
             
         let channel = Guid.NewGuid().ToString()
         underlying channel, overlaying channel
-        
 
     [<Test>]
     member x.OverlayWriteCanReadAtBothTest() =
-        let underlay,overlay = createChannels()
+        let underlay,overlay = x.CreateChannels()
 
         overlayEvent |> writer overlay
         
@@ -53,7 +54,7 @@ type SourceTests() =
 
     [<Test>]
     member x.UnderlayWriteCanReadAtBothTest() =
-        let underlay,overlay = createChannels()
+        let underlay,overlay = x.CreateChannels()
 
         underlayEvent |> writer underlay
 

@@ -6,15 +6,9 @@ open FSharp.Data
 open NUnit.Framework
 open Nata.IO
 open Nata.IO.Capability
-open Nata.IO.Memory
 
-[<TestFixture>]
+[<AbstractClass>]
 type SubscriberFromTests() =
-
-    let connect(fn) =
-        let stream = Stream.connect() (Guid.NewGuid().ToString())
-        stream |> subscriberFrom |> fn,
-        stream |> writer
 
     let event =
         { Type = "event_type"
@@ -23,9 +17,16 @@ type SubscriberFromTests() =
           Data = ()
           Metadata = () }
 
+    abstract member Connect : unit -> List<Capability<'Data,'Metadata,int>>
+    
+    member x.Connect(fn) =
+        let stream = x.Connect()
+        stream |> subscriberFrom |> fn,
+        stream |> writer
+
     [<Test>]
     member x.MapDataValueTest() =
-        let subscribeFrom, write = connect(SubscriberFrom.mapData ((+) 1))
+        let subscribeFrom, write = x.Connect(SubscriberFrom.mapData ((+) 1))
 
         let input = [1;2;3]
         let output = [2;3;4]
@@ -39,7 +40,7 @@ type SubscriberFromTests() =
 
     [<Test>]
     member x.MapDataTypeTest() =
-        let subscribeFrom, write = connect(SubscriberFrom.mapData (fun x -> x.ToString()))
+        let subscribeFrom, write = x.Connect(SubscriberFrom.mapData (fun x -> x.ToString()))
 
         let input = [1;2;3]
         let output = ["1";"2";"3"]
@@ -53,7 +54,7 @@ type SubscriberFromTests() =
 
     [<Test>]
     member x.MapMetadataValueTest() =
-        let subscribeFrom, write = connect(SubscriberFrom.mapMetadata (fun i -> i*i))
+        let subscribeFrom, write = x.Connect(SubscriberFrom.mapMetadata (fun i -> i*i))
 
         let input = [1;2;3]
         let output = [1;4;9]
@@ -67,7 +68,7 @@ type SubscriberFromTests() =
 
     [<Test>]
     member x.MapMetadataTypeTest() =
-        let subscribeFrom, write = connect(SubscriberFrom.mapMetadata int64)
+        let subscribeFrom, write = x.Connect(SubscriberFrom.mapMetadata int64)
 
         let input = [1;2;3]
         let output = [1L;2L;3L]
@@ -82,7 +83,7 @@ type SubscriberFromTests() =
     [<Test>]
     member x.MapTest() =
         let mapping = SubscriberFrom.map (fun (x:int) -> int64 (x*x)) (fun (x:int) -> (1+x).ToString()) (Codec.Identity)
-        let subscribeFrom, write = connect(mapping)
+        let subscribeFrom, write = x.Connect(mapping)
 
         let input = [1;2;3;4]
 

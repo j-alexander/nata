@@ -6,15 +6,9 @@ open FSharp.Data
 open NUnit.Framework
 open Nata.IO
 open Nata.IO.Capability
-open Nata.IO.Memory
 
-[<TestFixture>]
+[<AbstractClass>]
 type ReaderFromTests() =
-
-    let connect(fn) =
-        let stream = Stream.connect() (Guid.NewGuid().ToString())
-        stream |> readerFrom |> fn,
-        stream |> writer
 
     let event =
         { Type = "event_type"
@@ -23,9 +17,16 @@ type ReaderFromTests() =
           Data = ()
           Metadata = () }
 
+    abstract member Connect : unit -> List<Capability<'Data,'Metadata,int>>
+
+    member x.Connect(fn) =
+        let stream = x.Connect()
+        stream |> readerFrom |> fn,
+        stream |> writer
+
     [<Test>]
     member x.MapDataValueTest() =
-        let readFrom, write = connect(ReaderFrom.mapData ((+) 1))
+        let readFrom, write = x.Connect(ReaderFrom.mapData ((+) 1))
 
         let input = [1;2;3]
         let output = [2;3;4]
@@ -39,7 +40,7 @@ type ReaderFromTests() =
 
     [<Test>]
     member x.MapDataTypeTest() =
-        let readFrom, write = connect(ReaderFrom.mapData (fun x -> x.ToString()))
+        let readFrom, write = x.Connect(ReaderFrom.mapData (fun x -> x.ToString()))
 
         let input = [1;2;3]
         let output = ["1";"2";"3"]
@@ -53,7 +54,7 @@ type ReaderFromTests() =
 
     [<Test>]
     member x.MapMetadataValueTest() =
-        let readFrom, write = connect(ReaderFrom.mapMetadata (fun i -> i*i))
+        let readFrom, write = x.Connect(ReaderFrom.mapMetadata (fun i -> i*i))
 
         let input = [1;2;3]
         let output = [1;4;9]
@@ -67,7 +68,7 @@ type ReaderFromTests() =
 
     [<Test>]
     member x.MapMetadataTypeTest() =
-        let readFrom, write = connect(ReaderFrom.mapMetadata int64)
+        let readFrom, write = x.Connect(ReaderFrom.mapMetadata int64)
 
         let input = [1;2;3]
         let output = [1L;2L;3L]
@@ -82,7 +83,7 @@ type ReaderFromTests() =
     [<Test>]
     member x.MapTest() =
         let mapping = ReaderFrom.map (fun (x:int) -> int64 (x*x)) (fun (x:int) -> (1+x).ToString()) (Codec.Identity)
-        let readFrom, write = connect(mapping)
+        let readFrom, write = x.Connect(mapping)
 
         let input = [1;2;3;4]
 

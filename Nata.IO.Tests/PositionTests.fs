@@ -6,7 +6,6 @@ open FSharp.Data
 open NUnit.Framework
 open Nata.IO
 open Nata.IO.Capability
-open Nata.IO.Memory
 
 [<TestFixture>]
 type PositionTests() =

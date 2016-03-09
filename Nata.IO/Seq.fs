@@ -3,6 +3,6 @@
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Seq =
 
-    let mapFst fn = Seq.map (fun (i,j) -> fn i, j)
-    let mapSnd fn = Seq.map (fun (i,j) -> i, fn j)
+    let mapFst fn = Seq.map <| mapFst fn
+    let mapSnd fn = Seq.map <| mapSnd fn
 

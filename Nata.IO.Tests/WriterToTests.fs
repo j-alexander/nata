@@ -6,15 +6,9 @@ open FSharp.Data
 open NUnit.Framework
 open Nata.IO
 open Nata.IO.Capability
-open Nata.IO.Memory
 
-[<TestFixture>]
+[<AbstractClass>]
 type WriterToTests() =
-
-    let connect(fn) =
-        let stream = Stream.connect() (Guid.NewGuid().ToString())
-        stream |> reader,
-        stream |> writerTo |> fn
 
     let event =
         { Type = "event_type"
@@ -23,9 +17,16 @@ type WriterToTests() =
           Data = ()
           Metadata = () }
 
+    abstract member Connect : unit -> List<Capability<'Data,'Metadata,int>>
+    
+    member x.Connect(fn) =
+        let stream = x.Connect()
+        stream |> reader,
+        stream |> writerTo |> fn
+
     [<Test>]
     member x.MapDataValueTest() =
-        let read, writeTo = connect(WriterTo.mapData ((+) 1))
+        let read, writeTo = x.Connect(WriterTo.mapData ((+) 1))
 
         let input = [1;2;3]
         let output = [2;3;4]
@@ -39,7 +40,7 @@ type WriterToTests() =
 
     [<Test>]
     member x.MapDataTypeTest() =
-        let read, writeTo = connect(WriterTo.mapData (fun x -> x.ToString()))
+        let read, writeTo = x.Connect(WriterTo.mapData (fun x -> x.ToString()))
 
         let input = [1;2;3]
         let output = ["1";"2";"3"]
@@ -53,7 +54,7 @@ type WriterToTests() =
 
     [<Test>]
     member x.MapMetadataValueTest() =
-        let read, writeTo = connect(WriterTo.mapMetadata (fun i -> i*i))
+        let read, writeTo = x.Connect(WriterTo.mapMetadata (fun i -> i*i))
 
         let input = [1;2;3]
         let output = [1;4;9]
@@ -67,7 +68,7 @@ type WriterToTests() =
 
     [<Test>]
     member x.MapMetadataTypeTest() =
-        let read, writeTo = connect(WriterTo.mapMetadata int64)
+        let read, writeTo = x.Connect(WriterTo.mapMetadata int64)
 
         let input = [1;2;3]
         let output = [1L;2L;3L]
@@ -82,7 +83,7 @@ type WriterToTests() =
     [<Test>]
     member x.MapTest() =
         let mapping = WriterTo.map (fun (x:int) -> int64 (x*x)) (fun (x:int) -> (1+x).ToString()) Codec.Identity
-        let read, writeTo = connect(mapping)
+        let read, writeTo = x.Connect(mapping)
 
         let input = [1;2;3;4]
 

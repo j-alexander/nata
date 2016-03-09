@@ -54,6 +54,7 @@
     <Content Include="packages.config" />
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="AcceptanceTests.fs" />
     <Compile Include="StreamTests.fs" />
   </ItemGroup>
   <ItemGroup>
@@ -106,6 +107,11 @@
     <ProjectReference Include="..\Nata.IO.Memory\Nata.IO.Memory.fsproj">
       <Name>Nata.IO.Memory</Name>
       <Project>{5baa20b5-a18b-4bee-aed1-19f393e02096}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Nata.IO.Tests\Nata.IO.Tests.fsproj">
+      <Name>Nata.IO.Tests</Name>
+      <Project>{b58419f9-0387-4780-99d7-70ca2938da00}</Project>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Nata.IO\Nata.IO.fsproj">
