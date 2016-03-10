@@ -49,3 +49,4 @@ module AcceptanceTests =
     type MemorySourceTests() =
         inherit Nata.IO.Tests.SourceTests()
         override x.Connect() = Stream.connect()
+        override x.Channel() = Guid.NewGuid().ToString("n")
