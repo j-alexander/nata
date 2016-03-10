@@ -51,10 +51,11 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="StreamTests.fs" />
     <Content Include="packages.config" />
     <Content Include="App.config" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="FileTests.fs" />
+    <Compile Include="AcceptanceTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Data">
@@ -106,6 +107,11 @@
     <ProjectReference Include="..\Nata.IO.File\Nata.IO.File.fsproj">
       <Name>Nata.IO.File</Name>
       <Project>{093513eb-1c6c-40c6-a0af-f71baa6a827e}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Nata.IO.Tests\Nata.IO.Tests.fsproj">
+      <Name>Nata.IO.Tests</Name>
+      <Project>{b58419f9-0387-4780-99d7-70ca2938da00}</Project>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Nata.IO\Nata.IO.fsproj">

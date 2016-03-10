@@ -65,6 +65,7 @@
     <Compile Include="SubscriberTests.fs" />
     <Compile Include="SubscriberFromTests.fs" />
     <Compile Include="SourceTests.fs" />
+    <Compile Include="ChannelTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Data">

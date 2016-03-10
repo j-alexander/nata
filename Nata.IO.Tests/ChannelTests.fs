@@ -1,95 +1,55 @@
-﻿namespace Nata.IO.File.Tests
+﻿namespace Nata.IO.Tests
 
 open System
-open System.IO
-open System.Collections.Concurrent
 open System.Reflection
-open System.Threading
-open System.Threading.Tasks
-
+open System.Text
 open FSharp.Data
 open NUnit.Framework
+
 open Nata.IO
 open Nata.IO.Capability
-open Nata.IO.File
-open Nata.IO.File.Stream
 
-[<TestFixture>]
-type StreamTests() =
+type Index = int
 
-    let date = DateTime.UtcNow
-    let event fn i =
-        { Data = JsonValue.Number i
-          Metadata = JsonValue.String (Assembly.GetExecutingAssembly().FullName)
-          Date = date
-          Stream = "Nata.IO.File.Tests"
+[<AbstractClass>]
+type ChannelTests() as x =
+
+    let event(fn) =
+        { Data =
+            [| "case", JsonValue.String (x.GetType().Name + "." + fn)
+               "at", JsonValue.String (DateTime.Now.ToString()) 
+            |] |> JsonValue.Record
+               |> JsonValue.toBytes
+          Metadata =
+            [| "from", JsonValue.String (Assembly.GetExecutingAssembly().FullName)
+            |] |> JsonValue.Record
+               |> JsonValue.toBytes
+          Date = DateTime.UtcNow
+          Stream = null
           Type = fn }
 
-    let connect() = 
-        Stream.create(Path.GetTempFileName())
+    abstract member Connect : unit -> Source<string,byte[],byte[],Index>
+    abstract member Channel : unit -> string
 
-    [<Test>]
-    member x.TestConcurrency() =
-        let stream = connect()
-        let read,write,listen =
-            Nata.IO.Capability.reader stream,
-            Nata.IO.Capability.writer stream,
-            Nata.IO.Capability.subscriber stream
-             
-        let format = event "StreamTests.TestConcurrency"
-           
-        let work =
-            seq {
-                yield async {
-                    Assert.AreEqual(10000,
-                        listen()
-                        |> Seq.mapi(fun i actual ->
-                            let expected = i |> decimal |> (+) 1m |> format
-                            Assert.AreEqual(expected, actual))
-                        |> Seq.take 10000
-                        |> Seq.length)
-                    return 0
-                }
-                yield async {
-                    [1m..10000m] |> Seq.iter (format >> write)
-                    return 0
-                }
-                for reader in 1..40 -> async {
-                    do! Async.Sleep(10*reader)
-                    return
-                        read()
-                        |> Seq.mapi(fun i actual -> 
-                            let expected = i |> decimal |> (+) 1m |> format
-                            Assert.AreEqual(expected, actual))
-                        |> Seq.length
-                }
-            }
-
-        let results =
-            Async.Parallel work
-            |> Async.RunSynchronously
-            |> Seq.sum
-
-        Assert.Greater(results, 0, "should read some valid data")
-
+    member private x.Capabilities() = x.Channel() |> x.Connect()
 
     [<Test>]
     member x.TestConnect() =
-        let stream = connect()
+        let stream = x.Capabilities()
         Assert.Greater(stream.Length, 0)
 
     [<Test>]
     member x.TestWrite() =
-        let write = connect() |> writer
-        let event = event "StreamTests.TestWrite" 0m
+        let write = x.Capabilities() |> writer
+        let event = event("TestWrite")
         write event
 
     [<Test>]
     member x.TestRead() =
-        let connection = connect()
+        let connection = x.Capabilities()
         let write = writer connection
         let read = reader connection
-        let event = event "StreamTests.TestRead" 0m
+        let event = event("TestRead")
         write event
 
         let result = read() |> Seq.head
@@ -98,11 +58,11 @@ type StreamTests() =
 
     [<Test>]
     member x.TestReadFrom() =
-        let connection = connect()
+        let connection = x.Capabilities()
         let write = writer connection
         let readFrom = readerFrom connection
-        let event_0 = event "StreamTests.TestReadFrom" 0m
-        let event_1 = event "StreamTests.TestReadFrom" 1m
+        let event_0 = event("TestReadFrom-0")
+        let event_1 = event("TestReadFrom-1")
         write event_0
         write event_1
         
@@ -119,40 +79,40 @@ type StreamTests() =
     [<Test>]
     member x.TestWriteTo() =
         let writeTo, readFrom =
-            let connection = connect()
+            let connection = x.Capabilities()
             writerTo connection, readerFrom connection
-        event "StreamTests.TestWriteTo" 0m |> writeTo Stream.Empty |> ignore
-        event "StreamTests.TestWriteTo" 1m |> writeTo 0 |> ignore
-        event "StreamTests.TestWriteTo" 2m |> writeTo 1 |> ignore
+        event "TestWriteTo-0" |> writeTo -1 |> ignore
+        event "TestWriteTo-1" |> writeTo 0 |> ignore
+        event "TestWriteTo-2" |> writeTo 1 |> ignore
 
     [<Test; ExpectedException(typeof<InvalidPosition<string,Index>>)>]
     member x.TestWriteToShouldFailWithIndexTooLow() =
         let writeTo, readFrom =
-            let connection = connect()
+            let connection = x.Capabilities()
             writerTo connection, readerFrom connection
-        event "StreamTests.TestWriteToShouldFailWithIndexTooLow" 0m |> writeTo Stream.Empty |> ignore
-        event "StreamTests.TestWriteToShouldFailWithIndexTooLow" 1m |> writeTo 0 |> ignore
-        event "StreamTests.TestWriteToShouldFailWithIndexTooLow" 2m |> writeTo 0 |> ignore
+        event "TestWriteToShouldFailWithIndexTooLow-0" |> writeTo -1 |> ignore
+        event "TestWriteToShouldFailWithIndexTooLow-1" |> writeTo 0 |> ignore
+        event "TestWriteToShouldFailWithIndexTooLow-2" |> writeTo 0 |> ignore
 
     [<Test; ExpectedException(typeof<InvalidPosition<string,Index>>)>]
     member x.TestWriteToShouldFailWithIndexTooHigh() =
         let writeTo, readFrom =
-            let connection = connect()
+            let connection = x.Capabilities()
             writerTo connection, readerFrom connection
-        event "StreamTests.TestWriteToShouldFailWithIndexTooHigh" 0m |> writeTo Stream.Empty |> ignore
-        event "StreamTests.TestWriteToShouldFailWithIndexTooHigh" 1m |> writeTo 0 |> ignore
-        event "StreamTests.TestWriteToShouldFailWithIndexTooHigh" 2m |> writeTo 2 |> ignore
+        event "TestWriteToShouldFailWithIndexTooHigh-0" |> writeTo -1 |> ignore
+        event "TestWriteToShouldFailWithIndexTooHigh-1" |> writeTo 0 |> ignore
+        event "TestWriteToShouldFailWithIndexTooHigh-2" |> writeTo 2 |> ignore
         
     [<Test; Timeout(15000)>]
     member x.TestLiveSubscription() =
         let write, subscribe =
-            let connection= connect()
+            let connection = x.Capabilities()
             writer connection, subscriber connection
         let results = subscribe()
         let expected =
-            [ event "StreamTests.TestLiveSubscription" 0m
-              event "StreamTests.TestLiveSubscription" 1m
-              event "StreamTests.TestLiveSubscription" 2m ]
+            [ event "TestLiveSubscription-0"
+              event "TestLiveSubscription-1"
+              event "TestLiveSubscription-2" ]
         for event in expected do
             write event
         results
@@ -167,12 +127,12 @@ type StreamTests() =
     [<Test; Timeout(15000)>]
     member x.TestLateSubscription() =
         let write, subscribe =
-            let connection= connect()
+            let connection= x.Capabilities()
             writer connection, subscriber connection
         let expected =
-            [ event "StreamTests.TestLateSubscription" 0m
-              event "StreamTests.TestLateSubscription" 1m
-              event "StreamTests.TestLateSubscription" 2m ]
+            [ event "TestLateSubscription-0"
+              event "TestLateSubscription-1"
+              event "TestLateSubscription-2" ]
         for event in expected do
             write event
         subscribe()
@@ -187,12 +147,12 @@ type StreamTests() =
     [<Test; Timeout(15000)>]
     member x.TestSubscriptionFromIndex() =
         let write, subscribeFrom =
-            let connection= connect()
+            let connection = x.Capabilities()
             writer connection, subscriberFrom connection
         let expected =
-            [| event "StreamTests.TestLateSubscription" 0m
-               event "StreamTests.TestLateSubscription" 1m
-               event "StreamTests.TestLateSubscription" 2m |]
+            [| event "TestLateSubscriptionFromIndex-0"
+               event "TestLateSubscriptionFromIndex-1"
+               event "TestLateSubscriptionFromIndex-2" |]
         for event in expected do
             write event
         subscribeFrom 0
