@@ -54,7 +54,7 @@
     <Content Include="packages.config" />
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="StreamTests.fs" />
+    <Compile Include="AcceptanceTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="EventStore.ClientAPI">
@@ -107,6 +107,11 @@
     <ProjectReference Include="..\Nata.IO.EventStore\Nata.IO.EventStore.fsproj">
       <Name>Nata.IO.EventStore</Name>
       <Project>{b5f580e2-3957-41c3-9f14-f9f8cf636b7e}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Nata.IO.Tests\Nata.IO.Tests.fsproj">
+      <Name>Nata.IO.Tests</Name>
+      <Project>{b58419f9-0387-4780-99d7-70ca2938da00}</Project>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Nata.IO\Nata.IO.fsproj">

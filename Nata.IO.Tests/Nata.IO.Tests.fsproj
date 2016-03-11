@@ -64,6 +64,7 @@
     <Compile Include="ReaderFromTests.fs" />
     <Compile Include="SubscriberTests.fs" />
     <Compile Include="SubscriberFromTests.fs" />
+    <Compile Include="SerializationTests.fs" />
     <Compile Include="SourceTests.fs" />
     <Compile Include="ChannelTests.fs" />
   </ItemGroup>

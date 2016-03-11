@@ -8,6 +8,7 @@ open System.Net.Sockets
 open System.Threading
 open NLog.FSharp
 open EventStore.ClientAPI
+open EventStore.ClientAPI.Exceptions
 open EventStore.ClientAPI.SystemData
 
 module Stream =
@@ -80,8 +81,19 @@ module Stream =
         let result =
             connection.AppendToStreamAsync(targetStream, eventPosition, eventData)
             |> Async.AwaitTask
+            |> Async.Catch
             |> Async.RunSynchronously
-        result.NextExpectedVersion
+        match result with
+        | Choice1Of2 result -> result.NextExpectedVersion
+        | Choice2Of2 exn ->
+            match exn with
+            | :? AggregateException as e ->
+                match e.InnerException with
+                | :? WrongExpectedVersionException as v ->
+                    raise (Nata.IO.InvalidPosition(v.Message,Nata.IO.Position.At targetVersion))
+                | _ ->
+                    raise exn
+            | _ -> raise exn
         
 
     let connect : Nata.IO.Connector<Settings,Name,Data,Metadata,Index> =

@@ -1,4 +1,4 @@
-﻿namespace Nata.IO.Memory.Tests
+﻿namespace Nata.IO.File.Tests
 
 open System
 open System.IO
