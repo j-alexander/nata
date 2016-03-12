@@ -17,7 +17,7 @@ type WriterToTests() =
           Data = ()
           Metadata = () }
 
-    abstract member Connect : unit -> List<Capability<'Data,'Metadata,int>>
+    abstract member Connect : unit -> List<Capability<'Data,'Metadata,int64>>
     
     member x.Connect(fn) =
         let stream = x.Connect()
@@ -33,7 +33,7 @@ type WriterToTests() =
 
         let run =
             for at, i in input |> Seq.mapi (fun at i -> at-1,i) do
-                event |> Event.mapData (fun _ -> i) |> writeTo at |> ignore
+                event |> Event.mapData (fun _ -> i) |> writeTo (int64 at) |> ignore
             read >> Seq.map Event.data >> Seq.toList
 
         Assert.AreEqual(output, run())
@@ -47,7 +47,7 @@ type WriterToTests() =
 
         let run =
             for at, i in input |> Seq.mapi (fun at i -> at-1,i) do
-                event |> Event.mapData (fun _ -> i) |> writeTo at |> ignore
+                event |> Event.mapData (fun _ -> i) |> writeTo (int64 at) |> ignore
             read >> Seq.map Event.data >> Seq.toList
 
         Assert.AreEqual(output, run())
@@ -61,7 +61,7 @@ type WriterToTests() =
 
         let run =
             for at, i in input |> Seq.mapi (fun at i -> at-1,i) do
-                event |> Event.mapMetadata (fun _ -> i) |> writeTo at |> ignore
+                event |> Event.mapMetadata (fun _ -> i) |> writeTo (int64 at) |> ignore
             read >> Seq.map Event.metadata >> Seq.toList
 
         Assert.AreEqual(output, run())
@@ -75,7 +75,7 @@ type WriterToTests() =
 
         let run =
             for at, i in input |> Seq.mapi (fun at i -> at-1,i) do
-                event |> Event.mapMetadata (fun _ -> i) |> writeTo at |> ignore
+                event |> Event.mapMetadata (fun _ -> i) |> writeTo (int64 at) |> ignore
             read >> Seq.map Event.metadata >> Seq.toList
 
         Assert.AreEqual(output, run())
@@ -92,7 +92,7 @@ type WriterToTests() =
 
         let results =
             for at, i in input |> Seq.mapi (fun at i -> at-1,i) do
-                event |> Event.map (fun _ -> i) (fun _ -> i) |> writeTo at |> ignore
+                event |> Event.map (fun _ -> i) (fun _ -> i) |> writeTo (int64 at) |> ignore
             read() |> Seq.toList
 
 

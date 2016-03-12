@@ -9,8 +9,6 @@ open NUnit.Framework
 open Nata.IO
 open Nata.IO.Capability
 
-type Index = int
-
 [<AbstractClass>]
 type ChannelTests() as x =
 
@@ -28,7 +26,7 @@ type ChannelTests() as x =
           Stream = null
           Type = fn }
 
-    abstract member Connect : unit -> Source<string,byte[],byte[],Index>
+    abstract member Connect : unit -> Source<string,byte[],byte[],int64>
     abstract member Channel : unit -> string
 
     member private x.Capabilities() = x.Channel() |> x.Connect()
@@ -66,12 +64,12 @@ type ChannelTests() as x =
         write event_0
         write event_1
         
-        let result, index = readFrom 0 |> Seq.head
+        let result, index = readFrom 0L |> Seq.head
         Assert.AreEqual(event_0.Data, result.Data)
         Assert.AreEqual(event_0.Metadata, result.Metadata)
         Assert.AreEqual(0, index)
         
-        let result, index = readFrom 1 |> Seq.head
+        let result, index = readFrom 1L |> Seq.head
         Assert.AreEqual(event_1.Data, result.Data)
         Assert.AreEqual(event_1.Metadata, result.Metadata)
         Assert.AreEqual(1, index)
@@ -81,27 +79,27 @@ type ChannelTests() as x =
         let writeTo, readFrom =
             let connection = x.Capabilities()
             writerTo connection, readerFrom connection
-        event "TestWriteTo-0" |> writeTo -1 |> ignore
-        event "TestWriteTo-1" |> writeTo 0 |> ignore
-        event "TestWriteTo-2" |> writeTo 1 |> ignore
+        event "TestWriteTo-0" |> writeTo -1L |> ignore
+        event "TestWriteTo-1" |> writeTo 0L |> ignore
+        event "TestWriteTo-2" |> writeTo 1L |> ignore
 
-    [<Test; ExpectedException(typeof<InvalidPosition<string,Index>>)>]
+    [<Test; ExpectedException(typeof<InvalidPosition<int64>>)>]
     member x.TestWriteToShouldFailWithIndexTooLow() =
         let writeTo, readFrom =
             let connection = x.Capabilities()
             writerTo connection, readerFrom connection
-        event "TestWriteToShouldFailWithIndexTooLow-0" |> writeTo -1 |> ignore
-        event "TestWriteToShouldFailWithIndexTooLow-1" |> writeTo 0 |> ignore
-        event "TestWriteToShouldFailWithIndexTooLow-2" |> writeTo 0 |> ignore
+        event "TestWriteToShouldFailWithIndexTooLow-0" |> writeTo -1L |> ignore
+        event "TestWriteToShouldFailWithIndexTooLow-1" |> writeTo 0L |> ignore
+        event "TestWriteToShouldFailWithIndexTooLow-2" |> writeTo 0L |> ignore
 
-    [<Test; ExpectedException(typeof<InvalidPosition<string,Index>>)>]
+    [<Test; ExpectedException(typeof<InvalidPosition<int64>>)>]
     member x.TestWriteToShouldFailWithIndexTooHigh() =
         let writeTo, readFrom =
             let connection = x.Capabilities()
             writerTo connection, readerFrom connection
-        event "TestWriteToShouldFailWithIndexTooHigh-0" |> writeTo -1 |> ignore
-        event "TestWriteToShouldFailWithIndexTooHigh-1" |> writeTo 0 |> ignore
-        event "TestWriteToShouldFailWithIndexTooHigh-2" |> writeTo 2 |> ignore
+        event "TestWriteToShouldFailWithIndexTooHigh-0" |> writeTo -1L |> ignore
+        event "TestWriteToShouldFailWithIndexTooHigh-1" |> writeTo 0L |> ignore
+        event "TestWriteToShouldFailWithIndexTooHigh-2" |> writeTo 2L |> ignore
         
     [<Test; Timeout(15000)>]
     member x.TestLiveSubscription() =
@@ -155,7 +153,7 @@ type ChannelTests() as x =
                event "TestLateSubscriptionFromIndex-2" |]
         for event in expected do
             write event
-        subscribeFrom 0
+        subscribeFrom 0L
         |> Seq.take 3
         |> Seq.toArray
         |> Array.zip expected
@@ -163,7 +161,7 @@ type ChannelTests() as x =
             Assert.AreEqual(expected.Type, actual.Type)
             Assert.AreEqual(expected.Data, actual.Data)
             Assert.AreEqual(expected.Metadata, actual.Metadata))
-        subscribeFrom 1
+        subscribeFrom 1L
         |> Seq.take 2
         |> Seq.toArray
         |> Array.zip (expected.[1..2])
@@ -171,7 +169,7 @@ type ChannelTests() as x =
             Assert.AreEqual(expected.Type, actual.Type)
             Assert.AreEqual(expected.Data, actual.Data)
             Assert.AreEqual(expected.Metadata, actual.Metadata))
-        subscribeFrom 2
+        subscribeFrom 2L
         |> Seq.take 1
         |> Seq.toArray
         |> Array.zip (expected.[2..2])

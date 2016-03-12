@@ -7,12 +7,6 @@ type Position<'Index> =
     | At of 'Index
     | End
 
-type InvalidPosition<'Name,'Index>(stream:'Name,position:Position<'Index>) =
-    inherit Exception(sprintf "Invalid Position %A" position)
-
-    member x.Stream = stream
-    member x.Position = position
-
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Position =
 
@@ -21,3 +15,17 @@ module Position =
         | Position.At index -> index |> fn |> Position.At
         | Position.End -> Position.End
         
+type InvalidPosition<'Index>(position:Position<'Index>) =
+    inherit Exception(sprintf "Invalid Position %A" position)
+    member x.Position = position
+
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+module InvalidPosition =
+
+    let map (fn:'IndexIn->'IndexOut) (exn:InvalidPosition<'IndexIn>) =
+        InvalidPosition<'IndexOut>(exn.Position |> Position.map fn)
+
+    let applyMap (fn:'IndexIn->'IndexOut) (f:'In->'Out) (x:'In) : 'Out =
+        try f x
+        with :? InvalidPosition<'IndexIn> as exn -> raise (map fn exn)
+            

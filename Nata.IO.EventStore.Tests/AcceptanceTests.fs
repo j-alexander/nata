@@ -22,7 +22,9 @@ module AcceptanceTests =
                    Password = "changeit" } }
                    
     let channel() = Guid.NewGuid().ToString("n")
-    let connect() = Stream.connect settings
+    let connect() = 
+        Stream.connect settings
+        |> Source.mapIndex (int, int64)
 
     [<TestFixture>]
     type EventStoreChannelTests() =

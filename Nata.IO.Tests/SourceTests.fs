@@ -40,7 +40,7 @@ type SourceTests() as x =
           Stream = null
           Type = fn }
 
-    abstract member Connect : unit -> Source<string,string,string,int>
+    abstract member Connect : unit -> Source<string,string,string,int64>
     abstract member Channel : unit -> string
 
     member private x.Capabilities() = x.Channel() |> x.Connect()
@@ -53,8 +53,8 @@ type SourceTests() as x =
             (fun (above:int) -> sprintf "metaD:%d" above),
             (fun (below:string) -> below.Substring(6) |> Int32.Parse)
 
-        let underlying : Source<string,string,string,int> = x.Connect()
-        let overlaying : Source<string,int,int,int> =
+        let underlying : Source<string,string,string,int64> = x.Connect()
+        let overlaying : Source<string,int,int,int64> =
             Source.map dataCodec metadataCodec underlying
             
         let channel = Guid.NewGuid().ToString()

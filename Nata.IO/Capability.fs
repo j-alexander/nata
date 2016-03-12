@@ -32,6 +32,16 @@ module Capability =
         | Subscriber x ->     x |> Subscriber.mapMetadata decode |> Subscriber
         | SubscriberFrom x -> x |> SubscriberFrom.mapMetadata decode |> SubscriberFrom
 
+    let mapIndex (codec:Codec<'IndexIn, 'IndexOut>)
+                 (capability:Capability<'Data,'Metadata,'IndexOut>) : Capability<'Data,'Metadata,'IndexIn> =
+        match capability with
+        | Writer x ->         x |> Writer
+        | WriterTo x ->       x |> WriterTo.mapIndex codec |> WriterTo
+        | Reader x ->         x |> Reader
+        | ReaderFrom x ->     x |> ReaderFrom.mapIndex (Codec.reverse codec) |> ReaderFrom
+        | Subscriber x ->     x |> Subscriber
+        | SubscriberFrom x -> x |> SubscriberFrom.mapIndex (Codec.reverse codec) |> SubscriberFrom
+
     let map ((encodeData,decodeData):Codec<'DataIn,'DataOut>)
             ((encodeMetadata,decodeMetadata):Codec<'MetadataIn,'MetadataOut>)
             ((encodeIndex,decodeIndex):Codec<'IndexIn,'IndexOut>)

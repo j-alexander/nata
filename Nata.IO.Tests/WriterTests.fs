@@ -17,7 +17,7 @@ type WriterTests() =
           Data = ()
           Metadata = () }
 
-    abstract member Connect : unit -> List<Capability<'Data,'Metadata,int>>
+    abstract member Connect : unit -> List<Capability<'Data,'Metadata,int64>>
 
     member x.Connect(fn) =
         let stream = x.Connect()

@@ -11,7 +11,7 @@ open Nata.IO
 module Stream =
 
     type Settings = unit
-    type Index = int
+    type Index = int64
     type Path = string
     
     let [<Literal>] Empty = -1
@@ -42,7 +42,7 @@ module Stream =
                 while (not reader.EndOfStream) do
                     yield reader.ReadLine()
             } |> Seq.choose tryDecode
-              |> Seq.length
+              |> Seq.fold (fun i _ -> 1L + i) 0L
 
         let lines = ref (count())
 
@@ -66,10 +66,10 @@ module Stream =
                             sender.Reply(Failure)
 
                         match position with
-                        | End ->                          insert()
-                        | Start when 0 = !lines ->        insert()
-                        | At last when last+1 = !lines -> insert()
-                        | _ ->                            fail()
+                        | End ->                           insert()
+                        | Start when 0L = !lines ->        insert()
+                        | At last when last+1L = !lines -> insert()
+                        | _ ->                             fail()
                             
                         return! loop()
                 }
@@ -78,12 +78,12 @@ module Stream =
         let writeTo index event =
             match actor.PostAndReply(fun sender -> Write (sender, event, Position.At index)) with
             | Success index -> index
-            | Failure -> raise (InvalidPosition(path,Position.At index))
+            | Failure -> raise (InvalidPosition(Position.At index))
 
         let write event =
             match actor.PostAndReply(fun sender -> Write (sender, event, Position.End)) with
             | Success index -> ()
-            | Failure -> raise (InvalidPosition(path,Position.End))
+            | Failure -> raise (InvalidPosition(Position.End))
 
         let close() =
             actor.PostAndReply(fun sender -> Close (sender))
@@ -91,24 +91,24 @@ module Stream =
         let readFrom(index:Index) =
             seq {
                 use reader = new StreamReader(openStream())
-                let i = ref -1
+                let i = ref -1L
                 while (!i < !lines && not reader.EndOfStream) do
                     match reader.ReadLine() |> tryDecode with
                     | None -> ()
                     | Some event ->
-                        i := 1 + !i
+                        i := 1L + !i
                         if !i >= index then
                             yield event, !i
             }
 
         let read() =
-            readFrom 0 |> Seq.map fst
+            readFrom 0L |> Seq.map fst
 
         let listenFrom(index) =
             seq {
                 use stream = openStream()
                 let builder = new StringBuilder()
-                let i = ref -1
+                let i = ref -1L
                 while true do
                     if stream.Position = stream.Length then
                         Thread.Sleep(1)
@@ -118,7 +118,7 @@ module Stream =
                             match builder.ToString() |> tryDecode with
                             | None -> ()
                             | Some event ->
-                                i := 1 + !i
+                                i := 1L + !i
                                 if !i >= index then
                                     yield event, !i
                             builder.Clear() |> ignore
@@ -127,7 +127,7 @@ module Stream =
             }
 
         let listen() =
-            listenFrom 0 |> Seq.map fst
+            listenFrom 0L |> Seq.map fst
         
         [   
             Nata.IO.Capability.Reader

@@ -13,6 +13,10 @@ module Connector =
                     (connector:Connector<'Configuration,'Channel,'Data,'MetadataOut,'Index>) : Connector<'Configuration,'Channel,'Data,'MetadataIn,'Index> =
         connector >> Source.mapMetadata codec
 
+    let mapIndex (codec:Codec<'IndexIn,'IndexOut>)
+                 (connector:Connector<'Configuration,'Channel,'Data,'Metadata,'IndexOut>) : Connector<'Configuration,'Channel,'Data,'Metadata,'IndexIn> =
+        connector >> Source.mapIndex codec
+
     let map (dataCodec:Codec<'DataIn,'DataOut>)
             (metadataCodec:Codec<'MetadataIn,'MetadataOut>)
             (connector:Connector<'Configuration,'Channel,'DataOut,'MetadataOut,'Index>) : Connector<'Configuration,'Channel,'DataIn,'MetadataIn,'Index> =

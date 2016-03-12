@@ -17,7 +17,7 @@ type SubscriberFromTests() =
           Data = ()
           Metadata = () }
 
-    abstract member Connect : unit -> List<Capability<'Data,'Metadata,int>>
+    abstract member Connect : unit -> List<Capability<'Data,'Metadata,int64>>
     
     member x.Connect(fn) =
         let stream = x.Connect()
@@ -34,7 +34,7 @@ type SubscriberFromTests() =
         let run() =
             for i in input do
                 event |> Event.mapData (fun _ -> i) |> write
-            subscribeFrom 0 |> Seq.take 3 |> Seq.map (fst >> Event.data) |> Seq.toList
+            subscribeFrom 0L |> Seq.take 3 |> Seq.map (fst >> Event.data) |> Seq.toList
 
         Assert.AreEqual(output, run())
 
@@ -48,7 +48,7 @@ type SubscriberFromTests() =
         let run() =
             for i in input do
                 event |> Event.mapData (fun _ -> i) |> write
-            subscribeFrom 0 |> Seq.take 3 |> Seq.map (fst >> Event.data) |> Seq.toList
+            subscribeFrom 0L |> Seq.take 3 |> Seq.map (fst >> Event.data) |> Seq.toList
 
         Assert.AreEqual(output, run())
 
@@ -62,7 +62,7 @@ type SubscriberFromTests() =
         let run() =
             for i in input do
                 event |> Event.mapMetadata (fun _ -> i) |> write
-            subscribeFrom 0 |> Seq.take 3 |> Seq.map (fst >> Event.metadata) |> Seq.toList
+            subscribeFrom 0L |> Seq.take 3 |> Seq.map (fst >> Event.metadata) |> Seq.toList
 
         Assert.AreEqual(output, run())
 
@@ -76,7 +76,7 @@ type SubscriberFromTests() =
         let run() =
             for i in [1;2;3] do
                 event |> Event.mapMetadata (fun _ -> i) |> write
-            subscribeFrom 0 |> Seq.take 3 |> Seq.map (fst >> Event.metadata) |> Seq.toList
+            subscribeFrom 0L |> Seq.take 3 |> Seq.map (fst >> Event.metadata) |> Seq.toList
 
         Assert.AreEqual(output, run())
 
@@ -93,7 +93,7 @@ type SubscriberFromTests() =
         let results =
             for i in input do
                 event |> Event.map (fun _ -> i) (fun _ -> i) |> write
-            subscribeFrom 0 |> Seq.take 4 |> Seq.map fst |> Seq.toList
+            subscribeFrom 0L |> Seq.take 4 |> Seq.map fst |> Seq.toList
 
 
         Assert.AreEqual(outputData, results |> List.map Event.data)

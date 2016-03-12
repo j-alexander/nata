@@ -14,6 +14,10 @@ module Source =
                     (source:Source<'Channel,'Data,'MetadataOut,'Index>) : Source<'Channel,'Data,'MetadataIn,'Index> =
         source >> List.map (Capability.mapMetadata codec)
 
+    let mapIndex (codec:Codec<'IndexIn,'IndexOut>)
+                 (source:Source<'Channel,'Data,'Metadata,'IndexOut>) : Source<'Channel,'Data,'Metadata,'IndexIn> =
+        source >> List.map (Capability.mapIndex codec)
+
     let map (dataCodec:Codec<'DataIn,'DataOut>)
             (metadataCodec:Codec<'MetadataIn,'MetadataOut>)
             (source:Source<'Channel,'DataOut,'MetadataOut,'Index>) : Source<'Channel,'DataIn,'MetadataIn,'Index> =

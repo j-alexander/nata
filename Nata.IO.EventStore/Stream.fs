@@ -90,7 +90,7 @@ module Stream =
             | :? AggregateException as e ->
                 match e.InnerException with
                 | :? WrongExpectedVersionException as v ->
-                    raise (Nata.IO.InvalidPosition(v.Message,Nata.IO.Position.At targetVersion))
+                    raise (Nata.IO.InvalidPosition(Nata.IO.Position.At targetVersion))
                 | _ ->
                     raise exn
             | _ -> raise exn

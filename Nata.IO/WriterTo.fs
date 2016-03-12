@@ -18,7 +18,8 @@ module WriterTo =
     let mapIndex ((encode,decode):Codec<'IndexIn,'IndexOut>)
                  (writerTo:WriterTo<'Data,'Metadata,'IndexOut>) : WriterTo<'Data,'Metadata,'IndexIn> =
         fun index ->
-            writerTo (encode index) >> decode
+            InvalidPosition.applyMap decode (writerTo (encode index) >> decode)
+                    
 
     let map (dataFn:'DataIn->'DataOut)
             (metadataFn:'MetadataIn->'MetadataOut)

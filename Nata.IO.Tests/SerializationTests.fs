@@ -26,7 +26,7 @@ type MetadataType = {
 [<AbstractClass>]
 type SerializationTests() =
 
-    abstract member Connect : unit -> Source<string,byte[],byte[],int>
+    abstract member Connect : unit -> Source<string,byte[],byte[],int64>
     abstract member Channel : unit -> string
 
     [<Test>]
