@@ -60,8 +60,14 @@ module Topic =
     let readFromStart topic =
         consume topic Offsets.completed None
 
+    let read =
+        readFromStart >> Seq.map fst
+
     let listenFrom topic offsets =
         consume topic Offsets.neverCompleted (Some offsets)
 
     let listenFromStart topic =
         consume topic Offsets.neverCompleted None
+
+    let listen =
+        listenFromStart >> Seq.map fst

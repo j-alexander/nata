@@ -43,13 +43,14 @@ module Offsets =
                 select (p, o) }
         |> Seq.toList
 
-    let start = List.map Offset.start
-
     let remaining = join >> List.map Offset.remaining >> List.sum
 
     let completed = join >> List.forall Offset.completed
 
     let neverCompleted _ = false
+
+    let start : Partitions -> Offsets =
+        List.map Offset.start
 
     let updateWith (message:Message) : Offsets -> Offsets =
         List.map(fun offset ->
