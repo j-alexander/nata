@@ -23,10 +23,6 @@ module Offset =
         { Offset.PartitionId = partition.Id
           Offset.Position = partition.Min }
 
-    let startFrom (partition:Partition, offset:Offset) =
-        { Offset.PartitionId = partition.Id
-          Offset.Position = Math.Max(partition.Min, offset.Position) }
-
     let remaining (partition:Partition, offset:Offset) =
         partition.Max - Math.Min(offset.Position, partition.Max)
 
@@ -48,8 +44,6 @@ module Offsets =
         |> Seq.toList
 
     let start = List.map Offset.start
-
-    let startFrom = join >> List.map Offset.startFrom
 
     let remaining = join >> List.map Offset.remaining >> List.sum
 

@@ -19,7 +19,7 @@ module Topic =
         { Consumer = new Consumer(new ConsumerOptions(name, cluster))
           Name = name }
 
-    let partitions (topic:Topic) : Partitions =
+    let partitionsFor (topic:Topic) : Partitions =
         topic.Consumer.GetTopicOffsetAsync(topic.Name)
         |> Async.AwaitTask
         |> Async.RunSynchronously
@@ -27,37 +27,29 @@ module Topic =
         |> Seq.sortBy Partition.id
         |> Seq.toList
 
-
     let readFrom (topic:Topic) (offsets:Offsets) =
 
-        let initial_partitions = partitions topic
-        let offsets = Offsets.startFrom(initial_partitions, offsets)
-        let start = Offsets.toOffsetPosition(offsets)
-
-        let stream = 
-            topic.Consumer.SetOffsetPosition(start)
+        let enumerator = 
+            topic.Consumer.SetOffsetPosition(Offsets.toOffsetPosition(offsets))
             topic.Consumer.Consume().GetEnumerator()
 
-        let rec iterate current_partitions offsets =
-            if Offsets.completed (current_partitions, offsets) then
-                let updated_partitions = partitions topic
-                if Offsets.completed (updated_partitions, offsets) then
-                    Seq.empty
-                else
-                    iterate updated_partitions offsets
+        let rec iterate(partitions, offsets) =
+            if Offsets.completed (partitions, offsets) then
+
+                (partitionsFor topic, offsets)
+                |> function | x when Offsets.completed x -> Seq.empty
+                            | x -> iterate x
             else
                 seq {
-                    let result = stream.MoveNext()
-                    let message = stream.Current |> Message.fromMessage 
+                    let result = enumerator.MoveNext()
+                    let message = enumerator.Current |> Message.fromMessage 
                     let offsets = offsets |> Offsets.updateWith message
 
                     yield message, offsets
-                    yield! iterate current_partitions offsets
+                    yield! iterate(partitions, offsets)
                 }
 
-        iterate initial_partitions offsets
+        iterate((partitionsFor topic), offsets)
 
-    let readFromStart (topic:Topic) =
-        partitions topic
-        |> Offsets.start
-        |> readFrom topic
+    let readFromStart topic =
+        readFrom topic (Offsets.start (partitionsFor topic))
