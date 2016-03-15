@@ -55,8 +55,8 @@
     <Compile Include="Message.fs" />
     <Compile Include="Partition.fs" />
     <Compile Include="Offset.fs" />
-    <Compile Include="Cluster.fs" />
     <Compile Include="Topic.fs" />
+    <Compile Include="Cluster.fs" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

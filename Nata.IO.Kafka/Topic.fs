@@ -12,22 +12,25 @@ open Nata.IO
 
 type Topic =
     { Consumer : Consumer
+      Producer : Producer
       Name : string }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Topic =
 
-    let connect (cluster:Cluster) (name:string) : Topic =
-        { Consumer = new Consumer(new ConsumerOptions(name, cluster))
-          Name = name }
-
     let partitionsFor (topic:Topic) : Partitions =
         topic.Consumer.GetTopicOffsetAsync(topic.Name)
         |> Async.AwaitTask
         |> Async.RunSynchronously
-        |> Seq.map Partition.fromOffsetResponse
+        |> Seq.map Partition.fromKafka
         |> Seq.sortBy Partition.id
         |> Seq.toList
+
+    let private produce (topic:Topic) (messages) =
+        topic.Producer.SendMessageAsync(topic.Name, Seq.map Message.toKafka messages)
+        |> Async.AwaitTask
+        |> Async.RunSynchronously
+        |> Seq.map Offset.fromKafka
 
     let private consume topic hasCompleted offsets =
 
@@ -36,13 +39,13 @@ module Topic =
         let offsets = Option.bindNone start offsets
 
         let enumerator = 
-            topic.Consumer.SetOffsetPosition(Offsets.toOffsetPosition(offsets))
+            topic.Consumer.SetOffsetPosition(Offsets.toKafka(offsets))
             topic.Consumer.Consume().GetEnumerator()
 
         let get(partitions, offsets) =
             let result, message =
                 enumerator.MoveNext(),
-                enumerator.Current |> Message.fromMessage
+                enumerator.Current |> Message.fromKafka
             let offsets =
                 offsets |> Offsets.updateWith message
             (message, offsets), (partitions, offsets)
@@ -71,3 +74,6 @@ module Topic =
 
     let listen =
         listenFromStart >> Seq.map fst
+
+    let write topic =
+        Seq.singleton >> produce topic >> ignore

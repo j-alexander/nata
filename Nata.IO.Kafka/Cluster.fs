@@ -6,7 +6,6 @@ open System.Text
 open NLog.FSharp
 open KafkaNet
 open KafkaNet.Model
-open KafkaNet.Protocol
 
 type Cluster = BrokerRouter
 
@@ -16,5 +15,7 @@ module Cluster =
     let connect (host:string) : Cluster =
         new BrokerRouter(new KafkaOptions(new Uri(host)))
 
-
-        
+    let topicFor (cluster:Cluster) (name:string) : Topic =
+        { Topic.Consumer = new Consumer(new ConsumerOptions(name, cluster))
+          Topic.Producer = new Producer(cluster)
+          Topic.Name = name }

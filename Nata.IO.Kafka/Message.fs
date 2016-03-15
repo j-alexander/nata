@@ -21,8 +21,14 @@ module Message =
     let key (x:Message) = x.Key
     let value (x:Message) = x.Value
 
-    let fromMessage (x:KafkaNet.Protocol.Message) =
+    let fromKafka (x:KafkaNet.Protocol.Message) =
         { Message.PartitionId = x.Meta.PartitionId
           Message.Offset = x.Meta.Offset
           Message.Key = x.Key
           Message.Value = x.Value }
+
+    let toKafka (x:Message) =
+        let message = new KafkaNet.Protocol.Message()
+        message.Key <- x.Key
+        message.Value <- x.Value
+        message

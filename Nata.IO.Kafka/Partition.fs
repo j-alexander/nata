@@ -23,7 +23,7 @@ module Partition =
     let min (x:Partition) = x.Min
     let max (x:Partition) = x.Max
 
-    let fromOffsetResponse (x:KafkaNet.Protocol.OffsetResponse) =
+    let fromKafka (x:KafkaNet.Protocol.OffsetResponse) =
         let offsets =
             match x.Error with
             | 0s -> [ yield! x.Offsets ]
@@ -32,4 +32,3 @@ module Partition =
           Partition.Id = x.PartitionId
           Partition.Min = Seq.last offsets
           Partition.Max = Seq.head offsets }
-        

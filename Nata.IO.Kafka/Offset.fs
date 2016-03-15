@@ -29,9 +29,15 @@ module Offset =
     let completed (partition:Partition, offset:Offset) =
         remaining (partition, offset) <= 0L
 
-    let toOffsetPosition (x:Offset) =
+    let toKafka (x:Offset) =
         new KafkaNet.Protocol.OffsetPosition(x.PartitionId, x.Position)
         
+    let fromKafka (x:KafkaNet.Protocol.ProduceResponse) =
+        if (x.Error <> 0s) then
+            x.Error |> sprintf "Kafka error response: %d" |> failwith
+        else
+            { Offset.PartitionId  = x.PartitionId
+              Offset.Position = x.Offset }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Offsets =
@@ -57,7 +63,7 @@ module Offsets =
             if offset.PartitionId <> message.PartitionId then offset
             else { offset with Position = 1L + message.Offset })
 
-    let toOffsetPosition : Offsets -> KafkaNet.Protocol.OffsetPosition[] =
+    let toKafka : Offsets -> KafkaNet.Protocol.OffsetPosition[] =
         Seq.sortBy Offset.partitionId
-        >> Seq.map Offset.toOffsetPosition
+        >> Seq.map Offset.toKafka
         >> Seq.toArray
