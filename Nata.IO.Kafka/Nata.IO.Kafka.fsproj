@@ -52,6 +52,7 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Message.fs" />
     <Compile Include="Partition.fs" />
     <Compile Include="Offset.fs" />
     <Compile Include="Cluster.fs" />
