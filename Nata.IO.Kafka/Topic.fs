@@ -18,10 +18,10 @@ module Topic =
         { Consumer = new Consumer(new ConsumerOptions(name, cluster))
           Name = name }
 
-    let offsets (topic:Topic) : Offset list =
+    let partitions (topic:Topic) : Partition list =
         topic.Consumer.GetTopicOffsetAsync(topic.Name)
         |> Async.AwaitTask
         |> Async.RunSynchronously
-        |> Seq.map Offset.fromResponse
-        |> Seq.sortBy Offset.partitionId
+        |> Seq.map Partition.fromOffsetResponse
+        |> Seq.sortBy Partition.id
         |> Seq.toList

@@ -1,4 +1,4 @@
-﻿namespace Nata.IO.Memory.Tests
+﻿namespace Nata.IO.Kafka.Tests
 
 open System
 open System.Reflection

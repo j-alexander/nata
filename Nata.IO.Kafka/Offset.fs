@@ -6,13 +6,10 @@ open System.Text
 open NLog.FSharp
 open KafkaNet
 open KafkaNet.Model
-open KafkaNet.Protocol
     
 type Offset =
-    { PartitionId : int
-      Topic : string
-      Min : int64
-      Max : int64 }
+    { PartitionId : int 
+      Position : int64 }
 
 type Offsets = Offset list
 
@@ -20,20 +17,11 @@ type Offsets = Offset list
 module Offset =
 
     let partitionId (x:Offset) = x.PartitionId
-    let topic (x:Offset) = x.Topic
-    let max (x:Offset) = x.Max
-    let min (x:Offset) = x.Min
+    let position (x:Offset) = x.Position
 
-    let fromResponse (x:OffsetResponse) =
-        let offsets =
-            match x.Error with
-            | 0s -> [ yield! x.Offsets ]
-            | _  -> [ 0L ]
-        { Offset.Topic = x.Topic
-          Offset.PartitionId = x.PartitionId
-          Offset.Min = Seq.last offsets
-          Offset.Max = Seq.head offsets }
+    let start (partition:Partition) =
+        { Offset.PartitionId = partition.Id
+          Offset.Position = partition.Min }
 
-    let toPosition (x:Offset) =
-        new OffsetPosition(x.PartitionId, x.Min)
-        
+    let toOffsetPosition (x:Offset) =
+        new KafkaNet.Protocol.OffsetPosition(x.PartitionId, x.Position)
