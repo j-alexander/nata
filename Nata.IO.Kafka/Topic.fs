@@ -8,6 +8,8 @@ open NLog.FSharp
 open KafkaNet
 open KafkaNet.Model
 
+open Nata.IO
+
 type Topic =
     { Consumer : Consumer
       Name : string }
@@ -33,23 +35,18 @@ module Topic =
             topic.Consumer.SetOffsetPosition(Offsets.toOffsetPosition(offsets))
             topic.Consumer.Consume().GetEnumerator()
 
-        let rec iterate(partitions, offsets) =
-            if Offsets.completed (partitions, offsets) then
-
-                (partitionsFor topic, offsets)
-                |> function | x when Offsets.completed x -> Seq.empty
-                            | x -> iterate x
-            else
-                seq {
-                    let result = enumerator.MoveNext()
-                    let message = enumerator.Current |> Message.fromMessage 
-                    let offsets = offsets |> Offsets.updateWith message
-
-                    yield message, offsets
-                    yield! iterate(partitions, offsets)
-                }
-
-        iterate((partitionsFor topic), offsets)
+        ((partitionsFor topic), offsets)
+        |> Seq.unfold (fun (partitions, offsets) ->
+            (partitions, offsets)
+            |> Option.whenTrue (Offsets.completed >> not)
+            |> Option.bindNone (fun _ -> partitionsFor topic, offsets)
+            |> Option.whenTrue (Offsets.completed >> not)
+            |> Option.map(fun (partitions, offsets) ->
+                let result, message =
+                    enumerator.MoveNext(),
+                    enumerator.Current |> Message.fromMessage 
+                let offsets = offsets |> Offsets.updateWith message
+                (message, offsets),(partitions, offsets)))
 
     let readFromStart topic =
         readFrom topic (Offsets.start (partitionsFor topic))
