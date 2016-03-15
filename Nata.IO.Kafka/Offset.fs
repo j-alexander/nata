@@ -49,7 +49,9 @@ module Offsets =
 
     let completed = join >> List.forall Offset.completed
 
-    let updateWith (message:Message) =
+    let neverCompleted _ = false
+
+    let updateWith (message:Message) : Offsets -> Offsets =
         List.map(fun offset ->
             if offset.PartitionId <> message.PartitionId then offset
             else { offset with Position = 1L + message.Offset })

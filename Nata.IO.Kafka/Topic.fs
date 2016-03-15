@@ -29,7 +29,7 @@ module Topic =
         |> Seq.sortBy Partition.id
         |> Seq.toList
 
-    let private iterate (hasCompleted, topic, offsets) =
+    let private consume topic hasCompleted offsets =
 
         let partitions = partitionsFor topic
         let start _ = Offsets.start partitions
@@ -39,27 +39,29 @@ module Topic =
             topic.Consumer.SetOffsetPosition(Offsets.toOffsetPosition(offsets))
             topic.Consumer.Consume().GetEnumerator()
 
-        (partitions, offsets)
-        |> Seq.unfold (fun (partitions, offsets) ->
+        let get(partitions, offsets) =
+            let result, message =
+                enumerator.MoveNext(),
+                enumerator.Current |> Message.fromMessage
+            let offsets =
+                offsets |> Offsets.updateWith message
+            (message, offsets), (partitions, offsets)
+
+        Seq.unfold (fun (partitions, offsets) ->
             (partitions, offsets)
             |> Option.whenTrue (hasCompleted >> not)
             |> Option.bindNone (fun _ -> partitionsFor topic, offsets)
             |> Option.whenTrue (hasCompleted >> not)
-            |> Option.map(fun (partitions, offsets) ->
-                let result, message =
-                    enumerator.MoveNext(),
-                    enumerator.Current |> Message.fromMessage
-                let offsets = offsets |> Offsets.updateWith message
-                (message, offsets),(partitions, offsets)))
+            |> Option.map get) (partitions, offsets)
 
     let readFrom topic offsets =
-        iterate(Offsets.completed, topic, Some offsets)
+        consume topic Offsets.completed (Some offsets)
 
     let readFromStart topic =
-        iterate(Offsets.completed, topic, None)
+        consume topic Offsets.completed None
 
     let listenFrom topic offsets =
-        iterate((fun _ -> false), topic, Some offsets)
+        consume topic Offsets.neverCompleted (Some offsets)
 
     let listenFromStart topic =
-        iterate((fun _ -> false), topic, None)
+        consume topic Offsets.neverCompleted None
