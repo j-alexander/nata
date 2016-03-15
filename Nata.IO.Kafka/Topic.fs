@@ -29,24 +29,37 @@ module Topic =
         |> Seq.sortBy Partition.id
         |> Seq.toList
 
-    let readFrom (topic:Topic) (offsets:Offsets) =
+    let private iterate (hasCompleted, topic, offsets) =
+
+        let partitions = partitionsFor topic
+        let start _ = Offsets.start partitions
+        let offsets = Option.bindNone start offsets
 
         let enumerator = 
             topic.Consumer.SetOffsetPosition(Offsets.toOffsetPosition(offsets))
             topic.Consumer.Consume().GetEnumerator()
 
-        ((partitionsFor topic), offsets)
+        (partitions, offsets)
         |> Seq.unfold (fun (partitions, offsets) ->
             (partitions, offsets)
-            |> Option.whenTrue (Offsets.completed >> not)
+            |> Option.whenTrue (hasCompleted >> not)
             |> Option.bindNone (fun _ -> partitionsFor topic, offsets)
-            |> Option.whenTrue (Offsets.completed >> not)
+            |> Option.whenTrue (hasCompleted >> not)
             |> Option.map(fun (partitions, offsets) ->
                 let result, message =
                     enumerator.MoveNext(),
-                    enumerator.Current |> Message.fromMessage 
+                    enumerator.Current |> Message.fromMessage
                 let offsets = offsets |> Offsets.updateWith message
                 (message, offsets),(partitions, offsets)))
 
+    let readFrom topic offsets =
+        iterate(Offsets.completed, topic, Some offsets)
+
     let readFromStart topic =
-        readFrom topic (Offsets.start (partitionsFor topic))
+        iterate(Offsets.completed, topic, None)
+
+    let listenFrom topic offsets =
+        iterate((fun _ -> false), topic, Some offsets)
+
+    let listenFromStart topic =
+        iterate((fun _ -> false), topic, None)
