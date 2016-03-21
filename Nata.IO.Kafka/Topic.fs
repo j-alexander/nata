@@ -10,10 +10,11 @@ open KafkaNet.Model
 
 open Nata.IO
 
+type TopicName = string
 type Topic =
     { Consumer : Consumer
       Producer : Producer
-      Name : string }
+      Name : TopicName }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Topic =

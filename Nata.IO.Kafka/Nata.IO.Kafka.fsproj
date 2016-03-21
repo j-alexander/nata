@@ -56,6 +56,7 @@
     <Compile Include="OffsetRange.fs" />
     <Compile Include="Offset.fs" />
     <Compile Include="Topic.fs" />
+    <Compile Include="Event.fs" />
     <Compile Include="Cluster.fs" />
     <Content Include="packages.config" />
   </ItemGroup>
