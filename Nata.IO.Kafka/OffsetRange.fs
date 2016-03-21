@@ -7,28 +7,28 @@ open NLog.FSharp
 open KafkaNet
 open KafkaNet.Model
     
-type Partition =
+type OffsetRange =
     { Topic : string
-      Id : int
+      PartitionId : int
       Min : int64
       Max : int64 }
 
-type Partitions = Partition list
+type OffsetRanges = OffsetRange list
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-module Partition =
+module OffsetRange =
 
-    let topic (x:Partition) = x.Topic
-    let id (x:Partition) = x.Id
-    let min (x:Partition) = x.Min
-    let max (x:Partition) = x.Max
+    let topic (x:OffsetRange) = x.Topic
+    let partitionId (x:OffsetRange) = x.PartitionId
+    let min (x:OffsetRange) = x.Min
+    let max (x:OffsetRange) = x.Max
 
     let fromKafka (x:KafkaNet.Protocol.OffsetResponse) =
         let offsets =
             match x.Error with
             | 0s -> [ yield! x.Offsets ]
             | _  -> [ 0L ]
-        { Partition.Topic = x.Topic
-          Partition.Id = x.PartitionId
-          Partition.Min = Seq.last offsets
-          Partition.Max = Seq.head offsets }
+        { OffsetRange.Topic = x.Topic
+          OffsetRange.PartitionId = x.PartitionId
+          OffsetRange.Min = Seq.last offsets
+          OffsetRange.Max = Seq.head offsets }

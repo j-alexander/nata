@@ -53,7 +53,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Message.fs" />
-    <Compile Include="Partition.fs" />
+    <Compile Include="OffsetRange.fs" />
     <Compile Include="Offset.fs" />
     <Compile Include="Topic.fs" />
     <Compile Include="Cluster.fs" />

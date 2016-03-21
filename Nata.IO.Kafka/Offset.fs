@@ -19,15 +19,15 @@ module Offset =
     let partitionId (x:Offset) = x.PartitionId
     let position (x:Offset) = x.Position
 
-    let start (partition:Partition) =
-        { Offset.PartitionId = partition.Id
-          Offset.Position = partition.Min }
+    let start (range:OffsetRange) =
+        { Offset.PartitionId = range.PartitionId
+          Offset.Position = range.Min }
 
-    let remaining (partition:Partition, offset:Offset) =
-        partition.Max - Math.Min(offset.Position, partition.Max)
+    let remaining (range:OffsetRange, offset:Offset) =
+        range.Max - Math.Min(offset.Position, range.Max)
 
-    let completed (partition:Partition, offset:Offset) =
-        remaining (partition, offset) <= 0L
+    let completed (range:OffsetRange, offset:Offset) =
+        remaining (range, offset) <= 0L
 
     let toKafka (x:Offset) =
         new KafkaNet.Protocol.OffsetPosition(x.PartitionId, x.Position)
@@ -42,10 +42,10 @@ module Offset =
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Offsets =
 
-    let private join (partitions:Partitions, offsets:Offsets) =
-        query { for p in partitions do
+    let private join (ranges:OffsetRanges, offsets:Offsets) =
+        query { for p in ranges do
                 for o in offsets do
-                where (p.Id = o.PartitionId)
+                where (p.PartitionId = o.PartitionId)
                 select (p, o) }
         |> Seq.toList
 
@@ -55,7 +55,7 @@ module Offsets =
 
     let neverCompleted _ = false
 
-    let start : Partitions -> Offsets =
+    let start : OffsetRanges -> Offsets =
         List.map Offset.start
 
     let updateWith (message:Message) : Offsets -> Offsets =

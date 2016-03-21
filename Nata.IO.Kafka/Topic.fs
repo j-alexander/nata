@@ -18,12 +18,12 @@ type Topic =
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Topic =
 
-    let partitionsFor (topic:Topic) : Partitions =
+    let offsetRangesFor (topic:Topic) : OffsetRanges =
         topic.Consumer.GetTopicOffsetAsync(topic.Name)
         |> Async.AwaitTask
         |> Async.RunSynchronously
-        |> Seq.map Partition.fromKafka
-        |> Seq.sortBy Partition.id
+        |> Seq.map OffsetRange.fromKafka
+        |> Seq.sortBy OffsetRange.partitionId
         |> Seq.toList
 
     let private produce (topic:Topic) (messages) =
@@ -34,8 +34,8 @@ module Topic =
 
     let private consume topic hasCompleted offsets =
 
-        let partitions = partitionsFor topic
-        let start _ = Offsets.start partitions
+        let offsetRanges = offsetRangesFor topic
+        let start _ = Offsets.start offsetRanges
         let offsets = Option.bindNone start offsets
 
         let enumerator = 
@@ -53,9 +53,9 @@ module Topic =
         Seq.unfold (fun (partitions, offsets) ->
             (partitions, offsets)
             |> Option.whenTrue (hasCompleted >> not)
-            |> Option.bindNone (fun _ -> partitionsFor topic, offsets)
+            |> Option.bindNone (fun _ -> offsetRangesFor topic, offsets)
             |> Option.whenTrue (hasCompleted >> not)
-            |> Option.map get) (partitions, offsets)
+            |> Option.map get) (offsetRanges, offsets)
 
     let readFrom topic offsets =
         consume topic Offsets.completed (Some offsets)
