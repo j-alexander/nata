@@ -67,3 +67,19 @@ module Offsets =
         Seq.sortBy Offset.partitionId
         >> Seq.map Offset.toKafka
         >> Seq.toArray
+
+    let toInt64 (partition) (offsets:Offsets) : int64 =
+        offsets
+        |> List.filter (fun x -> x.PartitionId = 0)
+        |> List.map (fun x -> x.Position)
+        |> List.head
+
+    let ofInt64 (partition) (position:int64) : Offsets =
+        { Offset.PartitionId=partition; Offset.Position=position }
+        |> Seq.singleton
+            |> Seq.toList
+
+    module Codec =
+        
+        let OffsetsToInt64 partition : Nata.IO.Codec<Offsets,int64> = toInt64 partition, ofInt64 partition
+        let Int64ToOffsets partition : Nata.IO.Codec<int64,Offsets> = ofInt64 partition, toInt64 partition
