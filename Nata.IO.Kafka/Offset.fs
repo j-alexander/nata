@@ -71,13 +71,13 @@ module Offsets =
     let toInt64 (partition) (offsets:Offsets) : int64 =
         offsets
         |> List.filter (fun x -> x.PartitionId = 0)
-        |> List.map (fun x -> x.Position)
+        |> List.map (fun x -> x.Position - 1L)
         |> List.head
 
     let ofInt64 (partition) (position:int64) : Offsets =
         { Offset.PartitionId=partition; Offset.Position=position }
         |> Seq.singleton
-            |> Seq.toList
+        |> Seq.toList
 
     module Codec =
         
