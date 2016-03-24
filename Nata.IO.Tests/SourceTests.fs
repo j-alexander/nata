@@ -15,12 +15,12 @@ type SourceTests() as x =
     let date = DateTime.Now
     let overlayEvent =
         Event.createAt date 1
-        |> Event.withEventType "event_type"
-        |> Event.withStream "stream"
+        |> Event.Source.withEventType "event_type"
+        |> Event.Source.withStream "stream"
     let underlayEvent =
         Event.createAt date "data:1"
-        |> Event.withEventType "event_type"
-        |> Event.withStream "stream"
+        |> Event.Source.withEventType "event_type"
+        |> Event.Source.withStream "stream"
 
     let event(fn) =
         [| 
@@ -31,7 +31,7 @@ type SourceTests() as x =
         |> JsonValue.Record
         |> JsonValue.toBytes       
         |> Event.create
-        |> Event.withEventType fn
+        |> Event.Source.withEventType fn
 
     abstract member Connect : unit -> Source<string,string,int64>
     abstract member Channel : unit -> string

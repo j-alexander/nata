@@ -120,35 +120,69 @@ module Event =
     let create data =
         createAt DateTime.UtcNow data
     
-    let name x =       x |> source |> Option.map  Metadata.name
-    let createdAt x =  x |> source |> Option.bind Metadata.createdAt
-    let sentAt x =     x |> source |> Option.bind Metadata.sentAt
-    let receivedAt x = x |> source |> Option.bind Metadata.receivedAt
-    let eventType x =  x |> source |> Option.bind Metadata.eventType
-    let stream x =     x |> source |> Option.bind Metadata.stream
-    let partition x =  x |> source |> Option.bind Metadata.partition
-    let key x =        x |> source |> Option.bind Metadata.key
-    let index x =      x |> source |> Option.bind Metadata.index
-    let bytes x =      x |> source |> Option.bind Metadata.bytes
+    module Source =
 
-    let withName x e =
-        match source e with
-        | Some s -> { e with Source = Some { s with Name = x } }
-        | None -> { e with Source = Some { Name = x; Values = [] }}
-    let withValue x e =
-        match source e with
-        | Some s -> { e with Source = Some { s with Values = x :: s.Values }}
-        | None -> { e with Source = Some { Name = ""; Values = [x] }}
+        let name x =       x |> source |> Option.map  Metadata.name
+        let createdAt x =  x |> source |> Option.bind Metadata.createdAt
+        let sentAt x =     x |> source |> Option.bind Metadata.sentAt
+        let receivedAt x = x |> source |> Option.bind Metadata.receivedAt
+        let eventType x =  x |> source |> Option.bind Metadata.eventType
+        let stream x =     x |> source |> Option.bind Metadata.stream
+        let partition x =  x |> source |> Option.bind Metadata.partition
+        let key x =        x |> source |> Option.bind Metadata.key
+        let index x =      x |> source |> Option.bind Metadata.index
+        let bytes x =      x |> source |> Option.bind Metadata.bytes
 
-    let withCreatedAt x =  withValue (x |> Value.CreatedAt)
-    let withSentAt x =     withValue (x |> Value.SentAt)
-    let withReceivedAt x = withValue (x |> Value.ReceivedAt)
-    let withEventType x =  withValue (x |> Value.EventType)
-    let withStream x =     withValue (x |> Value.Stream)
-    let withPartition x =  withValue (x |> Value.Partition)
-    let withKey x =        withValue (x |> Value.Key)
-    let withIndex x =      withValue (x |> Value.Index)
-    let withBytes x =      withValue (x |> Value.Bytes)
+        let withName x e =
+            match source e with
+            | Some s -> { e with Source = Some { s with Name = x } }
+            | None -> { e with Source = Some { Name = x; Values = [] }}
+        let withValue x e =
+            match source e with
+            | Some s -> { e with Source = Some { s with Values = x :: s.Values }}
+            | None -> { e with Source = Some { Name = ""; Values = [x] }}
+
+        let withCreatedAt x =  withValue (x |> Value.CreatedAt)
+        let withSentAt x =     withValue (x |> Value.SentAt)
+        let withReceivedAt x = withValue (x |> Value.ReceivedAt)
+        let withEventType x =  withValue (x |> Value.EventType)
+        let withStream x =     withValue (x |> Value.Stream)
+        let withPartition x =  withValue (x |> Value.Partition)
+        let withKey x =        withValue (x |> Value.Key)
+        let withIndex x =      withValue (x |> Value.Index)
+        let withBytes x =      withValue (x |> Value.Bytes)
+    
+    module Target =
+
+        let name x =       x |> target |> Option.map  Metadata.name
+        let createdAt x =  x |> target |> Option.bind Metadata.createdAt
+        let sentAt x =     x |> target |> Option.bind Metadata.sentAt
+        let receivedAt x = x |> target |> Option.bind Metadata.receivedAt
+        let eventType x =  x |> target |> Option.bind Metadata.eventType
+        let stream x =     x |> target |> Option.bind Metadata.stream
+        let partition x =  x |> target |> Option.bind Metadata.partition
+        let key x =        x |> target |> Option.bind Metadata.key
+        let index x =      x |> target |> Option.bind Metadata.index
+        let bytes x =      x |> target |> Option.bind Metadata.bytes
+
+        let withName x e =
+            match source e with
+            | Some s -> { e with Target = Some { s with Name = x } }
+            | None -> { e with Target = Some { Name = x; Values = [] }}
+        let withValue x e =
+            match source e with
+            | Some s -> { e with Target = Some { s with Values = x :: s.Values }}
+            | None -> { e with Target = Some { Name = ""; Values = [x] }}
+
+        let withCreatedAt x =  withValue (x |> Value.CreatedAt)
+        let withSentAt x =     withValue (x |> Value.SentAt)
+        let withReceivedAt x = withValue (x |> Value.ReceivedAt)
+        let withEventType x =  withValue (x |> Value.EventType)
+        let withStream x =     withValue (x |> Value.Stream)
+        let withPartition x =  withValue (x |> Value.Partition)
+        let withKey x =        withValue (x |> Value.Key)
+        let withIndex x =      withValue (x |> Value.Index)
+        let withBytes x =      withValue (x |> Value.Bytes)
 
     let mapData (fn:'DataIn->'DataOut)
                 (e:Event<'DataIn>) : Event<'DataOut> =

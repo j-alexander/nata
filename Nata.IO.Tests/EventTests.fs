@@ -13,17 +13,17 @@ type EventTests() =
     let date = DateTime.UtcNow
     let event =
         Event.createAt date "0"
-        |> Event.withName "event_name"
-        |> Event.withEventType "event_type"
-        |> Event.withStream "event_stream"
+        |> Event.Source.withName "event_name"
+        |> Event.Source.withEventType "event_type"
+        |> Event.Source.withStream "event_stream"
 
     [<Test>]
     member x.TypeTest() =
-        Assert.AreEqual(Some "event_type", Event.eventType event)
+        Assert.AreEqual(Some "event_type", Event.Source.eventType event)
 
     [<Test>]
     member x.StreamTest() =
-        Assert.AreEqual(Some "event_stream", Event.stream event)
+        Assert.AreEqual(Some "event_stream", Event.Source.stream event)
 
     [<Test>]
     member x.DateTest() =
