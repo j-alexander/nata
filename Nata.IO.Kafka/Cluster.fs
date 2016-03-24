@@ -22,7 +22,7 @@ module Cluster =
           Topic.Producer = new Producer(cluster)
           Topic.Name = name }
 
-    let topics : Nata.IO.Connector<Cluster,TopicName,Data,Metadata,Offsets>  =
+    let topics : Nata.IO.Connector<Cluster,TopicName,Data,Offsets>  =
         fun cluster name ->
             [
                 Nata.IO.Capability.Reader <| fun () ->

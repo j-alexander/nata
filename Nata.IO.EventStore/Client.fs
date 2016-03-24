@@ -8,10 +8,6 @@ open NLog.FSharp
 open EventStore.ClientAPI
 open EventStore.ClientAPI.SystemData
 
-type Data = byte[]
-type Metadata = byte[]
-type Event = Nata.IO.Event<Data,Metadata>
-
 module Client =
 
     let log = new Logger()

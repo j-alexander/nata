@@ -14,14 +14,14 @@ module Stream =
 
     type private Result = Success of Index | Failure
     type private Sender = AsyncReplyChannel<Result>
-    type private Message<'Data,'Metadata> = Sender*Event<'Data,'Metadata>*Position<Index>
+    type private Message<'Data> = Sender*Event<'Data>*Position<Index>
 
     let create (name:'Name) =
 
-        let queue = new BlockingCollection<Event<'Data,'Metadata>>()
-        let data = new ConcurrentDictionary<Index, Lazy<Event<'Data,'Metadata>>>()
+        let queue = new BlockingCollection<Event<'Data>>()
+        let data = new ConcurrentDictionary<Index, Lazy<Event<'Data>>>()
 
-        let actor = MailboxProcessor<Message<'Data,'Metadata>>.Start <| fun inbox ->
+        let actor = MailboxProcessor<Message<'Data>>.Start <| fun inbox ->
             let rec wait(count) = async {
 
                 let! (sender,event,position) = inbox.Receive()
@@ -96,10 +96,10 @@ module Stream =
            
 
 
-    let connect : Nata.IO.Connector<Settings,'Name,'Data,'Metadata,Index> =
+    let connect : Nata.IO.Connector<Settings,'Name,'Data,Index> =
         
         fun settings ->
-            let index = new ConcurrentDictionary<'Name, Nata.IO.Capability<'Data,'Metadata, Index> list>()
+            let index = new ConcurrentDictionary<'Name, Nata.IO.Capability<'Data, Index> list>()
             fun name ->
                 index.GetOrAdd(name, create)
                 

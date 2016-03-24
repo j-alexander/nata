@@ -23,4 +23,3 @@ type PositionTests() =
         Assert.AreEqual(Position<string>.Start, Position<int>.Start |> mapType)
         Assert.AreEqual(Position<string>.At "3", Position<int>.At 3 |> mapType)
         Assert.AreEqual(Position<string>.End, Position<int>.End |> mapType)
-        

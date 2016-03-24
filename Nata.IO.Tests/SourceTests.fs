@@ -14,33 +14,26 @@ type SourceTests() as x =
 
     let date = DateTime.Now
     let overlayEvent =
-        { Type = "event_type"
-          Stream = "event_stream"
-          Date = date
-          Data = 1
-          Metadata = 2 }
+        Event.createAt date 1
+        |> Event.withEventType "event_type"
+        |> Event.withStream "stream"
     let underlayEvent =
-        { Type = "event_type"
-          Stream = "event_stream"
-          Date = date
-          Data = "data:1"
-          Metadata = "metaD:2" }
+        Event.createAt date "data:1"
+        |> Event.withEventType "event_type"
+        |> Event.withStream "stream"
 
     let event(fn) =
-        { Data =
-            [| "case", JsonValue.String (x.GetType().Name + "." + fn)
-               "at", JsonValue.String (DateTime.Now.ToString()) 
-            |] |> JsonValue.Record
-               |> JsonValue.toBytes
-          Metadata =
-            [| "from", JsonValue.String (Assembly.GetExecutingAssembly().FullName)
-            |] |> JsonValue.Record
-               |> JsonValue.toBytes
-          Date = DateTime.UtcNow
-          Stream = null
-          Type = fn }
+        [| 
+            "case", JsonValue.String (x.GetType().Name + "." + fn)
+            "at", JsonValue.String (DateTime.Now.ToString()) 
+            "from", JsonValue.String (Assembly.GetExecutingAssembly().FullName)
+        |]
+        |> JsonValue.Record
+        |> JsonValue.toBytes       
+        |> Event.create
+        |> Event.withEventType fn
 
-    abstract member Connect : unit -> Source<string,string,string,int64>
+    abstract member Connect : unit -> Source<string,string,int64>
     abstract member Channel : unit -> string
 
     member private x.Capabilities() = x.Channel() |> x.Connect()
@@ -49,13 +42,11 @@ type SourceTests() as x =
         let dataCodec : Codec<int,string> =
             (fun (above:int) -> sprintf "data:%d" above),
             (fun (below:string) -> below.Substring(5) |> Int32.Parse)
-        let metadataCodec : Codec<int,string> =
-            (fun (above:int) -> sprintf "metaD:%d" above),
-            (fun (below:string) -> below.Substring(6) |> Int32.Parse)
+        let indexCodec = Codec.Identity
 
-        let underlying : Source<string,string,string,int64> = x.Connect()
-        let overlaying : Source<string,int,int,int64> =
-            Source.map dataCodec metadataCodec underlying
+        let underlying : Source<string,string,int64> = x.Connect()
+        let overlaying : Source<string,int,int64> =
+            Source.map dataCodec indexCodec underlying
             
         let channel = Guid.NewGuid().ToString()
         underlying channel, overlaying channel

@@ -19,11 +19,10 @@ type FileTests() =
 
     let date = DateTime.UtcNow
     let event fn i =
-        { Data = JsonValue.Number i
-          Metadata = JsonValue.String (Assembly.GetExecutingAssembly().FullName)
-          Date = date
-          Stream = "Nata.IO.File.Tests"
-          Type = fn }
+        Event.createAt date (JsonValue.Number i)
+        |> Event.withName "event_name"
+        |> Event.withEventType fn
+        |> Event.withStream "Nata.IO.File.Tests"
 
     let connect() = 
         Stream.create(Path.GetTempFileName())

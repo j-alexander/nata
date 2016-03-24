@@ -19,7 +19,7 @@ module Stream =
     type private Result = Success of Index | Failure
     type private Message =
         | Close of AsyncReplyChannel<unit>
-        | Write of AsyncReplyChannel<Result> * Event<JsonValue,JsonValue> * Position<Index>
+        | Write of AsyncReplyChannel<Result> * Event<JsonValue> * Position<Index>
 
     let create (path:Path) =
     
@@ -151,9 +151,9 @@ module Stream =
            
 
 
-    let connect : Nata.IO.Connector<Settings,Path,JsonValue,JsonValue,Index> =
+    let connect : Nata.IO.Connector<Settings,Path,JsonValue,Index> =
         
         fun settings ->
-            let index = new ConcurrentDictionary<Path, Nata.IO.Capability<JsonValue,JsonValue,Index> list>()
+            let index = new ConcurrentDictionary<Path, Nata.IO.Capability<JsonValue,Index> list>()
             fun name ->
                 index.GetOrAdd(name, create)

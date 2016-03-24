@@ -10,96 +10,58 @@ open Nata.IO.Capability
 [<TestFixture>]
 type EventTests() =
 
-    let date = DateTime.Now
+    let date = DateTime.UtcNow
     let event =
-        { Type = "event_type"
-          Stream = "event_stream"
-          Date = date
-          Data = "0"
-          Metadata = "1" }
+        Event.createAt date "0"
+        |> Event.withName "event_name"
+        |> Event.withEventType "event_type"
+        |> Event.withStream "event_stream"
 
     [<Test>]
-    member x.EventTypeTest() =
-        Assert.AreEqual("event_type", event |> Event.``type``)
+    member x.TypeTest() =
+        Assert.AreEqual(Some "event_type", Event.eventType event)
 
     [<Test>]
-    member x.EventStreamTest() =
-        Assert.AreEqual("event_stream", event |> Event.stream)
+    member x.StreamTest() =
+        Assert.AreEqual(Some "event_stream", Event.stream event)
 
     [<Test>]
-    member x.EventDateTest() =
-        Assert.AreEqual(date, event |> Event.date)
+    member x.DateTest() =
+        Assert.AreEqual(date, Event.at event)
 
     [<Test>]
-    member x.EventDataTest() =
-        Assert.AreEqual("0", event |> Event.data)
+    member x.DataTest() =
+        Assert.AreEqual("0", Event.data event)
 
     [<Test>]
-    member x.EventMetadataTest() =
-        Assert.AreEqual("1", event |> Event.metadata)
-
-    [<Test>]
-    member x.MapDataTypeTest() =
-        let expected = 
-            { Type = "event_type"
-              Stream = "event_stream"
-              Date = date
-              Data = 0
-              Metadata = "1" }
-        Assert.AreEqual(expected, event |> Event.mapData (Int32.Parse))
-
-    [<Test>]
-    member x.MapDataValueTest() =
-        let expected = 
-            { Type = "event_type"
-              Stream = "event_stream"
-              Date = date
-              Data = "2"
-              Metadata = "1" }
-        Assert.AreEqual(expected, event |> Event.mapData (function "0" -> "2" | _ -> "3"))
-        
-
-    [<Test>]
-    member x.MapMetadataTypeTest() =
-        let expected = 
-            { Type = "event_type"
-              Stream = "event_stream"
-              Date = date
-              Data = "0"
-              Metadata = 1 }
-        Assert.AreEqual(expected, event |> Event.mapMetadata (Int32.Parse))
-
-    [<Test>]
-    member x.MapMetadataValueTest() =
-        let expected = 
-            { Type = "event_type"
-              Stream = "event_stream"
-              Date = date
-              Data = "0"
-              Metadata = "2" }
-        Assert.AreEqual(expected, event |> Event.mapMetadata (function "1" -> "2" | _ -> "3"))
+    member x.CreationTest() =
+        let expected =
+            { Data = "0"
+              At = date
+              Target = None
+              Source = Some { Metadata.Name="event_name"
+                              Metadata.Values = [ Value.Stream "event_stream"
+                                                  Value.EventType "event_type" ] } }
+        Assert.AreEqual(expected, event)
 
     [<Test>]
     member x.MapTypeTest() =
-        let expected = 
-            { Type = "event_type"
-              Stream = "event_stream"
-              Date = date
-              Data = 0
-              Metadata = 1 }
-        Assert.AreEqual(expected, event |> Event.map (Int32.Parse) (Int32.Parse))
+        let expected =
+            { Data = 0
+              At = date
+              Target = None
+              Source = Some { Metadata.Name="event_name"
+                              Metadata.Values = [ Value.Stream "event_stream"
+                                                  Value.EventType "event_type" ] } }
+        Assert.AreEqual(expected, event |> Event.map Int32.Parse)
 
     [<Test>]
     member x.MapValueTest() =
-        let expected = 
-            { Type = "event_type"
-              Stream = "event_stream"
-              Date = date
-              Data = "zero"
-              Metadata = "one" }
-        let mapper = function
-            | "0" -> "zero"
-            | "1" -> "one"
-            | _ -> "something else"
-        Assert.AreEqual(expected, event |> Event.map mapper mapper)
-        
+        let expected =
+            { Data = "2"
+              At = date
+              Target = None
+              Source = Some { Metadata.Name="event_name"
+                              Metadata.Values = [ Value.Stream "event_stream"
+                                                  Value.EventType "event_type" ] } }
+        Assert.AreEqual(expected, event |> Event.map (function "0" -> "2" | _ -> "3"))

@@ -13,20 +13,17 @@ open Nata.IO.Capability
 type ChannelTests() as x =
 
     let event(fn) =
-        { Data =
-            [| "case", JsonValue.String (x.GetType().Name + "." + fn)
-               "at", JsonValue.String (DateTime.Now.ToString()) 
-            |] |> JsonValue.Record
-               |> JsonValue.toBytes
-          Metadata =
-            [| "from", JsonValue.String (Assembly.GetExecutingAssembly().FullName)
-            |] |> JsonValue.Record
-               |> JsonValue.toBytes
-          Date = DateTime.UtcNow
-          Stream = null
-          Type = fn }
+        [| 
+            "case", JsonValue.String (x.GetType().Name + "." + fn)
+            "at", JsonValue.String (DateTime.Now.ToString()) 
+            "from", JsonValue.String (Assembly.GetExecutingAssembly().FullName)
+        |]
+        |> JsonValue.Record
+        |> JsonValue.toBytes       
+        |> Event.create
+        |> Event.withEventType fn
 
-    abstract member Connect : unit -> Source<string,byte[],byte[],int64>
+    abstract member Connect : unit -> Source<string,byte[],int64>
     abstract member Channel : unit -> string
 
     member private x.Capabilities() = x.Channel() |> x.Connect()
@@ -52,7 +49,6 @@ type ChannelTests() as x =
 
         let result = read() |> Seq.head
         Assert.AreEqual(event.Data, result.Data)
-        Assert.AreEqual(event.Metadata, result.Metadata)
 
     [<Test>]
     member x.TestReadFrom() =
@@ -66,12 +62,10 @@ type ChannelTests() as x =
         
         let result, index = readFrom 0L |> Seq.head
         Assert.AreEqual(event_0.Data, result.Data)
-        Assert.AreEqual(event_0.Metadata, result.Metadata)
         Assert.AreEqual(0, index)
         
         let result, index = readFrom 1L |> Seq.head
         Assert.AreEqual(event_1.Data, result.Data)
-        Assert.AreEqual(event_1.Metadata, result.Metadata)
         Assert.AreEqual(1, index)
 
     [<Test>]
@@ -107,7 +101,7 @@ type ChannelTests() as x =
         | _ ->
             Assert.Pass("ReaderFrom and WriterTo are reported to be unsupported by this source.")
         
-    [<Test; Timeout(90000)>]
+    [<Test; Timeout(120000)>]
     member x.TestLiveSubscription() =
         let write, subscribe =
             let connection = x.Capabilities()
@@ -124,11 +118,9 @@ type ChannelTests() as x =
         |> Seq.toList
         |> List.zip expected
         |> List.iter(fun (expected, actual) ->
-            //Assert.AreEqual(expected.Type, actual.Type)
-            Assert.AreEqual(expected.Data, actual.Data)
-            Assert.AreEqual(expected.Metadata, actual.Metadata))
+            Assert.AreEqual(expected.Data, actual.Data))
             
-    [<Test; Timeout(90000)>]
+    [<Test; Timeout(120000)>]
     member x.TestLateSubscription() =
         let write, subscribe =
             let connection= x.Capabilities()
@@ -144,11 +136,9 @@ type ChannelTests() as x =
         |> Seq.toList
         |> List.zip expected
         |> List.iter(fun (expected, actual) ->
-            //Assert.AreEqual(expected.Type, actual.Type)
-            Assert.AreEqual(expected.Data, actual.Data)
-            Assert.AreEqual(expected.Metadata, actual.Metadata))
+            Assert.AreEqual(expected.Data, actual.Data))
             
-    [<Test; Timeout(90000)>]
+    [<Test; Timeout(120000)>]
     member x.TestSubscriptionFromIndex() =
         let write, subscribeFrom =
             let connection = x.Capabilities()
@@ -164,22 +154,16 @@ type ChannelTests() as x =
         |> Seq.toArray
         |> Array.zip expected
         |> Array.iter(fun (expected, (actual, index)) ->
-            //Assert.AreEqual(expected.Type, actual.Type)
-            Assert.AreEqual(expected.Data, actual.Data)
-            Assert.AreEqual(expected.Metadata, actual.Metadata))
+            Assert.AreEqual(expected.Data, actual.Data))
         subscribeFrom 1L
         |> Seq.take 2
         |> Seq.toArray
         |> Array.zip (expected.[1..2])
         |> Array.iter(fun (expected, (actual, index)) ->
-            //Assert.AreEqual(expected.Type, actual.Type)
-            Assert.AreEqual(expected.Data, actual.Data)
-            Assert.AreEqual(expected.Metadata, actual.Metadata))
+            Assert.AreEqual(expected.Data, actual.Data))
         subscribeFrom 2L
         |> Seq.take 1
         |> Seq.toArray
         |> Array.zip (expected.[2..2])
         |> Array.iter(fun (expected, (actual, index)) ->
-            //Assert.AreEqual(expected.Type, actual.Type)
-            Assert.AreEqual(expected.Data, actual.Data)
-            Assert.AreEqual(expected.Metadata, actual.Metadata))
+            Assert.AreEqual(expected.Data, actual.Data))

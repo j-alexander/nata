@@ -1,27 +1,37 @@
 ﻿namespace Nata.IO.Kafka
 
 open System
+open System.Text
 open Nata.IO
 
 type Data = byte[]
-type Metadata = byte[]
-type Event = Event<Data, Metadata> 
+type Event = Event<Data> 
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Event =
 
     let ofMessage (topic:TopicName) (message:Message) =
-        { Event.Date = DateTime.UtcNow
-          Event.Type = topic
-          Event.Stream = topic
-          Event.Data = message.Value
-          Event.Metadata = message.Key }
+        Event.create message.Value
+        |> Event.withKey (message.Key |> Encoding.Default.GetString)
+        |> Event.withStream topic
+        |> Event.withPartition message.PartitionId
+        |> Event.withIndex message.Offset
 
     let toMessage (partitionId:int) (offset:int64) (event:Event) =
-        { Message.PartitionId = 0
-          Message.Offset = 0L
+        { Message.Value = event.Data
+          Message.PartitionId =
+            match Event.partition event with
+            | Some x -> x
+            | None -> 0
+          Message.Offset =
+            match Event.index event with
+            | Some x -> x
+            | None -> 0L
           Message.Key =
-            match event.Metadata with
-            | [||] -> Guid.NewGuid().ToByteArray()
-            | meta -> meta
-          Message.Value = event.Data}
+            match Event.key event with
+            | Some x when String.IsNullOrEmpty x ->
+                Guid.NewGuid().ToByteArray()
+            | None ->
+                Guid.NewGuid().ToByteArray()
+            | Some key ->
+                Encoding.Default.GetBytes key }

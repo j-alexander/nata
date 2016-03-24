@@ -13,16 +13,18 @@ open EventStore.ClientAPI.SystemData
 
 module Stream =
 
+    type Data = byte[]
+    type Event = Nata.IO.Event<Data>
     type Name = string
     type Index = int
 
-
     let private decode (resolvedEvent:ResolvedEvent) =
-        { Event.Type = resolvedEvent.Event.EventType
-          Event.Stream = resolvedEvent.Event.EventStreamId
-          Event.Date = resolvedEvent.Event.Created
-          Event.Data = resolvedEvent.Event.Data
-          Event.Metadata = resolvedEvent.Event.Metadata }, resolvedEvent.Event.EventNumber
+        Nata.IO.Event.create           resolvedEvent.Event.Data
+        |> Nata.IO.Event.withCreatedAt resolvedEvent.Event.Created
+        |> Nata.IO.Event.withStream    resolvedEvent.Event.EventStreamId
+        |> Nata.IO.Event.withEventType resolvedEvent.Event.EventType
+        |> Nata.IO.Event.withBytes     resolvedEvent.Event.Metadata,
+        resolvedEvent.Event.EventNumber
 
 
     let rec private read (connection : IEventStoreConnection)
@@ -77,7 +79,15 @@ module Stream =
             match targetVersion with
             | x when x < 0 -> ExpectedVersion.Any
             | version -> version
-        let eventData = new EventData(eventId, event.Type, true, event.Data, event.Metadata)
+        let eventMetadata =
+            match Nata.IO.Event.bytes event with
+            | Some x -> x
+            | None -> [||]
+        let eventType =
+            match Nata.IO.Event.eventType event with
+            | Some x -> x
+            | None -> Guid.NewGuid().ToString("n")
+        let eventData = new EventData(eventId, eventType, true, event.Data, eventMetadata)
         let result =
             connection.AppendToStreamAsync(targetStream, eventPosition, eventData)
             |> Async.AwaitTask
@@ -96,7 +106,7 @@ module Stream =
             | _ -> raise exn
         
 
-    let connect : Nata.IO.Connector<Settings,Name,Data,Metadata,Index> =
+    let connect : Nata.IO.Connector<Settings,Name,Data,Index> =
         Client.connect >> (fun connection stream ->
             [   
                 Nata.IO.Capability.Reader <| fun () ->

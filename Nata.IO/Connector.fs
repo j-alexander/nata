@@ -1,23 +1,19 @@
 ﻿namespace Nata.IO
 
-type Connector<'Configuration,'Channel,'Data,'Metadata,'Index> = 'Configuration -> Source<'Channel,'Data,'Metadata,'Index>
+type Connector<'Configuration,'Channel,'Data,'Index> = 'Configuration -> Source<'Channel,'Data,'Index>
     
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Connector =
 
     let mapData (codec:Codec<'DataIn,'DataOut>)
-                (connector:Connector<'Configuration,'Channel,'DataOut,'Metadata,'Index>) : Connector<'Configuration,'Channel,'DataIn,'Metadata,'Index> =
+                (connector:Connector<'Configuration,'Channel,'DataOut,'Index>) : Connector<'Configuration,'Channel,'DataIn,'Index> =
         connector >> Source.mapData codec
 
-    let mapMetadata (codec:Codec<'MetadataIn,'MetadataOut>)
-                    (connector:Connector<'Configuration,'Channel,'Data,'MetadataOut,'Index>) : Connector<'Configuration,'Channel,'Data,'MetadataIn,'Index> =
-        connector >> Source.mapMetadata codec
-
     let mapIndex (codec:Codec<'IndexIn,'IndexOut>)
-                 (connector:Connector<'Configuration,'Channel,'Data,'Metadata,'IndexOut>) : Connector<'Configuration,'Channel,'Data,'Metadata,'IndexIn> =
+                 (connector:Connector<'Configuration,'Channel,'Data,'IndexOut>) : Connector<'Configuration,'Channel,'Data,'IndexIn> =
         connector >> Source.mapIndex codec
 
     let map (dataCodec:Codec<'DataIn,'DataOut>)
-            (metadataCodec:Codec<'MetadataIn,'MetadataOut>)
-            (connector:Connector<'Configuration,'Channel,'DataOut,'MetadataOut,'Index>) : Connector<'Configuration,'Channel,'DataIn,'MetadataIn,'Index> =
-        connector >> Source.map dataCodec metadataCodec
+            (indexCodec:Codec<'IndexIn,'IndexOut>)
+            (connector:Connector<'Configuration,'Channel,'DataOut,'IndexOut>) : Connector<'Configuration,'Channel,'DataIn,'IndexIn> =
+        connector >> Source.map dataCodec indexCodec

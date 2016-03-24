@@ -18,7 +18,7 @@ module AcceptanceTests =
     let connect() = 
         Stream.connect()
         |> Source.map JsonValue.Codec.BytesToJsonValue
-                      JsonValue.Codec.BytesToJsonValue
+                      Codec.Identity
     
 
     [<TestFixture>]
