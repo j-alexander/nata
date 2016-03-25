@@ -16,9 +16,11 @@ module Core =
     module Option =
         
         let whenTrue fn x = if fn x then Some x else None
-        let bindNone fn = function None -> fn() | Some x -> x
         let coalesce snd fst = match fst with None -> snd | Some _ -> fst
         let filter fn = Option.bind(whenTrue fn)
+
+        let bindNone fn = function None -> fn() | Some x -> x
+        let getValueOr x = function None -> x | Some x -> x
 
             
             

@@ -21,11 +21,12 @@ module Stream =
     type Index = int
 
     let private decode (resolvedEvent:ResolvedEvent) =
-        Event.create                  resolvedEvent.Event.Data
-        |> Event.Source.withCreatedAt resolvedEvent.Event.Created
-        |> Event.Source.withStream    resolvedEvent.Event.EventStreamId
-        |> Event.Source.withEventType resolvedEvent.Event.EventType
-        |> Event.Source.withBytes     resolvedEvent.Event.Metadata,
+        Event.create           resolvedEvent.Event.Data
+        |> Event.withCreatedAt resolvedEvent.Event.Created
+        |> Event.withStream    resolvedEvent.Event.EventStreamId
+        |> Event.withEventType resolvedEvent.Event.EventType
+        |> Event.withBytes     resolvedEvent.Event.Metadata
+        |> Event.withIndex    (resolvedEvent.Event.EventNumber |> int64),
         resolvedEvent.Event.EventNumber
 
 
@@ -81,14 +82,8 @@ module Stream =
             match targetVersion with
             | x when x < 0 -> ExpectedVersion.Any
             | version -> version
-        let eventMetadata =
-            Event.Target.bytes event
-            |> Option.coalesce (Event.Source.bytes event)
-            |> Option.bindNone (fun () -> [||])
-        let eventType =
-            Event.Target.eventType event
-            |> Option.coalesce (Event.Source.eventType event)
-            |> Option.bindNone (fun () -> Guid.NewGuid().ToString("n"))
+        let eventMetadata = Event.bytes event |> Option.getValueOr [||]
+        let eventType = Event.eventType event |> Option.bindNone (Guid.NewGuid().ToString)
         let eventData = new EventData(eventId, eventType, true, event.Data, eventMetadata)
         let result =
             connection.AppendToStreamAsync(targetStream, eventPosition, eventData)

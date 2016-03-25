@@ -39,10 +39,10 @@ type SerializationTests() =
                 { Data =
                     { DataType.case = sprintf "Event-%d" i
                       DataType.at = DateTime.Now }
-                  At = DateTime.UtcNow
-                  Target = None
-                  Source = Some { Metadata.Name = "SerializationTests"
-                                  Metadata.Values = [ Value.EventType "AutomaticSerialization" ] } } ]
+                  Metadata =
+                    [ Value.Name "SerializationTests"
+                      Value.EventType "AutomaticSerialization" ]
+                  At = DateTime.UtcNow } ]
 
         for event in events do
             write event

@@ -12,25 +12,26 @@ module Event =
 
     let ofMessage (topic:TopicName) (message:Message) =
         Event.create message.Value
-        |> Event.Source.withKey (message.Key |> Encoding.Default.GetString)
-        |> Event.Source.withStream topic
-        |> Event.Source.withPartition message.PartitionId
-        |> Event.Source.withIndex message.Offset
+        |> Event.withKey (message.Key |> Encoding.Default.GetString)
+        |> Event.withStream topic
+        |> Event.withPartition message.PartitionId
+        |> Event.withIndex message.Offset
 
-    let toMessage (partitionId:int) (offset:int64) (event:Event) =
-        { Message.Value = event.Data
+    let toMessage (event:Event) =
+        { Message.Value =
+            event
+            |> Event.data
           Message.PartitionId =
-            Event.Target.partition event
-            |> Option.coalesce (Event.Source.partition event)
-            |> Option.bindNone (fun () -> 0)
+            event
+            |> Event.partition 
+            |> Option.getValueOr 0
           Message.Offset =
-            Event.Target.index event
-            |> Option.coalesce (Event.Source.index event)
-            |> Option.bindNone (fun () -> 0L)
+            event
+            |> Event.index
+            |> Option.getValueOr 0L
           Message.Key =
-            Event.Target.key event
-            |> Option.filter (String.IsNullOrWhiteSpace >> not)
-            |> Option.coalesce (Event.Source.key event)
+            event
+            |> Event.key
             |> Option.filter (String.IsNullOrWhiteSpace >> not)
             |> Option.map (Encoding.Default.GetBytes)
-            |> Option.bindNone (fun () -> Guid.NewGuid().ToByteArray()) }
+            |> Option.bindNone (Guid.NewGuid().ToByteArray) }

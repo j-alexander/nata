@@ -21,7 +21,7 @@ type ChannelTests() as x =
         |> JsonValue.Record
         |> JsonValue.toBytes       
         |> Event.create
-        |> Event.Source.withEventType fn
+        |> Event.withEventType fn
 
     abstract member Connect : unit -> Source<string,byte[],int64>
     abstract member Channel : unit -> string

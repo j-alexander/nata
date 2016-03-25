@@ -32,7 +32,7 @@ module Cluster =
                     (Topic.readFrom (topicFor cluster name) >> Seq.mapFst (Event.ofMessage name))
 
                 Nata.IO.Capability.Writer <|
-                    (Event.toMessage 0 0L >> Topic.write (topicFor cluster name))
+                    (Event.toMessage >> Topic.write (topicFor cluster name))
 
                 Nata.IO.Capability.Subscriber <| fun () ->
                     (Topic.listen (topicFor cluster name) |> Seq.map (Event.ofMessage name))

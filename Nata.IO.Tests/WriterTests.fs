@@ -12,9 +12,9 @@ type WriterTests() =
 
     let event =
         Event.create "0"
-        |> Event.Source.withName "event_name"
-        |> Event.Source.withEventType "event_type"
-        |> Event.Source.withStream "event_stream"
+        |> Event.withName "event_name"
+        |> Event.withEventType "event_type"
+        |> Event.withStream "event_stream"
 
     abstract member Connect : unit -> List<Capability<'Data,int64>>
 

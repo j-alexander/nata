@@ -5,19 +5,15 @@ open FSharp.Data
 
 type Event<'Data> = {
     Data : 'Data
-    Source : Metadata option
-    Target : Metadata option
+    Metadata : Value list
     At : DateTime
-}
-and Metadata = {
-    Name : string
-    Values : Value list
 }
 and Value =
     | CreatedAt of DateTime
     | SentAt of DateTime
     | ReceivedAt of DateTime
     | EventType of string
+    | Name of string
     | Stream of string
     | Partition of int
     | Key of string
@@ -36,6 +32,8 @@ module Value =
         function Value.ReceivedAt x -> Some x | _ -> None
     let eventType =
         function Value.EventType  x -> Some x | _ -> None
+    let name =
+        function Value.Name       x -> Some x | _ -> None
     let stream =
         function Value.Stream     x -> Some x | _ -> None
     let partition =
@@ -53,6 +51,7 @@ module Value =
         | Value.SentAt x ->     "sentAt",     DateTime.toJsonValue x
         | Value.ReceivedAt x -> "receivedAt", DateTime.toJsonValue x
         | Value.EventType x ->  "eventType",  JsonValue.String x
+        | Value.Name x ->       "name",       JsonValue.String x
         | Value.Stream x ->     "stream",     JsonValue.String x
         | Value.Partition x ->  "partition",  JsonValue.Number (decimal x)
         | Value.Key x ->        "key",        JsonValue.Number (decimal x)
@@ -64,154 +63,86 @@ module Value =
         | "sentAt", json ->     json |> DateTime.ofJsonValue |> Value.SentAt     |> Some
         | "receivedAt", json -> json |> DateTime.ofJsonValue |> Value.ReceivedAt |> Some
         | "eventType", json ->  json.AsString()              |> Value.EventType  |> Some
+        | "name", json ->       json.AsString()              |> Value.Name       |> Some
         | "stream", json ->     json.AsString()              |> Value.Stream     |> Some
         | "partition", json ->  json.AsInteger()             |> Value.Partition  |> Some
         | "key", json ->        json.AsString()              |> Value.Key        |> Some
         | "index", json ->      json.AsInteger64()           |> Value.Index      |> Some
         | "bytes", json ->      [||]                         |> Value.Bytes      |> Some
         | _ ->                  None
-        
-        
-
-[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-module Metadata =
-
-    let name (x:Metadata) = x.Name
-    let values (x:Metadata) = x.Values
-
-    let valueOf fn = values >> List.tryPick fn
-    
-    let createdAt =  valueOf Value.createdAt
-    let sentAt =     valueOf Value.sentAt
-    let receivedAt = valueOf Value.receivedAt
-    let eventType =  valueOf Value.eventType
-    let stream =     valueOf Value.stream
-    let partition =  valueOf Value.partition
-    let key =        valueOf Value.key
-    let index =      valueOf Value.index
-    let bytes =      valueOf Value.bytes
-
-    let toJsonValue (x:Metadata) =
-        JsonValue.Record [|
-            "name", x.Name |> JsonValue.String
-            "values", x.Values |> Seq.map Value.toJsonValue |> Seq.toArray |> JsonValue.Record
-        |]
-
-    let ofJsonValue (json:JsonValue) =
-        { Metadata.Name = json.["name"].AsString()
-          Metadata.Values =
-            json.["values"].Properties()
-            |> Seq.choose Value.ofJsonValue
-            |> Seq.toList }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Event =
 
     let data (e:Event<_>) = e.Data
-    let source (e:Event<_>) = e.Source
-    let target (e:Event<_>) = e.Target
+    let metadata (e:Event<_>) = e.Metadata
     let at (e:Event<_>) = e.At
+
+    let valueOf fn = metadata >> List.tryPick fn
+    
+    let createdAt e =  e |> valueOf Value.createdAt
+    let sentAt e =     e |> valueOf Value.sentAt
+    let receivedAt e = e |> valueOf Value.receivedAt
+    let eventType e =  e |> valueOf Value.eventType
+    let name e =       e |> valueOf Value.name
+    let stream e =     e |> valueOf Value.stream
+    let partition e =  e |> valueOf Value.partition
+    let key e =        e |> valueOf Value.key
+    let index e =      e |> valueOf Value.index
+    let bytes e =      e |> valueOf Value.bytes
 
     let createAt time data =
         { Event.Data = data
-          Event.At = time
-          Event.Source = None
-          Event.Target = None }
+          Event.Metadata = []
+          Event.At = time }
+
     let create data =
         createAt DateTime.UtcNow data
     
-    module Source =
+    let withMetadata x e =
+        { e with Metadata = x :: e.Metadata }
 
-        let name x =       x |> source |> Option.map  Metadata.name
-        let createdAt x =  x |> source |> Option.bind Metadata.createdAt
-        let sentAt x =     x |> source |> Option.bind Metadata.sentAt
-        let receivedAt x = x |> source |> Option.bind Metadata.receivedAt
-        let eventType x =  x |> source |> Option.bind Metadata.eventType
-        let stream x =     x |> source |> Option.bind Metadata.stream
-        let partition x =  x |> source |> Option.bind Metadata.partition
-        let key x =        x |> source |> Option.bind Metadata.key
-        let index x =      x |> source |> Option.bind Metadata.index
-        let bytes x =      x |> source |> Option.bind Metadata.bytes
-
-        let withName x e =
-            match source e with
-            | Some s -> { e with Source = Some { s with Name = x } }
-            | None -> { e with Source = Some { Name = x; Values = [] }}
-        let withValue x e =
-            match source e with
-            | Some s -> { e with Source = Some { s with Values = x :: s.Values }}
-            | None -> { e with Source = Some { Name = ""; Values = [x] }}
-
-        let withCreatedAt x =  withValue (x |> Value.CreatedAt)
-        let withSentAt x =     withValue (x |> Value.SentAt)
-        let withReceivedAt x = withValue (x |> Value.ReceivedAt)
-        let withEventType x =  withValue (x |> Value.EventType)
-        let withStream x =     withValue (x |> Value.Stream)
-        let withPartition x =  withValue (x |> Value.Partition)
-        let withKey x =        withValue (x |> Value.Key)
-        let withIndex x =      withValue (x |> Value.Index)
-        let withBytes x =      withValue (x |> Value.Bytes)
-    
-    module Target =
-
-        let name x =       x |> target |> Option.map  Metadata.name
-        let createdAt x =  x |> target |> Option.bind Metadata.createdAt
-        let sentAt x =     x |> target |> Option.bind Metadata.sentAt
-        let receivedAt x = x |> target |> Option.bind Metadata.receivedAt
-        let eventType x =  x |> target |> Option.bind Metadata.eventType
-        let stream x =     x |> target |> Option.bind Metadata.stream
-        let partition x =  x |> target |> Option.bind Metadata.partition
-        let key x =        x |> target |> Option.bind Metadata.key
-        let index x =      x |> target |> Option.bind Metadata.index
-        let bytes x =      x |> target |> Option.bind Metadata.bytes
-
-        let withName x e =
-            match source e with
-            | Some s -> { e with Target = Some { s with Name = x } }
-            | None -> { e with Target = Some { Name = x; Values = [] }}
-        let withValue x e =
-            match source e with
-            | Some s -> { e with Target = Some { s with Values = x :: s.Values }}
-            | None -> { e with Target = Some { Name = ""; Values = [x] }}
-
-        let withCreatedAt x =  withValue (x |> Value.CreatedAt)
-        let withSentAt x =     withValue (x |> Value.SentAt)
-        let withReceivedAt x = withValue (x |> Value.ReceivedAt)
-        let withEventType x =  withValue (x |> Value.EventType)
-        let withStream x =     withValue (x |> Value.Stream)
-        let withPartition x =  withValue (x |> Value.Partition)
-        let withKey x =        withValue (x |> Value.Key)
-        let withIndex x =      withValue (x |> Value.Index)
-        let withBytes x =      withValue (x |> Value.Bytes)
+    let withCreatedAt x =  withMetadata (x |> Value.CreatedAt)
+    let withSentAt x =     withMetadata (x |> Value.SentAt)
+    let withReceivedAt x = withMetadata (x |> Value.ReceivedAt)
+    let withEventType x =  withMetadata (x |> Value.EventType)
+    let withName x =       withMetadata (x |> Value.Name)
+    let withStream x =     withMetadata (x |> Value.Stream)
+    let withPartition x =  withMetadata (x |> Value.Partition)
+    let withKey x =        withMetadata (x |> Value.Key)
+    let withIndex x =      withMetadata (x |> Value.Index)
+    let withBytes x =      withMetadata (x |> Value.Bytes)
 
     let mapData (fn:'DataIn->'DataOut)
                 (e:Event<'DataIn>) : Event<'DataOut> =
         { Data = fn e.Data
-          Source = e.Source
-          Target = e.Target
+          Metadata = e.Metadata
           At = e.At }
 
     let map : ('DataIn->'DataOut) -> Event<'DataIn> -> Event<'DataOut> = mapData
           
     let toJsonValue (event:Event<JsonValue>) =
         JsonValue.Record [|
-            yield "data", event.Data
-            yield "at", DateTime.toJsonValue event.At
-            if event.Source.IsSome then
-                yield "source", Metadata.toJsonValue event.Source.Value
-            if event.Target.IsSome then
-                yield "target", Metadata.toJsonValue event.Target.Value
+            "data", event.Data
+            "metadata",
+                event.Metadata
+                |> Seq.map Value.toJsonValue
+                |> Seq.toArray
+                |> JsonValue.Record
+            "at",
+                event.At
+                |> DateTime.toJsonValue 
         |]
         
     let ofJsonValue (json:JsonValue) =
         { Event.Data = json.["data"]
-          Event.At = json.["at"] |> DateTime.ofJsonValue
-          Event.Source =
-            json.TryGetProperty("source")
-            |> Option.map(Metadata.ofJsonValue)
-          Event.Target = 
-            json.TryGetProperty("target")
-            |> Option.map(Metadata.ofJsonValue) }
+          Event.Metadata =
+            json.["metadata"].Properties()
+            |> Seq.choose Value.ofJsonValue
+            |> Seq.toList
+          Event.At =
+            json.["at"]
+            |> DateTime.ofJsonValue }
 
     module Codec =
             
