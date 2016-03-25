@@ -14,12 +14,22 @@ type Cluster = BrokerRouter
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Cluster =
     
+    let delay = TimeSpan.FromMilliseconds(500.)
+
     let connect (host:string) : Cluster =
         new BrokerRouter(new KafkaOptions(new Uri(host)))
 
     let topicFor (cluster:Cluster) (name:TopicName) =
-        { Topic.Consumer = new Consumer(new ConsumerOptions(name, cluster))
-          Topic.Producer = new Producer(cluster)
+        { Topic.Consumer =
+            new Consumer(
+                new ConsumerOptions(
+                    name,
+                    cluster,
+                    MaxWaitTimeForMinimumBytes=delay))
+          Topic.Producer =
+            new Producer(
+                cluster,
+                BatchDelayTime=delay)
           Topic.Name = name }
 
     let topics : Nata.IO.Connector<Cluster,TopicName,Data,Offsets>  =

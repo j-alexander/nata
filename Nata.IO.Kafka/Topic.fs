@@ -51,12 +51,16 @@ module Topic =
                 offsets |> Offsets.updateWith message
             (message, offsets), (partitions, offsets)
 
-        Seq.unfold (fun (partitions, offsets) ->
-            (partitions, offsets)
-            |> Option.whenTrue (hasCompleted >> not)
-            |> Option.bindNone (fun _ -> offsetRangesFor topic, offsets)
-            |> Option.whenTrue (hasCompleted >> not)
-            |> Option.map get) (offsetRanges, offsets)
+        seq {
+            yield! 
+                Seq.unfold (fun (partitions, offsets) ->
+                    (partitions, offsets)
+                    |> Option.whenTrue (hasCompleted >> not)
+                    |> Option.bindNone (fun _ -> offsetRangesFor topic, offsets)
+                    |> Option.whenTrue (hasCompleted >> not)
+                    |> Option.map get) (offsetRanges, offsets)
+            enumerator.Dispose()
+        }
 
     let readFrom topic offsets =
         consume topic Offsets.completed (Some offsets)
