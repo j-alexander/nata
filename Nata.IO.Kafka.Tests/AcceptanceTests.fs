@@ -26,7 +26,7 @@ module AcceptanceTests =
 
         override x.Connect() =
             Cluster.topics cluster
-            |> Source.mapIndex (Offsets.Codec.Int64ToOffsets 0)
+            |> Source.mapIndex (Offsets.Codec.OffsetsToInt64 0)
             
         override x.Channel() =
              Guid.NewGuid().ToString("n")

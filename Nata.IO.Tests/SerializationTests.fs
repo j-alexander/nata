@@ -27,7 +27,7 @@ type SerializationTests() =
     member x.TestSerializationCodecs() =
         let connection =
             x.Connect()
-            |> Source.map DataType.ToBytes Codec.Identity
+            |> Source.map DataType.OfBytes Codec.Identity
         
         let write, read =
             let stream = connection <| x.Channel()

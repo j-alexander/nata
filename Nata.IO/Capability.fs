@@ -13,35 +13,31 @@ type Capability<'Data,'Index> =
 module Capability =
     
     let mapData ((encode,decode):Codec<'DataIn,'DataOut>)
-                (capability:Capability<'DataOut,'Index>) : Capability<'DataIn,'Index> =
+                (capability:Capability<'DataIn,'Index>) : Capability<'DataOut,'Index> =
         match capability with
-        | Writer x ->         x |> Writer.mapData encode |> Writer
-        | WriterTo x ->       x |> WriterTo.mapData encode |> WriterTo
-        | Reader x ->         x |> Reader.mapData decode |> Reader
-        | ReaderFrom x ->     x |> ReaderFrom.mapData decode |> ReaderFrom
-        | Subscriber x ->     x |> Subscriber.mapData decode |> Subscriber
-        | SubscriberFrom x -> x |> SubscriberFrom.mapData decode |> SubscriberFrom
+        | Writer x ->         x |> Writer.mapData decode |> Writer
+        | WriterTo x ->       x |> WriterTo.mapData decode |> WriterTo
+        | Reader x ->         x |> Reader.mapData encode |> Reader
+        | ReaderFrom x ->     x |> ReaderFrom.mapData encode |> ReaderFrom
+        | Subscriber x ->     x |> Subscriber.mapData encode |> Subscriber
+        | SubscriberFrom x -> x |> SubscriberFrom.mapData encode |> SubscriberFrom
 
     let mapIndex (codec:Codec<'IndexIn, 'IndexOut>)
-                 (capability:Capability<'Data,'IndexOut>) : Capability<'Data,'IndexIn> =
+                 (capability:Capability<'Data,'IndexIn>) : Capability<'Data,'IndexOut> =
         match capability with
         | Writer x ->         x |> Writer
-        | WriterTo x ->       x |> WriterTo.mapIndex codec |> WriterTo
+        | WriterTo x ->       x |> WriterTo.mapIndex (Codec.reverse codec) |> WriterTo
         | Reader x ->         x |> Reader
-        | ReaderFrom x ->     x |> ReaderFrom.mapIndex (Codec.reverse codec) |> ReaderFrom
+        | ReaderFrom x ->     x |> ReaderFrom.mapIndex codec |> ReaderFrom
         | Subscriber x ->     x |> Subscriber
-        | SubscriberFrom x -> x |> SubscriberFrom.mapIndex (Codec.reverse codec) |> SubscriberFrom
+        | SubscriberFrom x -> x |> SubscriberFrom.mapIndex codec |> SubscriberFrom
 
-    let map ((encodeData,decodeData):Codec<'DataIn,'DataOut>)
-            ((encodeIndex,decodeIndex):Codec<'IndexIn,'IndexOut>)
-            (capability:Capability<'DataOut,'IndexOut>) : Capability<'DataIn,'IndexIn> =
-        match capability with
-        | Writer x ->         x |> Writer.map encodeData |> Writer
-        | WriterTo x ->       x |> WriterTo.map encodeData (encodeIndex,decodeIndex) |> WriterTo
-        | Reader x ->         x |> Reader.map decodeData |> Reader
-        | ReaderFrom x ->     x |> ReaderFrom.map decodeData (decodeIndex,encodeIndex) |> ReaderFrom
-        | Subscriber x ->     x |> Subscriber.map decodeData |> Subscriber
-        | SubscriberFrom x -> x |> SubscriberFrom.map decodeData (decodeIndex,encodeIndex) |> SubscriberFrom
+    let map (dataCodec:Codec<'DataIn,'DataOut>)
+            (indexCodec:Codec<'IndexIn,'IndexOut>)
+            (capability:Capability<'DataIn,'IndexIn>) : Capability<'DataOut,'IndexOut> =
+        capability
+        |> mapData dataCodec
+        |> mapIndex indexCodec
 
     let tryReader (capabilities:Capability<'Data,'Index> list) : Reader<'Data> option =
         capabilities |> List.tryPick (function Reader x -> Some x | _ -> None)

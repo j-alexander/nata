@@ -6,14 +6,14 @@ type Connector<'Configuration,'Channel,'Data,'Index> = 'Configuration -> Source<
 module Connector =
 
     let mapData (codec:Codec<'DataIn,'DataOut>)
-                (connector:Connector<'Configuration,'Channel,'DataOut,'Index>) : Connector<'Configuration,'Channel,'DataIn,'Index> =
+                (connector:Connector<'Configuration,'Channel,'DataIn,'Index>) : Connector<'Configuration,'Channel,'DataOut,'Index> =
         connector >> Source.mapData codec
 
     let mapIndex (codec:Codec<'IndexIn,'IndexOut>)
-                 (connector:Connector<'Configuration,'Channel,'Data,'IndexOut>) : Connector<'Configuration,'Channel,'Data,'IndexIn> =
+                 (connector:Connector<'Configuration,'Channel,'Data,'IndexIn>) : Connector<'Configuration,'Channel,'Data,'IndexOut> =
         connector >> Source.mapIndex codec
 
     let map (dataCodec:Codec<'DataIn,'DataOut>)
             (indexCodec:Codec<'IndexIn,'IndexOut>)
-            (connector:Connector<'Configuration,'Channel,'DataOut,'IndexOut>) : Connector<'Configuration,'Channel,'DataIn,'IndexIn> =
+            (connector:Connector<'Configuration,'Channel,'DataIn,'IndexIn>) : Connector<'Configuration,'Channel,'DataOut,'IndexOut> =
         connector >> Source.map dataCodec indexCodec

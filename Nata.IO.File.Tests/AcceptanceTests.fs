@@ -17,7 +17,7 @@ module AcceptanceTests =
 
     let connect() = 
         Stream.connect()
-        |> Source.map JsonValue.Codec.BytesToJsonValue
+        |> Source.map JsonValue.Codec.JsonValueToBytes
                       Codec.Identity
     
 

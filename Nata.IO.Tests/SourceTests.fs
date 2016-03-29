@@ -39,9 +39,9 @@ type SourceTests() as x =
     member private x.Capabilities() = x.Channel() |> x.Connect()
 
     member private x.CreateUnderlayAndOverlay() =
-        let dataCodec : Codec<int,string> =
-            (fun (above:int) -> sprintf "data:%d" above),
-            (fun (below:string) -> below.Substring(5) |> Int32.Parse)
+        let dataCodec : Codec<string,int> =
+            (fun (below:string) -> below.Substring(5) |> Int32.Parse),
+            (fun (above:int) -> sprintf "data:%d" above)
         let indexCodec = Codec.Identity
 
         let underlying : Source<string,string,int64> = x.Connect()

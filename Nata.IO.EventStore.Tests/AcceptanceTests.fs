@@ -24,7 +24,7 @@ module AcceptanceTests =
     let channel() = Guid.NewGuid().ToString("n")
     let connect() = 
         Stream.connect settings
-        |> Source.mapIndex (int, int64)
+        |> Source.mapIndex (int64, int)
 
     [<TestFixture>]
     type EventStoreChannelTests() =
