@@ -32,22 +32,22 @@ module Cluster =
                 BatchDelayTime=delay)
           Topic.Name = name }
 
-    let topics : Nata.IO.Connector<Cluster,TopicName,Data,Offsets>  =
+    let topics : Connector<Cluster,TopicName,Data,Offsets>  =
         fun cluster name ->
             [
-                Nata.IO.Capability.Reader <| fun () ->
+                Capability.Reader <| fun () ->
                     (Topic.read (topicFor cluster name) |> Seq.map (Event.ofMessage name))
 
-                Nata.IO.Capability.ReaderFrom <|
+                Capability.ReaderFrom <|
                     (Topic.readFrom (topicFor cluster name) >> Seq.mapFst (Event.ofMessage name))
 
-                Nata.IO.Capability.Writer <|
+                Capability.Writer <|
                     (Event.toMessage >> Topic.write (topicFor cluster name))
 
-                Nata.IO.Capability.Subscriber <| fun () ->
+                Capability.Subscriber <| fun () ->
                     (Topic.listen (topicFor cluster name) |> Seq.map (Event.ofMessage name))
 
-                Nata.IO.Capability.SubscriberFrom <|
+                Capability.SubscriberFrom <|
                     (Topic.listenFrom (topicFor cluster name) >> Seq.mapFst (Event.ofMessage name))
             ]
             

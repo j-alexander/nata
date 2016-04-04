@@ -20,29 +20,30 @@ module Stream =
 
         let queue = new BlockingCollection<Event<'Data>>()
         let data = new ConcurrentDictionary<Index, Lazy<Event<'Data>>>()
+        
+        let rec indexOf = function
+            | Position.Start -> 0L
+            | Position.Before x -> -1L + indexOf x
+            | Position.At x -> Math.Max(0L, x)
+            | Position.After x -> 1L + indexOf x
+            | Position.End -> int64 (data.Count - 1)
 
         let actor = MailboxProcessor<Message<'Data>>.Start <| fun inbox ->
             let rec wait(count) = async {
 
                 let! (sender,event,position) = inbox.Receive()
 
-                let insert() =
-                    data.[count+1L] <- lazy(queue.Take())
-                    queue.Add(event)
-                    let result = data.[count].Force()
-                    assert(Object.ReferenceEquals(result, event))
-                    sender.Reply(Success count)
-                    wait(count+1L)
-                let fail() =
-                    sender.Reply(Failure)
-                    wait(count)
-
                 return!
-                    match position with
-                    | End ->                        insert()
-                    | Start when count=0L ->        insert()
-                    | At last when last=count-1L -> insert()
-                    | _ ->                          fail()
+                    if indexOf position = count then
+                        data.[count+1L] <- lazy(queue.Take())
+                        queue.Add(event)
+                        let result = data.[count].Force()
+                        assert(Object.ReferenceEquals(result, event))
+                        sender.Reply(Success count)
+                        wait(count+1L)
+                    else
+                        sender.Reply(Failure)
+                        wait(count)
             }
 
             data.[0L] <- lazy(queue.Take())
@@ -51,7 +52,7 @@ module Stream =
         let writeTo position event= 
             match actor.PostAndReply(fun sender -> sender,event,position) with
             | Success index -> index
-            | Failure -> raise (InvalidPosition(position))
+            | Failure -> raise (Position.Invalid(position))
 
         let rec readFrom index =
             seq {
@@ -60,7 +61,7 @@ module Stream =
                     yield event.Value, index
                     yield! readFrom(1L+index)
                 | false, _ ->
-                    raise (InvalidPosition(Position.At index))
+                    raise (Position.Invalid(Position.At index))
                 | _  -> ()
             }
 
@@ -71,35 +72,35 @@ module Stream =
                     yield event.Force(), index
                     yield! readFrom(1L+index)
                 | _ ->
-                    raise (InvalidPosition(Position.At index))
+                    raise (Position.Invalid(Position.At index))
             }
 
         [   
-            Nata.IO.Capability.Reader <| fun () ->
+            Capability.Reader <| fun () ->
                 readFrom 0L |> Seq.map fst
 
-            Nata.IO.Capability.ReaderFrom <| fun index ->
-                readFrom (Math.Max(index,0L))
+            Capability.ReaderFrom
+                (indexOf >> readFrom)
 
-            Nata.IO.Capability.Writer
+            Capability.Writer
                 (writeTo Position.End >> ignore)
 
-            Nata.IO.Capability.WriterTo <| fun index ->
-                (writeTo (Position.At index))
+            Capability.WriterTo <| fun position ->
+                (writeTo position)
 
-            Nata.IO.Capability.Subscriber <| fun () ->
+            Capability.Subscriber <| fun () ->
                 listenFrom 0L |> Seq.map fst
 
-            Nata.IO.Capability.SubscriberFrom <| fun index ->
-                listenFrom (Math.Max(index,0L))
+            Capability.SubscriberFrom
+                (indexOf >> listenFrom)
         ]
            
 
 
-    let connect : Nata.IO.Connector<Settings,'Name,'Data,Index> =
+    let connect : Connector<Settings,'Name,'Data,Index> =
         
         fun settings ->
-            let index = new ConcurrentDictionary<'Name, Nata.IO.Capability<'Data, Index> list>()
+            let index = new ConcurrentDictionary<'Name, Capability<'Data, Index> list>()
             fun name ->
                 index.GetOrAdd(name, create)
                 

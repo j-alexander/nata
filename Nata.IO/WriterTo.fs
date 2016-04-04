@@ -1,6 +1,6 @@
 ﻿namespace Nata.IO
 
-type WriterTo<'Data,'Index> = 'Index -> Event<'Data> -> 'Index
+type WriterTo<'Data,'Index> = Position<'Index> -> Event<'Data> -> 'Index
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module WriterTo =
@@ -12,8 +12,8 @@ module WriterTo =
 
     let mapIndex ((encode,decode):Codec<'IndexIn,'IndexOut>)
                  (writerTo:WriterTo<'Data,'IndexOut>) : WriterTo<'Data,'IndexIn> =
-        fun index ->
-            InvalidPosition.applyMap decode (writerTo (encode index) >> decode)
+        Position.map encode >> fun position ->
+            Position.applyMap decode (writerTo position >> decode)
                     
     let map (dataFn:'DataIn->'DataOut)
             (indexCodec:Codec<'IndexIn,'IndexOut>) =

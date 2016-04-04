@@ -23,6 +23,10 @@ module Offset =
         { Offset.PartitionId = range.PartitionId
           Offset.Position = range.Min }
 
+    let finish (range:OffsetRange) =
+        { Offset.PartitionId = range.PartitionId
+          Offset.Position = range.Max }
+
     let remaining (range:OffsetRange, offset:Offset) =
         range.Max - Math.Min(offset.Position, range.Max)
 
@@ -57,6 +61,15 @@ module Offsets =
 
     let start : OffsetRanges -> Offsets =
         List.map Offset.start
+
+    let finish : OffsetRanges -> Offsets =
+        List.map Offset.finish
+
+    let before (range:OffsetRanges) (offsets:Offsets) =
+        raise (new NotImplementedException())
+
+    let after (range:OffsetRanges) (offsets:Offsets) =
+        raise (new NotImplementedException())
 
     let updateWith (message:Message) : Offsets -> Offsets =
         List.map(fun offset ->

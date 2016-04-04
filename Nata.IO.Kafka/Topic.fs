@@ -33,11 +33,16 @@ module Topic =
         |> Async.RunSynchronously
         |> Seq.map Offset.fromKafka
 
-    let private consume topic hasCompleted offsets =
-
-        let offsetRanges = offsetRangesFor topic
-        let start _ = Offsets.start offsetRanges
-        let offsets = Option.bindNone start offsets
+    let private consume topic hasCompleted (position:Position<Offsets>) =
+    
+        let ranges = topic |> offsetRangesFor
+        let rec start = function
+            | Position.Start -> Offsets.start ranges
+            | Position.End -> Offsets.finish ranges
+            | Position.At x -> x
+            | Position.Before x -> Offsets.before ranges (start x)
+            | Position.After x -> Offsets.after ranges (start x)
+        let offsets = start position
 
         let enumerator = 
             topic.Consumer.SetOffsetPosition(Offsets.toKafka(offsets))
@@ -58,24 +63,24 @@ module Topic =
                     |> Option.whenTrue (hasCompleted >> not)
                     |> Option.bindNone (fun _ -> offsetRangesFor topic, offsets)
                     |> Option.whenTrue (hasCompleted >> not)
-                    |> Option.map get) (offsetRanges, offsets)
+                    |> Option.map get) (ranges, offsets)
             enumerator.Dispose()
         }
 
-    let readFrom topic offsets =
-        consume topic Offsets.completed (Some offsets)
+    let readFrom topic position =
+        consume topic Offsets.completed position
 
     let readFromStart topic =
-        consume topic Offsets.completed None
+        consume topic Offsets.completed Position.Start
 
     let read =
         readFromStart >> Seq.map fst
 
-    let listenFrom topic offsets =
-        consume topic Offsets.neverCompleted (Some offsets)
+    let listenFrom topic position =
+        consume topic Offsets.neverCompleted position
 
     let listenFromStart topic =
-        consume topic Offsets.neverCompleted None
+        consume topic Offsets.neverCompleted Position.Start
 
     let listen =
         listenFromStart >> Seq.map fst

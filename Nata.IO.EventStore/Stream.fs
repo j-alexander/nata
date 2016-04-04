@@ -7,18 +7,19 @@ open System.Net
 open System.Net.Sockets
 open System.Threading
 open NLog.FSharp
+open Nata.IO
 open EventStore.ClientAPI
 open EventStore.ClientAPI.Exceptions
 open EventStore.ClientAPI.SystemData
 
-open Nata.IO
 
 module Stream =
 
     type Data = byte[]
-    type Event = Nata.IO.Event<Data>
+    type Event = Event<Data>
     type Name = string
     type Index = int
+    type Position = Position<Index>
 
     let private decode (resolvedEvent:ResolvedEvent) =
         Event.create           resolvedEvent.Event.Data
@@ -29,11 +30,18 @@ module Stream =
         |> Event.withIndex    (resolvedEvent.Event.EventNumber |> int64),
         resolvedEvent.Event.EventNumber
 
+    let rec private indexOf = function
+        | Position.Start -> StreamPosition.Start
+        | Position.Before x -> -1 + indexOf x
+        | Position.At x -> x
+        | Position.After x -> 1 + indexOf x
+        | Position.End -> StreamPosition.End
 
     let rec private read (connection : IEventStoreConnection)
                          (stream : string)
-                         (from : int) : seq<Event*Index> =
+                         (position : Position<Index>) : seq<Event*Index> =
         seq {
+            let from = indexOf position
             let sliceTask = connection.ReadStreamEventsForwardAsync(stream, from, 1000, true)
             let slice = sliceTask |> Async.AwaitTask |> Async.RunSynchronously
             match slice.Status with
@@ -43,14 +51,15 @@ module Stream =
                 if slice.Events.Length > 0 then
                     for resolvedEvent in slice.Events ->
                         decode resolvedEvent
-                    yield! read connection stream slice.NextEventNumber
+                    yield! read connection stream (Position.At slice.NextEventNumber)
             | x -> failwith (sprintf "Stream %s at (%d) produced undocumented response: %A" stream from x)
         }
 
 
     let rec private listen (connection : IEventStoreConnection)
                            (stream : string)
-                           (from : int) : seq<Event*Index> =
+                           (position : Position<Index>) : seq<Event*Index> =                         
+        let from = indexOf position
         let queue = new BlockingCollection<Option<Event*Index>>(new ConcurrentQueue<Option<Event*Index>>())
         let subscription =
             let start = match from-1 with -1 -> Nullable() | x -> Nullable(x)
@@ -68,20 +77,29 @@ module Stream =
                     yield! traverse (index+1)
                 | None ->
                     Thread.Sleep(10000)
-                    yield! listen connection stream last
+                    yield! listen connection stream (Position.At last)
             }
         traverse from
 
 
     let private write (connection : IEventStoreConnection)
                       (targetStream : string)
-                      (targetVersion : int)
+                      (position : Position<int>)
                       (event : Event) : Index =
+        let rec targetVersionOf = function
+            | Position.Start -> ExpectedVersion.EmptyStream
+            | Position.At x -> x-1
+            | Position.End -> ExpectedVersion.Any  
+            | Position.Before x ->
+                match targetVersionOf x with
+                | index when index < 0 -> raise (Position.Invalid(position))
+                | index -> index - 1
+            | Position.After x ->
+                match targetVersionOf x with
+                | index when index < -1 -> raise (Position.Invalid(position))
+                | index -> index + 1
         let eventId = Guid.NewGuid()
-        let eventPosition =
-            match targetVersion with
-            | x when x < 0 -> ExpectedVersion.Any
-            | version -> version
+        let eventPosition = targetVersionOf position
         let eventMetadata = Event.bytes event |> Option.getValueOr [||]
         let eventType = Event.eventType event |> Option.bindNone (Guid.NewGuid().ToString)
         let eventData = new EventData(eventId, eventType, true, event.Data, eventMetadata)
@@ -97,30 +115,29 @@ module Stream =
             | :? AggregateException as e ->
                 match e.InnerException with
                 | :? WrongExpectedVersionException as v ->
-                    raise (Nata.IO.InvalidPosition(Nata.IO.Position.At targetVersion))
+                    raise (Position.Invalid(position))
                 | _ ->
                     raise exn
             | _ -> raise exn
-        
 
-    let connect : Nata.IO.Connector<Settings,Name,Data,Index> =
+    let connect : Connector<Settings,Name,Data,Index> =
         Client.connect >> (fun connection stream ->
             [   
-                Nata.IO.Capability.Reader <| fun () ->
-                    read connection stream 0 |> Seq.map fst
+                Capability.Reader <| fun () ->
+                    read connection stream Position.Start |> Seq.map fst
 
-                Nata.IO.Capability.ReaderFrom <|
+                Capability.ReaderFrom <|
                     read connection stream
 
-                Nata.IO.Capability.Writer <| fun event ->
-                    write connection stream ExpectedVersion.Any event |> ignore
+                Capability.Writer <| fun event ->
+                    write connection stream Position.End event |> ignore
 
-                Nata.IO.Capability.WriterTo <|
+                Capability.WriterTo <|
                     write connection stream
 
-                Nata.IO.Capability.Subscriber <| fun () ->
-                    listen connection stream 0 |> Seq.map fst
+                Capability.Subscriber <| fun () ->
+                    listen connection stream Position.Start |> Seq.map fst
 
-                Nata.IO.Capability.SubscriberFrom <|
+                Capability.SubscriberFrom <|
                     listen connection stream
             ])

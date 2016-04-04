@@ -60,11 +60,11 @@ type ChannelTests() as x =
         write event_0
         write event_1
         
-        let result, index = readFrom 0L |> Seq.head
+        let result, index = readFrom (Position.At 0L) |> Seq.head
         Assert.AreEqual(event_0.Data, result.Data)
         Assert.AreEqual(0, index)
         
-        let result, index = readFrom 1L |> Seq.head
+        let result, index = readFrom (Position.At 1L) |> Seq.head
         Assert.AreEqual(event_1.Data, result.Data)
         Assert.AreEqual(1, index)
 
@@ -73,31 +73,31 @@ type ChannelTests() as x =
         let connection = x.Capabilities()
         match tryWriterTo connection, tryReaderFrom connection with
         | Some writeTo, Some readFrom ->
-            event "TestWriteTo-0" |> writeTo -1L |> ignore
-            event "TestWriteTo-1" |> writeTo 0L |> ignore
-            event "TestWriteTo-2" |> writeTo 1L |> ignore
+            event "TestWriteTo-0" |> writeTo (Position.At 0L) |> ignore
+            event "TestWriteTo-1" |> writeTo (Position.At 1L) |> ignore
+            event "TestWriteTo-2" |> writeTo (Position.At 2L) |> ignore
         | _ ->
             Assert.Pass("ReaderFrom and WriterTo are reported to be unsupported by this source.")
 
-    [<Test; ExpectedException(typeof<InvalidPosition<int64>>)>]
+    [<Test; ExpectedException(typeof<Position.Invalid<int64>>)>]
     member x.TestWriteToShouldFailWithIndexTooLow() =
         let connection = x.Capabilities()
         match tryWriterTo connection, tryReaderFrom connection with
         | Some writeTo, Some readFrom ->
-            event "TestWriteToShouldFailWithIndexTooLow-0" |> writeTo -1L |> ignore
-            event "TestWriteToShouldFailWithIndexTooLow-1" |> writeTo 0L |> ignore
-            event "TestWriteToShouldFailWithIndexTooLow-2" |> writeTo 0L |> ignore
+            event "TestWriteToShouldFailWithIndexTooLow-0" |> writeTo (Position.At -1L) |> ignore
+            event "TestWriteToShouldFailWithIndexTooLow-1" |> writeTo (Position.At 0L) |> ignore
+            event "TestWriteToShouldFailWithIndexTooLow-2" |> writeTo (Position.At 0L) |> ignore
         | _ ->
             Assert.Pass("ReaderFrom and WriterTo are reported to be unsupported by this source.")
 
-    [<Test; ExpectedException(typeof<InvalidPosition<int64>>)>]
+    [<Test; ExpectedException(typeof<Position.Invalid<int64>>)>]
     member x.TestWriteToShouldFailWithIndexTooHigh() =
         let connection = x.Capabilities()
         match tryWriterTo connection, tryReaderFrom connection with
         | Some writeTo, Some readFrom ->
-            event "TestWriteToShouldFailWithIndexTooHigh-0" |> writeTo -1L |> ignore
-            event "TestWriteToShouldFailWithIndexTooHigh-1" |> writeTo 0L |> ignore
-            event "TestWriteToShouldFailWithIndexTooHigh-2" |> writeTo 2L |> ignore
+            event "TestWriteToShouldFailWithIndexTooHigh-0" |> writeTo (Position.At -1L) |> ignore
+            event "TestWriteToShouldFailWithIndexTooHigh-1" |> writeTo (Position.At 0L) |> ignore
+            event "TestWriteToShouldFailWithIndexTooHigh-2" |> writeTo (Position.At 2L) |> ignore
         | _ ->
             Assert.Pass("ReaderFrom and WriterTo are reported to be unsupported by this source.")
         
@@ -149,19 +149,19 @@ type ChannelTests() as x =
                event "TestLateSubscriptionFromIndex-2" |]
         for event in expected do
             write event
-        subscribeFrom 0L
+        subscribeFrom (Position.At 0L)
         |> Seq.take 3
         |> Seq.toArray
         |> Array.zip expected
         |> Array.iter(fun (expected, (actual, index)) ->
             Assert.AreEqual(expected.Data, actual.Data))
-        subscribeFrom 1L
+        subscribeFrom (Position.At 1L)
         |> Seq.take 2
         |> Seq.toArray
         |> Array.zip (expected.[1..2])
         |> Array.iter(fun (expected, (actual, index)) ->
             Assert.AreEqual(expected.Data, actual.Data))
-        subscribeFrom 2L
+        subscribeFrom (Position.At 2L)
         |> Seq.take 1
         |> Seq.toArray
         |> Array.zip (expected.[2..2])

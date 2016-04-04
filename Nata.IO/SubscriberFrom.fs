@@ -1,6 +1,6 @@
 ﻿namespace Nata.IO
 
-type SubscriberFrom<'Data,'Index> = 'Index -> seq<Event<'Data> * 'Index>
+type SubscriberFrom<'Data,'Index> = Position<'Index> -> seq<Event<'Data> * 'Index>
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module SubscriberFrom =
@@ -11,7 +11,8 @@ module SubscriberFrom =
 
     let mapIndex ((encode,decode):Codec<'IndexIn,'IndexOut>)
                  (subscriberFrom:SubscriberFrom<'Data,'IndexIn>) : SubscriberFrom<'Data,'IndexOut> =
-        decode >> subscriberFrom >> Seq.mapSnd encode
+        Position.map decode >>
+            Position.applyMap encode (subscriberFrom >> Seq.mapSnd encode)
 
     let map (dataFn:'DataIn->'DataOut)
             (indexCodec:Codec<'IndexIn,'IndexOut>) = 

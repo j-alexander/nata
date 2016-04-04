@@ -33,7 +33,7 @@ type ReaderFromTests() =
         let run() =
             for i in input do
                 event |> Event.mapData (fun _ -> i) |> write
-            readFrom 0L |> Seq.map (fst >> Event.data) |> Seq.toList
+            readFrom (Position.At 0L) |> Seq.map (fst >> Event.data) |> Seq.toList
 
         Assert.AreEqual(output, run())
 
@@ -47,6 +47,6 @@ type ReaderFromTests() =
         let run() =
             for i in input do
                 event |> Event.mapData (fun _ -> i) |> write
-            readFrom 0L |> Seq.map (fst >> Event.data) |> Seq.toList
+            readFrom (Position.At 0L) |> Seq.map (fst >> Event.data) |> Seq.toList
 
         Assert.AreEqual(output, run())

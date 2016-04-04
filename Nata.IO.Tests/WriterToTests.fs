@@ -31,8 +31,8 @@ type WriterToTests() =
         let output = [2;3;4]
 
         let run =
-            for at, i in input |> Seq.mapi (fun at i -> at-1,i) do
-                event |> Event.mapData (fun _ -> i) |> writeTo (int64 at) |> ignore
+            for at, i in input |> Seq.mapi (fun at i -> int64 at,i) do
+                event |> Event.mapData (fun _ -> i) |> writeTo (Position.At at) |> ignore
             read >> Seq.map Event.data >> Seq.toList
 
         Assert.AreEqual(output, run())
@@ -45,8 +45,8 @@ type WriterToTests() =
         let output = ["1";"2";"3"]
 
         let run =
-            for at, i in input |> Seq.mapi (fun at i -> at-1,i) do
-                event |> Event.mapData (fun _ -> i) |> writeTo (int64 at) |> ignore
+            for at, i in input |> Seq.mapi (fun at i -> int64 at,i) do
+                event |> Event.mapData (fun _ -> i) |> writeTo (Position.At at) |> ignore
             read >> Seq.map Event.data >> Seq.toList
 
         Assert.AreEqual(output, run())

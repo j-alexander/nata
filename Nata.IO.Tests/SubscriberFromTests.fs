@@ -33,7 +33,7 @@ type SubscriberFromTests() =
         let run() =
             for i in input do
                 event |> Event.mapData (fun _ -> i) |> write
-            subscribeFrom 0L |> Seq.take 3 |> Seq.map (fst >> Event.data) |> Seq.toList
+            subscribeFrom (Position.At 0L) |> Seq.take 3 |> Seq.map (fst >> Event.data) |> Seq.toList
 
         Assert.AreEqual(output, run())
 
@@ -47,6 +47,6 @@ type SubscriberFromTests() =
         let run() =
             for i in input do
                 event |> Event.mapData (fun _ -> i) |> write
-            subscribeFrom 0L |> Seq.take 3 |> Seq.map (fst >> Event.data) |> Seq.toList
+            subscribeFrom (Position.At 0L) |> Seq.take 3 |> Seq.map (fst >> Event.data) |> Seq.toList
 
         Assert.AreEqual(output, run())

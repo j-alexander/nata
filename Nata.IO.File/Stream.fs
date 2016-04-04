@@ -46,6 +46,13 @@ module Stream =
 
         let lines = ref (count())
 
+        let rec indexOf = function
+            | Position.Start -> 0L
+            | Position.Before x -> -1L + indexOf x
+            | Position.At x -> Math.Max(0L, x)
+            | Position.After x -> 1L + indexOf x
+            | Position.End -> !lines
+
         let actor = MailboxProcessor<Message>.Start <| fun inbox ->
             let rec loop() =
                 async {
@@ -56,34 +63,26 @@ module Stream =
                         sender.Reply()
                         return()
                     | Write (sender, event, position) ->
-
-                        let insert() =
+                        if indexOf position = !lines then
                             writer.WriteLine(encode event)
                             writer.Flush()
                             Interlocked.Increment(&lines.contents) |> ignore
                             sender.Reply(Success(!lines))
-                        let fail() =
+                        else
                             sender.Reply(Failure)
-
-                        match position with
-                        | End ->                           insert()
-                        | Start when 0L = !lines ->        insert()
-                        | At last when last+1L = !lines -> insert()
-                        | _ ->                             fail()
-                            
                         return! loop()
                 }
             loop()
 
-        let writeTo index event =
-            match actor.PostAndReply(fun sender -> Write (sender, event, Position.At index)) with
+        let writeTo position event =
+            match actor.PostAndReply(fun sender -> Write (sender, event, position)) with
             | Success index -> index
-            | Failure -> raise (InvalidPosition(Position.At index))
+            | Failure -> raise (Position.Invalid(position))
 
         let write event =
             match actor.PostAndReply(fun sender -> Write (sender, event, Position.End)) with
             | Success index -> ()
-            | Failure -> raise (InvalidPosition(Position.End))
+            | Failure -> raise (Position.Invalid(Position.End))
 
         let close() =
             actor.PostAndReply(fun sender -> Close (sender))
@@ -130,30 +129,30 @@ module Stream =
             listenFrom 0L |> Seq.map fst
         
         [   
-            Nata.IO.Capability.Reader
+            Capability.Reader
                 read
 
-            Nata.IO.Capability.ReaderFrom
-                readFrom
+            Capability.ReaderFrom
+                (indexOf >> readFrom)
 
-            Nata.IO.Capability.Writer
+            Capability.Writer
                 write
 
-            Nata.IO.Capability.WriterTo
+            Capability.WriterTo
                 writeTo
 
-            Nata.IO.Capability.Subscriber
+            Capability.Subscriber
                 listen
 
-            Nata.IO.Capability.SubscriberFrom
-                listenFrom
+            Capability.SubscriberFrom
+                (indexOf >> listenFrom)
         ]
            
 
 
-    let connect : Nata.IO.Connector<Settings,Path,JsonValue,Index> =
+    let connect : Connector<Settings,Path,JsonValue,Index> =
         
         fun settings ->
-            let index = new ConcurrentDictionary<Path, Nata.IO.Capability<JsonValue,Index> list>()
+            let index = new ConcurrentDictionary<Path, Capability<JsonValue,Index> list>()
             fun name ->
                 index.GetOrAdd(name, create)
