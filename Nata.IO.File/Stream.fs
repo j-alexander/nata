@@ -63,12 +63,13 @@ module Stream =
                         sender.Reply()
                         return()
                     | Write (sender, event, position) ->
-                        if indexOf position = !lines then
+                        match indexOf position with
+                        | index when index = !lines ->
                             writer.WriteLine(encode event)
                             writer.Flush()
                             Interlocked.Increment(&lines.contents) |> ignore
-                            sender.Reply(Success(!lines))
-                        else
+                            sender.Reply(Success index)
+                        | index ->
                             sender.Reply(Failure)
                         return! loop()
                 }

@@ -75,35 +75,58 @@ type ChannelTests() as x =
     [<Test>]
     member x.TestWriteTo() =
         let connection = x.Capabilities()
+        match tryWriterTo connection with
+        | Some writeTo ->
+            [ 0L, event "TestWriteTo-0" |> writeTo (Position.At 0L)
+              1L, event "TestWriteTo-1" |> writeTo (Position.At 1L)
+              2L, event "TestWriteTo-2" |> writeTo (Position.At 2L) ]
+            |> List.iter Assert.AreEqual
+        | _ ->
+            Assert.Pass("WriterTo is reported to be unsupported by this source.")
+
+    [<Test>]
+    member x.TestWriteToPosition() =
+        let connection = x.Capabilities()
         match tryWriterTo connection, tryReaderFrom connection with
         | Some writeTo, Some readFrom ->
-            event "TestWriteTo-0" |> writeTo (Position.At 0L) |> ignore
-            event "TestWriteTo-1" |> writeTo (Position.At 1L) |> ignore
-            event "TestWriteTo-2" |> writeTo (Position.At 2L) |> ignore
+            let event_0, event_1, event_2 =
+                event "TestWriteTo-0",
+                event "TestWriteTo-1",
+                event "TestWriteTo-2"
+            [ 0L, event_0 |> writeTo Position.Start
+              1L, event_1 |> writeTo Position.End
+              2L, event_2 |> writeTo Position.End ]
+            |> List.iter Assert.AreEqual
+            match readFrom Position.Start |> Seq.toList with
+            | [ result_0, 0L ; result_1, 1L ; result_2, 2L ] ->
+                Assert.AreEqual(event_0.Data, result_0.Data)
+                Assert.AreEqual(event_1.Data, result_1.Data)
+                Assert.AreEqual(event_2.Data, result_2.Data)
+            | _ -> Assert.Fail()
         | _ ->
             Assert.Pass("ReaderFrom and WriterTo are reported to be unsupported by this source.")
 
     [<Test; ExpectedException(typeof<Position.Invalid<int64>>)>]
     member x.TestWriteToShouldFailWithIndexTooLow() =
         let connection = x.Capabilities()
-        match tryWriterTo connection, tryReaderFrom connection with
-        | Some writeTo, Some readFrom ->
+        match tryWriterTo connection with
+        | Some writeTo ->
             event "TestWriteToShouldFailWithIndexTooLow-0" |> writeTo (Position.At -1L) |> ignore
             event "TestWriteToShouldFailWithIndexTooLow-1" |> writeTo (Position.At 0L) |> ignore
             event "TestWriteToShouldFailWithIndexTooLow-2" |> writeTo (Position.At 0L) |> ignore
         | _ ->
-            Assert.Pass("ReaderFrom and WriterTo are reported to be unsupported by this source.")
+            Assert.Pass("WriterTo is reported to be unsupported by this source.")
 
     [<Test; ExpectedException(typeof<Position.Invalid<int64>>)>]
     member x.TestWriteToShouldFailWithIndexTooHigh() =
         let connection = x.Capabilities()
-        match tryWriterTo connection, tryReaderFrom connection with
-        | Some writeTo, Some readFrom ->
+        match tryWriterTo connection with
+        | Some writeTo ->
             event "TestWriteToShouldFailWithIndexTooHigh-0" |> writeTo (Position.At -1L) |> ignore
             event "TestWriteToShouldFailWithIndexTooHigh-1" |> writeTo (Position.At 0L) |> ignore
             event "TestWriteToShouldFailWithIndexTooHigh-2" |> writeTo (Position.At 2L) |> ignore
         | _ ->
-            Assert.Pass("ReaderFrom and WriterTo are reported to be unsupported by this source.")
+            Assert.Pass("WriterTo is reported to be unsupported by this source.")
         
     [<Test; Timeout(120000)>]
     member x.TestLiveSubscription() =
