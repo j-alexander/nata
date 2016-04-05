@@ -12,15 +12,15 @@ open Nata.IO
 
 type TopicName = string
 type Topic =
-    { Consumer : Consumer
-      Producer : Producer
+    { Consumer : unit -> Consumer
+      Producer : unit -> Producer
       Name : TopicName }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Topic =
 
-    let offsetRangesFor (topic:Topic) : OffsetRanges =
-        topic.Consumer.GetTopicOffsetAsync(topic.Name)
+    let private offsetRangesFor (consumer:Consumer, topic:TopicName) : OffsetRanges =
+        consumer.GetTopicOffsetAsync(topic)
         |> Async.AwaitTask
         |> Async.RunSynchronously
         |> Seq.map OffsetRange.fromKafka
@@ -28,14 +28,15 @@ module Topic =
         |> Seq.toList
 
     let private produce (topic:Topic) (messages) =
-        topic.Producer.SendMessageAsync(topic.Name, Seq.map Message.toKafka messages)
+        topic.Producer().SendMessageAsync(topic.Name, Seq.map Message.toKafka messages)
         |> Async.AwaitTask
         |> Async.RunSynchronously
         |> Seq.map Offset.fromKafka
 
-    let private consume topic hasCompleted (position:Position<Offsets>) =
+    let private consume (topic:Topic) hasCompleted (position:Position<Offsets>) =
     
-        let ranges = topic |> offsetRangesFor
+        let consumer = topic.Consumer()
+        let ranges = offsetRangesFor(consumer, topic.Name)
         let rec start = function
             | Position.Start -> Offsets.start ranges
             | Position.End -> Offsets.finish ranges
@@ -44,27 +45,26 @@ module Topic =
             | Position.After x -> Offsets.after ranges (start x)
         let offsets = start position
 
-        let enumerator = 
-            topic.Consumer.SetOffsetPosition(Offsets.toKafka(offsets))
-            topic.Consumer.Consume().GetEnumerator()
-
-        let get(partitions, offsets) =
-            let result, message =
-                enumerator.MoveNext(),
-                enumerator.Current |> Message.fromKafka
-            let offsets =
-                offsets |> Offsets.updateWith message
-            (message, offsets), (partitions, offsets)
-
         seq {
+            use enumerator = 
+                consumer.SetOffsetPosition(Offsets.toKafka(offsets))
+                consumer.Consume().GetEnumerator()
+
+            let get(partitions, offsets) =
+                let result, message =
+                    enumerator.MoveNext(),
+                    enumerator.Current |> Message.fromKafka
+                let offsets =
+                    offsets |> Offsets.updateWith message
+                (message, offsets), (partitions, offsets)
+
             yield! 
                 Seq.unfold (fun (partitions, offsets) ->
                     (partitions, offsets)
                     |> Option.whenTrue (hasCompleted >> not)
-                    |> Option.bindNone (fun _ -> offsetRangesFor topic, offsets)
+                    |> Option.bindNone (fun _ -> offsetRangesFor(consumer,topic.Name), offsets)
                     |> Option.whenTrue (hasCompleted >> not)
                     |> Option.map get) (ranges, offsets)
-            enumerator.Dispose()
         }
 
     let readFrom topic position =

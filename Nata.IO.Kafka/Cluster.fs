@@ -21,15 +21,17 @@ module Cluster =
 
     let topicFor (cluster:Cluster) (name:TopicName) =
         { Topic.Consumer =
-            new Consumer(
-                new ConsumerOptions(
-                    name,
-                    cluster,
-                    MaxWaitTimeForMinimumBytes=delay))
+            fun () ->
+                new Consumer(
+                    new ConsumerOptions(
+                        name,
+                        cluster,
+                        MaxWaitTimeForMinimumBytes=delay))
           Topic.Producer =
-            new Producer(
-                cluster,
-                BatchDelayTime=delay)
+            fun () ->
+                new Producer(
+                    cluster,
+                    BatchDelayTime=delay)
           Topic.Name = name }
 
     let topics : Connector<Cluster,TopicName,Data,Offsets>  =

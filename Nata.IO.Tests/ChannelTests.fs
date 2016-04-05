@@ -67,6 +67,10 @@ type ChannelTests() as x =
         let result, index = readFrom (Position.At 1L) |> Seq.head
         Assert.AreEqual(event_1.Data, result.Data)
         Assert.AreEqual(1, index)
+        
+        let result, index = readFrom (Position.Start) |> Seq.head
+        Assert.AreEqual(event_0.Data, result.Data)
+        Assert.AreEqual(0, index)
 
     [<Test>]
     member x.TestWriteTo() =
@@ -149,6 +153,12 @@ type ChannelTests() as x =
                event "TestLateSubscriptionFromIndex-2" |]
         for event in expected do
             write event
+        subscribeFrom (Position.Start)
+        |> Seq.take 3
+        |> Seq.toArray
+        |> Array.zip expected
+        |> Array.iter(fun (expected, (actual, index)) ->
+            Assert.AreEqual(expected.Data, actual.Data))
         subscribeFrom (Position.At 0L)
         |> Seq.take 3
         |> Seq.toArray
