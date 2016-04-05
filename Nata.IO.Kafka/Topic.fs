@@ -34,18 +34,17 @@ module Topic =
         |> Seq.map Offset.fromKafka
 
     let private consume (topic:Topic) hasCompleted (position:Position<Offsets>) =
-    
-        let consumer = topic.Consumer()
-        let ranges = offsetRangesFor(consumer, topic.Name)
-        let rec start = function
-            | Position.Start -> Offsets.start ranges
-            | Position.End -> Offsets.finish ranges
-            | Position.At x -> x
-            | Position.Before x -> Offsets.before ranges (start x)
-            | Position.After x -> Offsets.after ranges (start x)
-        let offsets = start position
+        seq {   
+            use consumer = topic.Consumer()
+            let ranges = offsetRangesFor(consumer, topic.Name)
+            let rec start = function
+                | Position.Start -> Offsets.start ranges
+                | Position.End -> Offsets.finish ranges
+                | Position.At x -> x
+                | Position.Before x -> Offsets.before ranges (start x)
+                | Position.After x -> Offsets.after ranges (start x)
+            let offsets = start position
 
-        seq {
             use enumerator = 
                 consumer.SetOffsetPosition(Offsets.toKafka(offsets))
                 consumer.Consume().GetEnumerator()
