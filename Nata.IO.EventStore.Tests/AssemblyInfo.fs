@@ -1,4 +1,4 @@
-﻿namespace Nata.EventStore.Tests.AssemblyInfo
+﻿namespace Nata.IO.EventStore.Tests.AssemblyInfo
 
 open System.Reflection
 open System.Runtime.CompilerServices
@@ -7,11 +7,11 @@ open System.Runtime.InteropServices
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[<assembly: AssemblyTitle("Nata.EventStore.Tests")>]
+[<assembly: AssemblyTitle("Nata.IO.EventStore.Tests")>]
 [<assembly: AssemblyDescription("")>]
 [<assembly: AssemblyConfiguration("")>]
 [<assembly: AssemblyCompany("")>]
-[<assembly: AssemblyProduct("Nata.EventStore.Tests")>]
+[<assembly: AssemblyProduct("Nata.IO.EventStore.Tests")>]
 [<assembly: AssemblyCopyright("Copyright ©  2016")>]
 [<assembly: AssemblyTrademark("")>]
 [<assembly: AssemblyCulture("")>]

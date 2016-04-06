@@ -52,7 +52,6 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Content Include="packages.config" />
-    <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Stream.fs" />
   </ItemGroup>
