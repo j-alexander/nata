@@ -70,11 +70,11 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="NLog">
-      <HintPath>..\packages\NLog.3.2.1\lib\net45\NLog.dll</HintPath>
+      <HintPath>..\packages\NLog.4.2.3\lib\net45\NLog.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NLog.FSharp">
-      <HintPath>..\packages\NLog.FSharp.3.2.1\lib\net40\NLog.FSharp.dll</HintPath>
+      <HintPath>..\packages\NLog.FSharp.4.2.3\lib\net40\NLog.FSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="nunit.core">
