@@ -53,6 +53,8 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
+    <Compile Include="Account.fs" />
+    <Compile Include="Blob.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Data">

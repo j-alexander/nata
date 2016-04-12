@@ -54,6 +54,8 @@
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
+    <Compile Include="Emulator.fs" />
+    <Compile Include="BlockBlobTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Data">
