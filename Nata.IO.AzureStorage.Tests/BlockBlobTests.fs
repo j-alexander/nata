@@ -50,3 +50,24 @@ type BlockBlobTests() =
         Assert.True(result |> Event.name |> Option.isSome)
         Assert.True(result |> Event.createdAt |> Option.isSome)
         Assert.True(result |> Event.tag |> Option.isSome)
+
+    [<Test>]
+    member x.TestReadWriteFrom() =
+        let container, event = container(), event()
+        let blob_name = guid()
+
+        let writePosition = writeTo container blob_name Position.Start event
+        Assert.False(writePosition |> String.IsNullOrWhiteSpace)
+
+        let readEvent, readPosition =
+            readFrom container blob_name (Position.At writePosition)
+            |> Seq.head
+        Assert.False(readPosition |> String.IsNullOrWhiteSpace)
+        Assert.AreEqual(writePosition, readPosition)
+        Assert.AreEqual(event.Data, readEvent.Data)
+
+        let readTag = Event.tag readEvent
+        Assert.True(readTag.IsSome)
+        Assert.AreEqual(readTag, Some writePosition)
+        Assert.AreEqual(readTag, Some readPosition)
+        
