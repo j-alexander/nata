@@ -9,13 +9,19 @@ type Account = CloudStorageAccount
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Account =
 
-    let connection name key =
+    let connection(name, key) =
         sprintf "DefaultEndpointsProtocol=https;AccountName=%s;AccountKey=%s" name key
 
-    let account =
+    let create =
         Account.Parse
 
-    let tryAccount =
+    let tryCreate =
         Account.TryParse >> function | true, account -> Some account
                                      | false, _ -> None
          
+    let createFrom =
+        connection >> create
+
+    let tryCreateFrom =
+        connection >> tryCreate
+        

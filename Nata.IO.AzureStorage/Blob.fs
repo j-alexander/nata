@@ -48,6 +48,7 @@ module Blob =
 
                 Event.create bytes
                 |> Event.withName blobName
+                |> Event.withTag reference.Properties.ETag
                 |> Event.withEventType reference.Properties.ContentType
                 |> withLastModified
 
@@ -71,6 +72,7 @@ module Blob =
 
                 Event.create bytes
                 |> Event.withName blobName
+                |> Event.withTag reference.Properties.ETag
                 |> Event.withEventType reference.Properties.ContentType
                 |> withLastModified
                 |> function | x when satisfies position etag -> Some((x, etag), position)

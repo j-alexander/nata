@@ -17,6 +17,7 @@ and Value =
     | Stream of string
     | Partition of int
     | Key of string
+    | Tag of string
     | Index of int64
     | Bytes of byte[]
 
@@ -36,10 +37,12 @@ module Value =
         function Value.Name       x -> Some x | _ -> None
     let stream =
         function Value.Stream     x -> Some x | _ -> None
-    let partition =
-        function Value.Partition  x -> Some x | _ -> None
+    let tag =
+        function Value.Tag        x -> Some x | _ -> None
     let key =
         function Value.Key        x -> Some x | _ -> None
+    let partition =
+        function Value.Partition  x -> Some x | _ -> None
     let index =
         function Value.Index      x -> Some x | _ -> None
     let bytes =
@@ -53,8 +56,9 @@ module Value =
         | Value.EventType x ->  "eventType",  JsonValue.String x
         | Value.Name x ->       "name",       JsonValue.String x
         | Value.Stream x ->     "stream",     JsonValue.String x
+        | Value.Tag x ->        "tag",        JsonValue.String x
+        | Value.Key x ->        "key",        JsonValue.String x
         | Value.Partition x ->  "partition",  JsonValue.Number (decimal x)
-        | Value.Key x ->        "key",        JsonValue.Number (decimal x)
         | Value.Index x ->      "index",      JsonValue.Number (decimal x)
         | Value.Bytes x ->      "bytes",      JsonValue.Null
 
@@ -65,8 +69,9 @@ module Value =
         | "eventType", json ->  json.AsString()              |> Value.EventType  |> Some
         | "name", json ->       json.AsString()              |> Value.Name       |> Some
         | "stream", json ->     json.AsString()              |> Value.Stream     |> Some
-        | "partition", json ->  json.AsInteger()             |> Value.Partition  |> Some
+        | "tag", json ->        json.AsString()              |> Value.Tag        |> Some
         | "key", json ->        json.AsString()              |> Value.Key        |> Some
+        | "partition", json ->  json.AsInteger()             |> Value.Partition  |> Some
         | "index", json ->      json.AsInteger64()           |> Value.Index      |> Some
         | "bytes", json ->      [||]                         |> Value.Bytes      |> Some
         | _ ->                  None
@@ -86,8 +91,9 @@ module Event =
     let eventType e =  e |> valueOf Value.eventType
     let name e =       e |> valueOf Value.name
     let stream e =     e |> valueOf Value.stream
-    let partition e =  e |> valueOf Value.partition
+    let tag e =        e |> valueOf Value.tag
     let key e =        e |> valueOf Value.key
+    let partition e =  e |> valueOf Value.partition
     let index e =      e |> valueOf Value.index
     let bytes e =      e |> valueOf Value.bytes
 
@@ -108,8 +114,9 @@ module Event =
     let withEventType x =  withMetadata (x |> Value.EventType)
     let withName x =       withMetadata (x |> Value.Name)
     let withStream x =     withMetadata (x |> Value.Stream)
-    let withPartition x =  withMetadata (x |> Value.Partition)
+    let withTag x =        withMetadata (x |> Value.Tag)
     let withKey x =        withMetadata (x |> Value.Key)
+    let withPartition x =  withMetadata (x |> Value.Partition)
     let withIndex x =      withMetadata (x |> Value.Index)
     let withBytes x =      withMetadata (x |> Value.Bytes)
 

@@ -55,6 +55,8 @@
     <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
     <Compile Include="Emulator.fs" />
+    <Compile Include="AccountTests.fs" />
+    <Compile Include="ContainerTests.fs" />
     <Compile Include="BlockBlobTests.fs" />
   </ItemGroup>
   <ItemGroup>
