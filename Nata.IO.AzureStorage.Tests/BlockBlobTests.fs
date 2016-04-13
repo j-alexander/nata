@@ -71,3 +71,61 @@ type BlockBlobTests() =
         Assert.AreEqual(readTag, Some writePosition)
         Assert.AreEqual(readTag, Some readPosition)
         
+    [<Test>]
+    member x.TestReadFromTagWhenTagExpires() =
+        let container, blob_name = container(), guid()
+
+        let oldEvent = event()
+        let oldWritePosition = writeTo container blob_name Position.End oldEvent
+        Assert.False(oldWritePosition |> String.IsNullOrWhiteSpace)
+
+        let reader = readFrom container blob_name (Position.At oldWritePosition)
+        let enumerator = reader.GetEnumerator()
+
+        Assert.True(enumerator.MoveNext())
+        let readEvent, readPosition = enumerator.Current
+        Assert.AreEqual(oldWritePosition, readPosition)
+        Assert.AreEqual(oldEvent.Data, readEvent.Data)
+
+        Assert.True(enumerator.MoveNext())
+        let readEvent, readPosition = enumerator.Current
+        Assert.AreEqual(oldWritePosition, readPosition)
+        Assert.AreEqual(oldEvent.Data, readEvent.Data)
+
+        let newEvent = event()
+        let newWritePosition = writeTo container blob_name Position.End newEvent
+        Assert.False(newWritePosition |> String.IsNullOrWhiteSpace)
+        Assert.AreNotEqual(newWritePosition, oldWritePosition)
+
+        Assert.False(enumerator.MoveNext(), "we should no longer be able to read from this position")
+        
+    [<Test>]
+    member x.TestReadFromAnyWhenTagExpires() =
+        let container, blob_name = container(), guid()
+
+        let oldEvent = event()
+        let oldWritePosition = writeTo container blob_name Position.End oldEvent
+        Assert.False(oldWritePosition |> String.IsNullOrWhiteSpace)
+
+        let reader = readFrom container blob_name Position.End
+        let enumerator = reader.GetEnumerator()
+
+        Assert.True(enumerator.MoveNext())
+        let readEvent, readPosition = enumerator.Current
+        Assert.AreEqual(oldWritePosition, readPosition)
+        Assert.AreEqual(oldEvent.Data, readEvent.Data)
+
+        let newEvent = event()
+        let newWritePosition = writeTo container blob_name Position.End newEvent
+        Assert.False(newWritePosition |> String.IsNullOrWhiteSpace)
+        Assert.AreNotEqual(newWritePosition, oldWritePosition)
+
+        Assert.True(enumerator.MoveNext())
+        let readEvent, readPosition = enumerator.Current
+        Assert.AreEqual(newWritePosition, readPosition)
+        Assert.AreEqual(newEvent.Data, readEvent.Data)
+
+        Assert.True(enumerator.MoveNext())
+        let readEvent, readPosition = enumerator.Current
+        Assert.AreEqual(newWritePosition, readPosition)
+        Assert.AreEqual(newEvent.Data, readEvent.Data)
