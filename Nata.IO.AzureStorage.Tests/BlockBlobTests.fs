@@ -53,18 +53,21 @@ type BlockBlobTests() =
 
     [<Test>]
     member x.TestReadWriteFrom() =
-        let container, event = container(), event()
-        let blob_name = guid()
+        let writeTo, readFrom =
+            let container, blob_name = container(), guid()
+            writeTo container blob_name,
+            readFrom container blob_name
 
-        let writePosition = writeTo container blob_name Position.Start event
+        let writeEvent = event()
+        let writePosition = writeTo Position.Start writeEvent
         Assert.False(writePosition |> String.IsNullOrWhiteSpace)
 
         let readEvent, readPosition =
-            readFrom container blob_name (Position.At writePosition)
+            readFrom (Position.At writePosition)
             |> Seq.head
         Assert.False(readPosition |> String.IsNullOrWhiteSpace)
         Assert.AreEqual(writePosition, readPosition)
-        Assert.AreEqual(event.Data, readEvent.Data)
+        Assert.AreEqual(writeEvent.Data, readEvent.Data)
 
         let readTag = Event.tag readEvent
         Assert.True(readTag.IsSome)
@@ -73,13 +76,16 @@ type BlockBlobTests() =
         
     [<Test>]
     member x.TestReadFromTagWhenTagExpires() =
-        let container, blob_name = container(), guid()
+        let writeTo, readFrom =
+            let container, blob_name = container(), guid()
+            writeTo container blob_name,
+            readFrom container blob_name
 
         let oldEvent = event()
-        let oldWritePosition = writeTo container blob_name Position.End oldEvent
+        let oldWritePosition = writeTo Position.End oldEvent
         Assert.False(oldWritePosition |> String.IsNullOrWhiteSpace)
 
-        let reader = readFrom container blob_name (Position.At oldWritePosition)
+        let reader = readFrom (Position.At oldWritePosition)
         let enumerator = reader.GetEnumerator()
 
         Assert.True(enumerator.MoveNext())
@@ -93,7 +99,7 @@ type BlockBlobTests() =
         Assert.AreEqual(oldEvent.Data, readEvent.Data)
 
         let newEvent = event()
-        let newWritePosition = writeTo container blob_name Position.End newEvent
+        let newWritePosition = writeTo Position.End newEvent
         Assert.False(newWritePosition |> String.IsNullOrWhiteSpace)
         Assert.AreNotEqual(newWritePosition, oldWritePosition)
 
@@ -101,13 +107,16 @@ type BlockBlobTests() =
         
     [<Test>]
     member x.TestReadFromAnyWhenTagExpires() =
-        let container, blob_name = container(), guid()
+        let writeTo, readFrom =
+            let container, blob_name = container(), guid()
+            writeTo container blob_name,
+            readFrom container blob_name
 
         let oldEvent = event()
-        let oldWritePosition = writeTo container blob_name Position.End oldEvent
+        let oldWritePosition = writeTo Position.End oldEvent
         Assert.False(oldWritePosition |> String.IsNullOrWhiteSpace)
 
-        let reader = readFrom container blob_name Position.End
+        let reader = readFrom Position.End
         let enumerator = reader.GetEnumerator()
 
         Assert.True(enumerator.MoveNext())
@@ -116,7 +125,7 @@ type BlockBlobTests() =
         Assert.AreEqual(oldEvent.Data, readEvent.Data)
 
         let newEvent = event()
-        let newWritePosition = writeTo container blob_name Position.End newEvent
+        let newWritePosition = writeTo Position.End newEvent
         Assert.False(newWritePosition |> String.IsNullOrWhiteSpace)
         Assert.AreNotEqual(newWritePosition, oldWritePosition)
 
@@ -129,3 +138,27 @@ type BlockBlobTests() =
         let readEvent, readPosition = enumerator.Current
         Assert.AreEqual(newWritePosition, readPosition)
         Assert.AreEqual(newEvent.Data, readEvent.Data)
+        
+    [<Test>]
+    member x.TestReadFromFalsePosition() =
+        let writeTo, readFrom =
+            let container, blob_name = container(), guid()
+            writeTo container blob_name,
+            readFrom container blob_name
+
+        let event = event()
+        let writePosition = writeTo Position.End event
+        Assert.False(writePosition |> String.IsNullOrWhiteSpace)
+
+        let falsePosition = guid()
+        let reader = readFrom (Position.At falsePosition)
+        Assert.IsEmpty(reader)
+        
+    [<Test>]
+    member x.TestReadFromABlobWithNoData() =
+        let readFrom =
+            let container, blob_name = container(), guid()
+            readFrom container blob_name
+        
+        let reader = readFrom Position.Start
+        Assert.IsEmpty(reader)

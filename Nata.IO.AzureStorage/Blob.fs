@@ -2,6 +2,7 @@
 
 open System
 open System.IO
+open System.Net
 open Microsoft.WindowsAzure.Storage
 open Microsoft.WindowsAzure.Storage.Blob
 open Nata.IO
@@ -34,46 +35,42 @@ module Blob =
                     reference.UploadFromByteArray(event.Data, 0, event.Data.Length, condition position)
                     reference.Properties.ETag
 
-        let read (container:CloudBlobContainer) (blobName:string) =
-            let reference = container.GetBlockBlobReference(blobName)
-            Seq.initInfinite <| fun i ->
-                use memory = new MemoryStream()
-                reference.DownloadToStream(memory)
-
-                let bytes = memory.ToArray()
-                let withLastModified =
-                    match reference.Properties.LastModified with
-                    | x when x.HasValue -> Event.withCreatedAt x.Value.UtcDateTime
-                    | x -> id
-
-                Event.create bytes
-                |> Event.withName blobName
-                |> Event.withTag reference.Properties.ETag
-                |> Event.withEventType reference.Properties.ContentType
-                |> withLastModified
-
         let readFrom (container:CloudBlobContainer) (blobName:string) =
             let reference = container.GetBlockBlobReference(blobName)
-            let satisfies = function
-                | Position.At etag ->
-                    (=) etag
-                | Position.Before _ | Position.After _ | Position.Start | Position.End ->
-                    fun _ -> true
-            Seq.unfold <| fun (position:Position<string>) ->
-                use memory = new MemoryStream()
-                reference.DownloadToStream(memory)
+            let condition = function
+                | Position.Start -> AccessCondition.GenerateIfNotExistsCondition()
+                | Position.Before x -> AccessCondition.GenerateEmptyCondition()
+                | Position.At etag -> AccessCondition.GenerateIfMatchCondition(etag)
+                | Position.After x -> AccessCondition.GenerateEmptyCondition()
+                | Position.End -> AccessCondition.GenerateEmptyCondition()
+            let generator =
+                Seq.unfold <| fun (position:Position<string>) ->
+                    try 
+                        use memory = new MemoryStream()
+                        reference.DownloadToStream(memory, condition position)
+                    
+                        let bytes = memory.ToArray()
+                        let withLastModified =
+                            match reference.Properties.LastModified with
+                            | x when x.HasValue -> Event.withCreatedAt x.Value.UtcDateTime
+                            | x -> id
+                        let etag, contentType =
+                            reference.Properties.ETag,
+                            reference.Properties.ContentType
+                        let event =
+                            Event.create bytes
+                            |> Event.withName blobName
+                            |> Event.withTag etag
+                            |> Event.withEventType contentType
+                            |> withLastModified
+                        Some ((event, etag), position)
+                    with
+                    | :? StorageException as e when e.RequestInformation.HttpStatusCode = 412 ->
+                        None
+            fun position ->
+                seq {
+                    if reference.Exists() then yield! generator position
+                }
 
-                let bytes = memory.ToArray()
-                let withLastModified =
-                    match reference.Properties.LastModified with
-                    | x when x.HasValue -> Event.withCreatedAt x.Value.UtcDateTime
-                    | x -> id
-                let etag = reference.Properties.ETag
-
-                Event.create bytes
-                |> Event.withName blobName
-                |> Event.withTag reference.Properties.ETag
-                |> Event.withEventType reference.Properties.ContentType
-                |> withLastModified
-                |> function | x when satisfies position etag -> Some((x, etag), position)
-                            | _ -> None
+        let read container blobName =
+            readFrom container blobName Position.End |> Seq.map fst
