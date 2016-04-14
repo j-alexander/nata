@@ -70,3 +70,29 @@ module Blob =
 
         let read container blobName =
             readFrom container blobName Position.End |> Seq.map fst
+            
+    module Append =
+
+        open FSharp.Data
+
+        let encode, decode = Event.Codec.EventToString
+        let tryDecode line =
+            try Some (decode line)
+            with _ -> None
+    
+        let write (container:CloudBlobContainer) (blobName:string) =
+            let reference = container.GetAppendBlobReference(blobName)
+            reference.CreateOrReplace(AccessCondition.GenerateIfNotExistsCondition())
+            encode >> reference.AppendText
+
+        let read (container:CloudBlobContainer) (blobName:string) =
+            let reference = container.GetAppendBlobReference(blobName)
+            seq {
+                use stream = reference.OpenRead()
+                use reader = new StreamReader(stream)
+                while reader.EndOfStream |> not do
+                    yield
+                        reader.ReadLine()
+                        |> decode
+                        |> Event.withName blobName
+            }
