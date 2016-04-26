@@ -1,5 +1,7 @@
 ﻿namespace Nata.IO
 
+open System
+
 [<AutoOpen>]
 module Core =
 
@@ -21,6 +23,10 @@ module Core =
 
         let bindNone fn = function None -> fn() | Some x -> x
         let getValueOr x = function None -> x | Some x -> x
-
-            
+        
+    [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+    module Nullable =
+        
+        let map (fn : 'T -> 'U) (x : Nullable<'T>) : Nullable<'U> =
+            if x.HasValue then Nullable(fn x.Value) else Nullable()
             

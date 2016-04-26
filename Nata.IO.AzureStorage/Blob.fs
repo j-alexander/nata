@@ -48,10 +48,9 @@ module Blob =
                     reference.DownloadToStream(memory, condition position)
                     
                     let bytes = memory.ToArray()
-                    let withLastModified =
-                        match reference.Properties.LastModified with
-                        | x when x.HasValue -> Event.withCreatedAt x.Value.UtcDateTime
-                        | x -> id
+                    let created =
+                        reference.Properties.LastModified
+                        |> Nullable.map DateTime.ofOffset
                     let etag, contentType =
                         reference.Properties.ETag,
                         reference.Properties.ContentType
@@ -60,7 +59,7 @@ module Blob =
                         |> Event.withName blobName
                         |> Event.withTag etag
                         |> Event.withEventType contentType
-                        |> withLastModified
+                        |> Event.withCreatedAtNullable created
                     Some ((event, etag), position)
                 with
                 | :? StorageException as e when

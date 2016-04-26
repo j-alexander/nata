@@ -59,6 +59,7 @@
     <Compile Include="ContainerTests.fs" />
     <Compile Include="BlockBlobTests.fs" />
     <Compile Include="AppendBlobTests.fs" />
+    <Compile Include="QueueTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Data">

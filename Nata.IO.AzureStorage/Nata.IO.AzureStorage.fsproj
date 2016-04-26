@@ -55,6 +55,7 @@
     <Content Include="packages.config" />
     <Compile Include="Account.fs" />
     <Compile Include="Blob.fs" />
+    <Compile Include="Queue.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Data">

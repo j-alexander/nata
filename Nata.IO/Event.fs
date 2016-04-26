@@ -120,6 +120,23 @@ module Event =
     let withIndex x =      withMetadata (x |> Value.Index)
     let withBytes x =      withMetadata (x |> Value.Bytes)
 
+    let private withNull (fn: 'Value -> 'Event -> 'Event) (x: 'Value) =
+        if x = null then id else fn x
+    let private withNullable (fn: 'Value -> 'Event -> 'Event) (x : Nullable<'Value>)  =
+        if x.HasValue then fn x.Value else id
+
+    let withCreatedAtNullable x =  x |> withNullable withCreatedAt
+    let withSentAtNullable x =     x |> withNullable withSentAt
+    let withReceivedAtNullable x = x |> withNullable withReceivedAt
+    let withEventTypeNullable x =  x |> withNull     withEventType
+    let withNameNullable x =       x |> withNull     withName
+    let withStreamNullable x =     x |> withNull     withStream
+    let withTagNullable x =        x |> withNull     withTag
+    let withKeyNullable x =        x |> withNull     withKey
+    let withPartitionNullable x =  x |> withNullable withPartition
+    let withIndexNullable x =      x |> withNullable withIndex
+    let withBytesNullable x =      x |> withNull     withBytes
+
     let mapData (fn:'DataIn->'DataOut)
                 (e:Event<'DataIn>) : Event<'DataOut> =
         { Data = fn e.Data

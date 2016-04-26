@@ -5,6 +5,9 @@ open FSharp.Data
 
 module DateTime =
 
+    let ofOffset (offset:DateTimeOffset) =
+        offset.UtcDateTime
+
     let toJsonValue (date:DateTime) =
         JsonValue.String (date.ToUniversalTime().ToString("o"))
 
