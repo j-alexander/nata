@@ -21,5 +21,5 @@ type ContainerTests() =
 
     [<Test>]
     member x.TestCreateDevelopmentContainer() =
-        let container = Blob.container (name()) (account())
+        let container = Blob.Container.create (name()) (account())
         Assert.True(container.Exists())

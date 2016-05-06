@@ -8,20 +8,26 @@ open Nata.IO
 
 module Blob =
 
-    let container name (account:Account) =
-        let client = account.CreateCloudBlobClient()
-        let container = client.GetContainerReference(name)
-        let result = container.CreateIfNotExists()
-        container
+    module Container =
+
+        type Name = string
+
+        let create (containerName:Name) (account:Account) =
+            let client = account.CreateCloudBlobClient()
+            let container = client.GetContainerReference(containerName)
+            let result = container.CreateIfNotExists()
+            container
 
     module Block =
+
+        type Name = string
     
-        let write (container:CloudBlobContainer) (blobName:string) =
+        let write (container:CloudBlobContainer) (blobName:Name) =
             let reference = container.GetBlockBlobReference(blobName)
             fun (event:Event<byte[]>) ->
                 reference.UploadFromByteArray(event.Data, 0, event.Data.Length)
 
-        let writeTo (container:CloudBlobContainer) (blobName:string) =
+        let writeTo (container:CloudBlobContainer) (blobName:Name) =
             let reference = container.GetBlockBlobReference(blobName)
             fun (position:Position<string>) ->
                 let condition = function
@@ -34,7 +40,7 @@ module Blob =
                     reference.UploadFromByteArray(event.Data, 0, event.Data.Length, condition position)
                     reference.Properties.ETag
 
-        let readFrom (container:CloudBlobContainer) (blobName:string) =
+        let readFrom (container:CloudBlobContainer) (blobName:Name) =
             let reference = container.GetBlockBlobReference(blobName)
             let condition = function
                 | Position.Start -> AccessCondition.GenerateIfNotExistsCondition()
@@ -69,8 +75,32 @@ module Blob =
 
         let read container blobName =
             readFrom container blobName Position.End |> Seq.map fst
+
+        let connect : Connector<Account*Container.Name,Name,byte[],string> =
+
+            fun (account,containerName) ->
+
+                let container =
+                    Container.create containerName account
+
+                fun (blob:Name) ->
+                    [ 
+                        Capability.Reader <| fun () ->
+                            read container blob
+
+                        Capability.ReaderFrom <|
+                            readFrom container blob
+
+                        Capability.Writer <|
+                            write container blob
+
+                        Capability.WriterTo <|
+                            writeTo container blob
+                    ]
             
     module Append =
+
+        type Name = string
 
         open FSharp.Data
 
@@ -79,12 +109,12 @@ module Blob =
             try Some (decode line)
             with _ -> None
     
-        let write (container:CloudBlobContainer) (blobName:string) =
+        let write (container:CloudBlobContainer) (blobName:Name) =
             let reference = container.GetAppendBlobReference(blobName)
             reference.CreateOrReplace(AccessCondition.GenerateIfNotExistsCondition())
             encode >> reference.AppendText
 
-        let read (container:CloudBlobContainer) (blobName:string) =
+        let read (container:CloudBlobContainer) (blobName:Name) =
             let reference = container.GetAppendBlobReference(blobName)
             seq {
                 use stream = reference.OpenRead()
@@ -95,3 +125,19 @@ module Blob =
                         |> decode
                         |> Event.withName blobName
             }
+
+        let connect : Connector<Account*Container.Name,Name,JsonValue,string> =
+
+            fun (account,containerName) ->
+
+                let container =
+                    Container.create containerName account
+
+                fun (blob:Name) ->
+                    [ 
+                        Capability.Reader <| fun () ->
+                            read container blob
+
+                        Capability.Writer <|
+                            write container blob
+                    ]

@@ -29,7 +29,7 @@ type BlockBlobTests() =
     let container() =
         Emulator.Account.connectionString
         |> Account.create 
-        |> Blob.container (guid())
+        |> Blob.Container.create (guid())
 
     let event() =
         { JsonBlob.text = guid() }

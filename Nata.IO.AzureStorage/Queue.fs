@@ -33,3 +33,15 @@ module Queue =
             Event.create message.AsBytes
             |> Event.withStream queue.Name
             |> Event.withCreatedAtNullable created
+
+    
+
+    let connect : Connector<Account,Name,byte[],unit> =
+        fun account -> create account >> fun queue ->
+                [ 
+                    Capability.Writer <|
+                        write queue
+
+                    Capability.Subscriber <| fun () ->
+                        subscribe queue    
+                ]

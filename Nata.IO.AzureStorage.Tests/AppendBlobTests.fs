@@ -23,7 +23,7 @@ type AppendBlobTests() =
     let container() =
         Emulator.Account.connectionString
         |> Account.create 
-        |> Blob.container (guid())
+        |> Blob.Container.create (guid())
 
     let event() =
         [| "text", JsonValue.String (guid()) |]
