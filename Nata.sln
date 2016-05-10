@@ -29,6 +29,10 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.AzureStorage", "Nat
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.AzureStorage.Tests", "Nata.IO.AzureStorage.Tests\Nata.IO.AzureStorage.Tests.fsproj", "{79D6ACA1-59E0-4278-AEA0-2CD1E526A4DB}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.RabbitMQ", "Nata.IO.RabbitMQ\Nata.IO.RabbitMQ.fsproj", "{A60676EE-8E17-4830-BB88-F2D520F5B55F}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.RabbitMQ.Tests", "Nata.IO.RabbitMQ.Tests\Nata.IO.RabbitMQ.Tests.fsproj", "{9D416CA4-09CE-4722-905F-251162BDFDDF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +91,14 @@ Global
 		{79D6ACA1-59E0-4278-AEA0-2CD1E526A4DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{79D6ACA1-59E0-4278-AEA0-2CD1E526A4DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{79D6ACA1-59E0-4278-AEA0-2CD1E526A4DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A60676EE-8E17-4830-BB88-F2D520F5B55F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A60676EE-8E17-4830-BB88-F2D520F5B55F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A60676EE-8E17-4830-BB88-F2D520F5B55F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A60676EE-8E17-4830-BB88-F2D520F5B55F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D416CA4-09CE-4722-905F-251162BDFDDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D416CA4-09CE-4722-905F-251162BDFDDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D416CA4-09CE-4722-905F-251162BDFDDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D416CA4-09CE-4722-905F-251162BDFDDF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
