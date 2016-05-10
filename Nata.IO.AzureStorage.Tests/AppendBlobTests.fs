@@ -15,7 +15,7 @@ open Nata.IO.Capability
 open Nata.IO.AzureStorage
 open Nata.IO.AzureStorage.Blob.Append
 
-[<TestFixture>]
+[<TestFixture(Description="Azure-AppendBlob")>]
 type AppendBlobTests() =
 
     let guid() = Guid.NewGuid().ToString("n")

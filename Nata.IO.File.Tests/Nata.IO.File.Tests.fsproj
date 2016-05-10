@@ -55,7 +55,7 @@
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="FileTests.fs" />
-    <Compile Include="AcceptanceTests.fs" />
+    <Compile Include="LogStoreTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Data">

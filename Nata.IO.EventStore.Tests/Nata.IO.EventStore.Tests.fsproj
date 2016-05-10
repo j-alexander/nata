@@ -54,7 +54,9 @@
     <Content Include="packages.config" />
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="AcceptanceTests.fs" />
+    <Compile Include="Configuration.fs" />
+    <Compile Include="LogStoreTests.fs" />
+    <Compile Include="SerializationTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="EventStore.ClientAPI">

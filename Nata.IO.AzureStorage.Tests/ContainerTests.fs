@@ -13,7 +13,7 @@ open Nata.IO
 open Nata.IO.Capability
 open Nata.IO.AzureStorage
 
-[<TestFixture>]
+[<TestFixture(Description="Azure-Container")>]
 type ContainerTests() =
 
     let account() = Account.create Emulator.Account.connectionString

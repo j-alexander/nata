@@ -13,7 +13,7 @@ open Nata.IO
 open Nata.IO.Capability
 open Nata.IO.AzureStorage
 
-[<TestFixture>]
+[<TestFixture(Description="Azure-Account")>]
 type AccountTests() =
 
     [<Test>]

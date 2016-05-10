@@ -10,7 +10,9 @@ open Nata.IO
 open Nata.IO.Capability
 open Nata.IO.Kafka
 
-module AcceptanceTests =
+[<TestFixture>]
+type LogStoreTests() =
+    inherit Nata.IO.Tests.LogStoreTests()
 
     let cluster = "tcp://127.0.0.1:9092"
 
@@ -20,13 +22,9 @@ module AcceptanceTests =
     // num.partitions=1
     // auto.create.topics.enable=true
 
-    [<TestFixture>]
-    type KafkaChannelTests() =
-        inherit Nata.IO.Tests.ChannelTests()
-
-        override x.Connect() =
-            Cluster.topics cluster
-            |> Source.mapIndex (Offsets.Codec.OffsetsToInt64 0)
+    override x.Connect() =
+        Cluster.topics cluster
+        |> Source.mapIndex (Offsets.Codec.OffsetsToInt64 0)
             
-        override x.Channel() =
-             Guid.NewGuid().ToString("n")
+    override x.Channel() =
+        Guid.NewGuid().ToString("n")

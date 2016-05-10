@@ -10,7 +10,7 @@ open Nata.IO
 open Nata.IO.Capability
 
 [<AbstractClass>]
-type ChannelTests() as x =
+type LogStoreTests() as x =
 
     let event(fn) =
         [| 

@@ -54,7 +54,15 @@
     <Content Include="packages.config" />
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="AcceptanceTests.fs" />
+    <Compile Include="Configuration.fs" />
+    <Compile Include="WriterTests.fs" />
+    <Compile Include="WriteToTests.fs" />
+    <Compile Include="ReaderTests.fs" />
+    <Compile Include="ReaderFromTests.fs" />
+    <Compile Include="Subscriber.fs" />
+    <Compile Include="SubscriberFromTests.fs" />
+    <Compile Include="SourceTests.fs" />
+    <Compile Include="LogStoreTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Data">

@@ -112,6 +112,11 @@
       <Project>{a60676ee-8e17-4830-bb88-f2d520f5b55f}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\Nata.IO.Tests\Nata.IO.Tests.fsproj">
+      <Name>Nata.IO.Tests</Name>
+      <Project>{b58419f9-0387-4780-99d7-70ca2938da00}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Nata.IO\Nata.IO.fsproj">
       <Name>Nata.IO</Name>
       <Project>{05933d30-393b-4a8e-8418-b6a141d70040}</Project>

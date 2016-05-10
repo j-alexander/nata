@@ -21,7 +21,7 @@ type JsonBlob = {
     static member ToBytes : Codec<JsonBlob,byte[]> = createTypeToBytes()
     static member OfBytes : Codec<byte[],JsonBlob> = createBytesToType()
 
-[<TestFixture>]
+[<TestFixture(Description="Azure-BlockBlob")>]
 type BlockBlobTests() =
 
     let guid() = Guid.NewGuid().ToString("n")

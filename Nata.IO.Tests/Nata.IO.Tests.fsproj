@@ -66,7 +66,8 @@
     <Compile Include="SubscriberFromTests.fs" />
     <Compile Include="SerializationTests.fs" />
     <Compile Include="SourceTests.fs" />
-    <Compile Include="ChannelTests.fs" />
+    <Compile Include="LogStoreTests.fs" />
+    <Compile Include="QueueTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Data">

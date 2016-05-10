@@ -14,7 +14,7 @@ open Nata.IO.Capability
 open Nata.IO.File
 open Nata.IO.File.Stream
 
-[<TestFixture>]
+[<TestFixture(Description="File")>]
 type FileTests() =
 
     let date = DateTime.UtcNow
