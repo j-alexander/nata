@@ -51,8 +51,8 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
-    <Compile Include="AssemblyInfo.fs" />
     <Content Include="packages.config" />
+    <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Account.fs" />
     <Compile Include="Blob.fs" />
     <Compile Include="Queue.fs" />

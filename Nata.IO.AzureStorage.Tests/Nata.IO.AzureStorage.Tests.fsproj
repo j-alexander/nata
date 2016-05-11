@@ -51,9 +51,9 @@
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
+    <Content Include="packages.config" />
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
-    <Content Include="packages.config" />
     <Compile Include="Emulator.fs" />
     <Compile Include="AccountTests.fs" />
     <Compile Include="ContainerTests.fs" />
