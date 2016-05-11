@@ -23,7 +23,7 @@ type PartitionTests() =
             
         let write, subscribe =
             let partitions = Hub.partitions hub
-            let partition = connectTo partitions.[4]
+            let partition = connectTo partitions.[0]
             writer partition, subscriber partition
 
         let event = guid() |> Event.create
@@ -35,3 +35,34 @@ type PartitionTests() =
             |> Seq.head
 
         Assert.AreEqual(event.Data, result.Data)
+        
+    [<Test; Timeout(30000); Ignore("No emulator exists for EventHub")>]
+    member x.TestPartitionEventIsolation() =
+        let hub = Hub.create settings
+
+        let connectTo =
+            Partition.connect hub
+            |> Source.mapData Codec.BytesToString
+            
+        let partitions = Hub.partitions hub
+        let subscribe, flush =
+            subscriber <| connectTo partitions.[1],
+            writer <| connectTo partitions.[1]
+
+        let unexpected = guid() |> Event.create
+        for write in partitions
+                     |> Seq.filter ((<>) partitions.[1])
+                     |> Seq.map (connectTo >> writer) do
+            write unexpected
+        
+        let expected = guid() |> Event.create
+        do flush expected
+
+        let results =
+            subscribe()
+            |> Seq.map Event.data
+            |> Seq.takeWhile ((<>) expected.Data)
+            |> Seq.filter ((=) unexpected.Data)
+            |> Seq.toList
+
+        Assert.AreEqual([], results)
