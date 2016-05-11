@@ -33,6 +33,10 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.RabbitMQ", "Nata.IO
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.RabbitMQ.Tests", "Nata.IO.RabbitMQ.Tests\Nata.IO.RabbitMQ.Tests.fsproj", "{9D416CA4-09CE-4722-905F-251162BDFDDF}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.EventHub", "Nata.IO.EventHub\Nata.IO.EventHub.fsproj", "{3844EA6A-47FB-4828-8D25-7ECFF02CAA27}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.EventHub.Tests", "Nata.IO.EventHub.Tests\Nata.IO.EventHub.Tests.fsproj", "{F0D10D96-77ED-4C85-9CF9-D4F2F6B49272}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +103,14 @@ Global
 		{9D416CA4-09CE-4722-905F-251162BDFDDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D416CA4-09CE-4722-905F-251162BDFDDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9D416CA4-09CE-4722-905F-251162BDFDDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3844EA6A-47FB-4828-8D25-7ECFF02CAA27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3844EA6A-47FB-4828-8D25-7ECFF02CAA27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3844EA6A-47FB-4828-8D25-7ECFF02CAA27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3844EA6A-47FB-4828-8D25-7ECFF02CAA27}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0D10D96-77ED-4C85-9CF9-D4F2F6B49272}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0D10D96-77ED-4C85-9CF9-D4F2F6B49272}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0D10D96-77ED-4C85-9CF9-D4F2F6B49272}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0D10D96-77ED-4C85-9CF9-D4F2F6B49272}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
