@@ -101,7 +101,7 @@ module Stream =
         let eventId = Guid.NewGuid()
         let eventPosition = targetVersionOf position
         let eventMetadata = Event.bytes event |> Option.getValueOr [||]
-        let eventType = Event.eventType event |> Option.bindNone (Guid.NewGuid().ToString)
+        let eventType = Event.eventType event |> Option.bindNone guid
         let eventData = new EventData(eventId, eventType, true, event.Data, eventMetadata)
         let result =
             connection.AppendToStreamAsync(targetStream, eventPosition, eventData)

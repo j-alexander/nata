@@ -18,8 +18,6 @@ open Nata.IO.AzureStorage.Blob.Append
 [<TestFixture(Description="Azure-AppendBlob")>]
 type AppendBlobTests() =
 
-    let guid() = Guid.NewGuid().ToString("n")
-
     let container() =
         Emulator.Account.connectionString
         |> Account.create 

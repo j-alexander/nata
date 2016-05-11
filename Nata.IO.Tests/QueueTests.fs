@@ -17,7 +17,7 @@ open Nata.IO.Capability
 type QueueTests<'Channel>() =
 
     let event() =
-        [| "text", JsonValue.String (Guid.NewGuid().ToString("n")) |]
+        [| "text", JsonValue.String (guid()) |]
         |> JsonValue.Record
         |> Event.create
         |> Event.map JsonValue.toBytes

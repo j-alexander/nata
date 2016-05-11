@@ -12,7 +12,7 @@ module Configuration =
           User = { Name = "admin"
                    Password = "changeit" } }
                    
-    let channel() = Guid.NewGuid().ToString("n")
+    let channel() = guid()
     let connect() = 
         Stream.connect settings
         |> Source.mapIndex (int64, int)

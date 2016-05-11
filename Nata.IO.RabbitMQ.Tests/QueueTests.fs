@@ -18,7 +18,7 @@ open Nata.IO.RabbitMQ
 type QueueTests() =
     inherit Nata.IO.Tests.QueueTests<Queue.Exchange*Queue.Name>()
 
-    let channel() : Queue.Exchange * Queue.Name = "", Guid.NewGuid().ToString("n")
+    let channel() : Queue.Exchange * Queue.Name = "", guid()
     let connect() = Queue.connect "localhost"
 
     override x.Connect() = connect()

@@ -22,7 +22,7 @@ open Nata.IO.AzureStorage.Queue
 type QueueTests() =
     inherit Nata.IO.Tests.QueueTests<Queue.Name>()
         
-    let channel() : Queue.Name = Guid.NewGuid().ToString("n")
+    let channel() : Queue.Name = guid()
     let connect() =
         Emulator.Account.connectionString
         |> Account.create

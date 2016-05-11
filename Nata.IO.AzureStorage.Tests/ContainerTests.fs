@@ -17,7 +17,7 @@ open Nata.IO.AzureStorage
 type ContainerTests() =
 
     let account() = Account.create Emulator.Account.connectionString
-    let name() = Guid.NewGuid().ToString("n")
+    let name() = guid()
 
     [<Test>]
     member x.TestCreateDevelopmentContainer() =

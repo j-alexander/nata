@@ -48,7 +48,7 @@ type SourceTests() as x =
         let overlaying : Source<string,int,int64> =
             Source.map dataCodec indexCodec underlying
             
-        let channel = Guid.NewGuid().ToString()
+        let channel = guid()
         underlying channel, overlaying channel
 
     [<Test>]

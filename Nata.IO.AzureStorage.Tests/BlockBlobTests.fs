@@ -24,8 +24,6 @@ type JsonBlob = {
 [<TestFixture(Description="Azure-BlockBlob")>]
 type BlockBlobTests() =
 
-    let guid() = Guid.NewGuid().ToString("n")
-
     let container() =
         Emulator.Account.connectionString
         |> Account.create 
