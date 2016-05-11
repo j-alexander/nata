@@ -26,7 +26,7 @@ module Codec =
         id, id
     
     let StringToBytes : Codec<string,byte[]> =
-        Encoding.Default.GetBytes, Encoding.Default.GetString
+        Encoding.UTF8.GetBytes, Encoding.UTF8.GetString
 
     let BytesToString : Codec<byte[],string> =
-        Encoding.Default.GetString, Encoding.Default.GetBytes
+        Encoding.UTF8.GetString, Encoding.UTF8.GetBytes

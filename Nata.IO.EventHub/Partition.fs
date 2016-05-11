@@ -12,8 +12,8 @@ module Partition =
         fun (event:Event<byte[]>) ->
             sender.Send(new EventData(event.Data))
             
-    let subscribe (hub:Hub) (partition:string) (consumerGroup:string) =
-        let group = hub.GetConsumerGroup(consumerGroup)
+    let subscribe (hub:Hub) (partition:string) =
+        let group = hub.GetDefaultConsumerGroup()
         let receiver = group.CreateReceiver(partition)
         Seq.initInfinite <| fun _ ->
             let data = receiver.Receive()
@@ -25,8 +25,8 @@ module Partition =
         fun hub partition ->
             [
                 Nata.IO.Writer <|
-                    (write hub partition)
+                    write hub partition
 
-                Nata.IO.Subscriber <|
-                    (guid >> subscribe hub partition)
+                Nata.IO.Subscriber <| fun () ->
+                    subscribe hub partition
             ]           
