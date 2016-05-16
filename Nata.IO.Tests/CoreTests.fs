@@ -5,6 +5,7 @@ open NUnit.Framework
 open Nata.IO
 
 type ExpectedDisposalException() = inherit Exception()
+type ExpectedEnumerationException() = inherit Exception()
 
 [<TestFixture>]
 type CoreTests() =
@@ -32,14 +33,30 @@ type CoreTests() =
 
     [<Test; ExpectedException(typeof<ExpectedDisposalException>)>]
     member x.TestSeqMergeDisposeExceptions() =
-        let sequence =
-            seq {
-                use willFail =
-                    {   new IDisposable with
-                            member x.Dispose() =
-                                raise (new ExpectedDisposalException()) }
-                yield [1..3]
-            }
-        let enumerator = sequence.GetEnumerator()
+        let merged =
+            let sequence =
+                seq {
+                    use willFail =
+                        {   new IDisposable with
+                                member x.Dispose() =
+                                    raise (new ExpectedDisposalException()) }
+                    yield! [1..3]
+                }
+            Seq.merge [ sequence ]
+
+        let enumerator = merged.GetEnumerator()
         Assert.True(enumerator.MoveNext())
         enumerator.Dispose()
+
+    [<Test; ExpectedException(typeof<ExpectedEnumerationException>)>]
+    member x.TestSeqMergeExceptions() =
+        let merged =
+            let sequence =
+                seq {
+                    raise (new ExpectedEnumerationException())
+                    yield! [1..3]
+                }
+            Seq.merge [ sequence ]
+
+        let enumerator = merged.GetEnumerator()
+        Assert.True(enumerator.MoveNext())

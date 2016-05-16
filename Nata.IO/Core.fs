@@ -47,6 +47,7 @@ module Core =
                                 else
                                     return None
                             }
+                            |> Async.Catch
                             |> Async.StartAsTask
                             :> Task
                     let complete i =
@@ -58,14 +59,16 @@ module Core =
                     let receiving = ref n
                     while receiving.Value > 0 do 
                         let i = Task.WaitAny(tasks)
-                        let result = (tasks.[i] :?> Task<'T option>).Result
+                        let result = (tasks.[i] :?> Task<Choice<'T option, exn>>).Result
                         match result with 
-                        | Some value -> 
+                        | Choice1Of2 (Some value) -> 
                             receive i
                             yield value
-                        | None ->
+                        | Choice1Of2 (None) ->
                             complete i
                             receiving := receiving.Value - 1
+                        | Choice2Of2 (exn) ->
+                            raise exn
               }
 
     [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
