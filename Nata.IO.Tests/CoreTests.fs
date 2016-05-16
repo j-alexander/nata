@@ -1,7 +1,10 @@
 ﻿namespace Nata.IO.Tests
 
+open System
 open NUnit.Framework
 open Nata.IO
+
+type ExpectedDisposalException() = inherit Exception()
 
 [<TestFixture>]
 type CoreTests() =
@@ -26,3 +29,17 @@ type CoreTests() =
                 |> List.filter (fun x -> input |> List.exists ((=) x))
             Assert.AreEqual(input, output)
         Assert.AreEqual([1..50], List.sort merged)
+
+    [<Test; ExpectedException(typeof<ExpectedDisposalException>)>]
+    member x.TestSeqMergeDisposeExceptions() =
+        let sequence =
+            seq {
+                use willFail =
+                    {   new IDisposable with
+                            member x.Dispose() =
+                                raise (new ExpectedDisposalException()) }
+                yield [1..3]
+            }
+        let enumerator = sequence.GetEnumerator()
+        Assert.True(enumerator.MoveNext())
+        enumerator.Dispose()
