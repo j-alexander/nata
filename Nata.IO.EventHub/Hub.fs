@@ -13,15 +13,22 @@ module Hub =
     let create (settings:Settings) : Hub =
         EventHubClient.CreateFromConnectionString(settings.Connection)
 
-    let partitions (client:Hub) : Partition[] =
-        client.GetRuntimeInformation().PartitionIds
+    let partitions (hub:Hub) : Partition[] =
+        hub.GetRuntimeInformation().PartitionIds
 
-    let write (client:Hub) (event:Event<byte[]>) =
+    let write (hub:Hub) (event:Event<byte[]>) =
         let data = new EventData(event.Data)
         data.PartitionKey <- 
             event
-            |> Event.partition
-            |> Option.map (fun x -> x.ToString())
+            |> Event.key
             |> Option.getValueOr (guid())
         data
-        |> client.Send
+        |> hub.Send
+
+    let subscribe (hub:Hub) =
+        let group = hub.GetDefaultConsumerGroup()
+        hub
+        |> partitions
+        |> Array.map (group.CreateReceiver >> Receiver.toSeq)
+        |> Array.toList
+        |> Seq.merge

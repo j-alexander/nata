@@ -12,14 +12,9 @@ module Partition =
         fun (event:Event<byte[]>) ->
             sender.Send(new EventData(event.Data))
             
-    let subscribe (hub:Hub) (partition:string) =
+    let subscribe (hub:Hub) =
         let group = hub.GetDefaultConsumerGroup()
-        let receiver = group.CreateReceiver(partition)
-        Seq.initInfinite <| fun _ ->
-            let data = receiver.Receive()
-            data.GetBytes()
-            |> Event.create
-            |> Event.withSentAt data.EnqueuedTimeUtc
+        group.CreateReceiver >> Receiver.toSeq
 
     let connect : Connector<Hub,Partition,byte[],unit> =
         fun hub partition ->
