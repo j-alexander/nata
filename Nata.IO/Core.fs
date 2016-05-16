@@ -42,7 +42,10 @@ module Core =
                     let receive i =
                         tasks.[i] <-
                             async {
-                                return enumerators.[i].MoveNext() 
+                                if enumerators.[i].MoveNext() then
+                                    return Some enumerators.[i].Current
+                                else
+                                    return None
                             }
                             |> Async.StartAsTask
                             :> Task

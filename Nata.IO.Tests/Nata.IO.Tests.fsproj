@@ -54,6 +54,7 @@
     <Content Include="packages.config" />
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="CoreTests.fs" />
     <Compile Include="CodecTests.fs" />
     <Compile Include="JsonValueTests.fs" />
     <Compile Include="EventTests.fs" />
