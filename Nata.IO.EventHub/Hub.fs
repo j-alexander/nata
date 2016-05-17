@@ -32,3 +32,13 @@ module Hub =
         |> Array.map (group.CreateReceiver >> Receiver.toSeq)
         |> Array.toList
         |> Seq.merge
+
+    let connect : Connector<Hub,unit,byte[],unit> =
+        fun hub _ ->
+            [
+                Nata.IO.Writer <|
+                    write hub
+
+                Nata.IO.Subscriber <| fun () ->
+                    subscribe hub
+            ]       

@@ -54,6 +54,7 @@
     <Content Include="packages.config" />
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="HubTests.fs" />
     <Compile Include="PartitionTests.fs" />
   </ItemGroup>
   <ItemGroup>
