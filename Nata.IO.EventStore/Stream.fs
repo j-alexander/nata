@@ -63,11 +63,12 @@ module Stream =
         let queue = new BlockingCollection<Option<Event*Index>>(new ConcurrentQueue<Option<Event*Index>>())
         let subscription =
             let start = match from-1 with -1 -> Nullable() | x -> Nullable(x)
+            let settings = CatchUpSubscriptionSettings.Default
             let onDropped,onEvent,onLive =
                 Action<_,_,_>(fun _ _ _ -> queue.Add None),
                 Action<_,_>(fun _ -> decode >> Some >> queue.Add),
                 Action<_>(ignore)
-            connection.SubscribeToStreamFrom(stream, start, true, onEvent, onLive, onDropped)
+            connection.SubscribeToStreamFrom(stream, start, settings, onEvent, onLive, onDropped)
 
         let rec traverse last =
             seq {
