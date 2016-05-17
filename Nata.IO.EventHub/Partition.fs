@@ -20,8 +20,8 @@ module Partition =
         fun hub partition ->
             [
                 Nata.IO.Writer <|
-                    write hub partition
+                    write hub (partition.ToString())
 
                 Nata.IO.Subscriber <| fun () ->
-                    subscribe hub partition
+                    subscribe hub (partition.ToString())
             ]           

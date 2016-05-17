@@ -5,7 +5,6 @@ open Microsoft.ServiceBus.Messaging
 open Nata.IO
 
 type Hub = EventHubClient
-type Partition = string
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Hub =
@@ -15,6 +14,7 @@ module Hub =
 
     let partitions (hub:Hub) : Partition[] =
         hub.GetRuntimeInformation().PartitionIds
+        |> Array.map Int32.Parse
 
     let write (hub:Hub) (event:Event<byte[]>) =
         let data = new EventData(event.Data)
@@ -27,10 +27,9 @@ module Hub =
 
     let subscribe (hub:Hub) =
         let group = hub.GetDefaultConsumerGroup()
-        hub
-        |> partitions
-        |> Array.map (group.CreateReceiver >> Receiver.toSeq)
-        |> Array.toList
+        hub.GetRuntimeInformation().PartitionIds
+        |> Seq.map (group.CreateReceiver >> Receiver.toSeq)
+        |> Seq.toList
         |> Seq.merge
 
     let connect : Connector<Hub,unit,byte[],unit> =
