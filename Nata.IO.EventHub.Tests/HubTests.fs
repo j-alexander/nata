@@ -6,14 +6,14 @@ open Nata.IO
 open Nata.IO.Capability
 open Nata.IO.EventHub
 
-[<TestFixture(Description="EventHub-Hub")>]
+[<TestFixture(Description="EventHub-Hub"); Ignore("No emulator exists for EventHub")>]
 type HubTests() = 
 
     let settings = {
         Connection = @"Endpoint=sb://;SharedAccessKeyName=;SharedAccessKey=;EntityPath="
     }
 
-    [<Test; Timeout(30000); Ignore("No emulator exists for EventHub")>]
+    [<Test; Timeout(30000)>]
     member x.TestWriteSubscribe() =
 
         let write, subscribe =

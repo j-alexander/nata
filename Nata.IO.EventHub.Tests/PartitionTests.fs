@@ -6,14 +6,14 @@ open Nata.IO
 open Nata.IO.Capability
 open Nata.IO.EventHub
 
-[<TestFixture(Description="EventHub-Partition")>]
+[<TestFixture(Description="EventHub-Partition"); Ignore("No emulator exists for EventHub")>]
 type PartitionTests() = 
 
     let settings = {
         Connection = @"Endpoint=sb://;SharedAccessKeyName=;SharedAccessKey=;EntityPath="
     }
 
-    [<Test; Timeout(30000); Ignore("No emulator exists for EventHub")>]
+    [<Test; Timeout(30000)>]
     member x.TestReadNone() =
         let hub = Hub.create settings
 
@@ -32,7 +32,7 @@ type PartitionTests() =
 
         Assert.AreEqual([], results)
 
-    [<Test; Timeout(30000); Ignore("No emulator exists for EventHub")>]
+    [<Test; Timeout(30000)>]
     member x.TestWriteRead() =
         let hub = Hub.create settings
 
@@ -64,7 +64,7 @@ type PartitionTests() =
 
         Assert.AreEqual([ event.Data ], results)
 
-    [<Test; Timeout(30000)>]//; Ignore("No emulator exists for EventHub")>]
+    [<Test; Timeout(30000)>]
     member x.TestWriteSubscribe() =
         let hub = Hub.create settings
 
@@ -87,7 +87,7 @@ type PartitionTests() =
 
         Assert.AreEqual(event.Data, result.Data)
         
-    [<Test; Timeout(30000); Ignore("No emulator exists for EventHub")>]
+    [<Test; Timeout(30000)>]
     member x.TestPartitionEventIsolation() =
         let hub = Hub.create settings
 
