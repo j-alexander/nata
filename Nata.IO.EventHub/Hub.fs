@@ -28,7 +28,7 @@ module Hub =
     let subscribe (hub:Hub) =
         let group = hub.GetDefaultConsumerGroup()
         hub.GetRuntimeInformation().PartitionIds
-        |> Seq.map (group.CreateReceiver >> Receiver.toSeq)
+        |> Seq.map (group.CreateReceiver >> Receiver.toSeq None)
         |> Seq.toList
         |> Seq.merge
 

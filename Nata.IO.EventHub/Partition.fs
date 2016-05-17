@@ -14,11 +14,18 @@ module Partition =
             
     let subscribe (hub:Hub) =
         let group = hub.GetDefaultConsumerGroup()
-        group.CreateReceiver >> Receiver.toSeq
+        group.CreateReceiver >> Receiver.toSeq (None)
+
+    let read (hub:Hub) =
+        let group = hub.GetDefaultConsumerGroup()
+        group.CreateReceiver >> Receiver.toSeq (Some (TimeSpan.FromMilliseconds 100.0))
 
     let connect : Connector<Hub,Partition,byte[],unit> =
         fun hub partition ->
             [
+                Nata.IO.Reader <| fun () ->
+                    read hub (partition.ToString())
+                
                 Nata.IO.Writer <|
                     write hub (partition.ToString())
 
