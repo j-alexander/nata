@@ -23,7 +23,11 @@ module Receiver =
 
         Seq.unfold(receive >> function null -> None | x -> Some(x,())) ()
         |> Seq.map(fun data ->
+            let offset =
+                data.Offset
+                |> Int64.Parse 
             data.GetBytes()
             |> Event.create
             |> Event.withPartition partition
+            |> Event.withIndex offset
             |> Event.withSentAt data.EnqueuedTimeUtc)
