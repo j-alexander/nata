@@ -15,7 +15,7 @@ open Nata.IO.Capability
 open Nata.IO.AzureStorage
 open Nata.IO.AzureStorage.Blob.Append
 
-[<TestFixture(Description="Azure-AppendBlob")>]
+[<TestFixture(Description="Azure-AppendBlob"); Ignore("AppendBlob is not supported by emulator.  Run with Azure only.")>]
 type AppendBlobTests() =
 
     let container() =
@@ -28,7 +28,7 @@ type AppendBlobTests() =
         |> JsonValue.Record
         |> Event.create
 
-    [<Test; Ignore("AppendBlob is not supported by emulator.  Run with Azure only.")>]
+    [<Test>]
     member x.TestReadWrite() =
         let container, event = container(), event()
         let blob_name = guid()
