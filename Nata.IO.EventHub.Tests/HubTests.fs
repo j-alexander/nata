@@ -11,6 +11,7 @@ type HubTests() =
 
     let settings = {
         Connection = @"Endpoint=sb://;SharedAccessKeyName=;SharedAccessKey=;EntityPath="
+        MaximumWaitTimeOnRead = TimeSpan.FromSeconds(10.0)
     }
 
     [<Test; Timeout(30000)>]
@@ -19,7 +20,6 @@ type HubTests() =
         let write, subscribe =
             let connect =
                 settings
-                |> Hub.create
                 |> Hub.connect
                 |> Source.mapData Codec.BytesToString
             let hub = connect()

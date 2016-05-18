@@ -11,19 +11,18 @@ type PartitionTests() =
 
     let settings = {
         Connection = @"Endpoint=sb://;SharedAccessKeyName=;SharedAccessKey=;EntityPath="
+        MaximumWaitTimeOnRead = TimeSpan.FromSeconds(10.0)
     }
 
     [<Test; Timeout(30000)>]
     member x.TestReadNone() =
-        let hub = Hub.create settings
 
         let connectTo =
-            Partition.connect hub
+            Partition.connect settings
             |> Source.mapData Codec.BytesToString
             
         let partition =
-            let partitions = Hub.partitions hub
-            connectTo partitions.[0]
+            connectTo 0
 
         let results =
             read partition
@@ -34,15 +33,13 @@ type PartitionTests() =
 
     [<Test; Timeout(30000)>]
     member x.TestWriteRead() =
-        let hub = Hub.create settings
 
         let connectTo =
-            Partition.connect hub
+            Partition.connect settings
             |> Source.mapData Codec.BytesToString
             
         let write, read, subscribe =
-            let partitions = Hub.partitions hub
-            let partition = connectTo partitions.[0]
+            let partition = connectTo 0
             writer partition,
             reader partition,
             subscriber partition
@@ -66,15 +63,13 @@ type PartitionTests() =
 
     [<Test; Timeout(30000)>]
     member x.TestWriteSubscribe() =
-        let hub = Hub.create settings
 
         let connectTo =
-            Partition.connect hub
+            Partition.connect settings
             |> Source.mapData Codec.BytesToString
             
         let write, subscribe =
-            let partitions = Hub.partitions hub
-            let partition = connectTo partitions.[0]
+            let partition = connectTo 0
             writer partition, subscriber partition
 
         let event = guid() |> Event.create
@@ -89,20 +84,24 @@ type PartitionTests() =
         
     [<Test; Timeout(30000)>]
     member x.TestPartitionEventIsolation() =
-        let hub = Hub.create settings
+
+        let partitions =
+            settings 
+            |> Hub.create
+            |> Hub.partitions
 
         let connectTo =
-            Partition.connect hub
+            Partition.connect settings
             |> Source.mapData Codec.BytesToString
             
-        let partitions = Hub.partitions hub
         let subscribe, flush =
-            subscriber <| connectTo partitions.[1],
-            writer <| connectTo partitions.[1]
+            let partition = connectTo 1
+            subscriber <| partition,
+            writer <| partition
 
         let unexpected = guid() |> Event.create
         for write in partitions
-                     |> Seq.filter ((<>) partitions.[1])
+                     |> Seq.filter ((<>) 1)
                      |> Seq.map (connectTo >> writer) do
             write unexpected
         

@@ -32,12 +32,18 @@ module Hub =
         |> Seq.toList
         |> Seq.merge
 
-    let connect : Connector<Hub,unit,byte[],unit> =
-        fun hub _ ->
-            [
-                Nata.IO.Writer <|
-                    write hub
+    let connect : Connector<Settings,unit,byte[],unit> =
 
-                Nata.IO.Subscriber <| fun () ->
-                    subscribe hub
-            ]       
+        fun settings ->
+        
+            let hub = settings |> create
+
+            fun _ ->
+
+                [
+                    Nata.IO.Writer <|
+                        write hub
+
+                    Nata.IO.Subscriber <| fun () ->
+                        subscribe hub
+                ]       

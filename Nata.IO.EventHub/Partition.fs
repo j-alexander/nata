@@ -16,19 +16,28 @@ module Partition =
         let group = hub.GetDefaultConsumerGroup()
         group.CreateReceiver >> Receiver.toSeq (None)
 
-    let read (hub:Hub) =
+    let read (wait:TimeSpan) (hub:Hub) =
         let group = hub.GetDefaultConsumerGroup()
-        group.CreateReceiver >> Receiver.toSeq (Some (TimeSpan.FromMilliseconds 100.0))
+        group.CreateReceiver >> Receiver.toSeq (Some wait)
 
-    let connect : Connector<Hub,Partition,byte[],unit> =
-        fun hub partition ->
-            [
-                Nata.IO.Reader <| fun () ->
-                    read hub (partition.ToString())
+    let connect : Connector<Settings,Partition,byte[],unit> =
+
+        fun settings ->
+
+            let hub = settings |> Hub.create 
+            let wait = settings.MaximumWaitTimeOnRead
+
+            fun partition ->
                 
-                Nata.IO.Writer <|
-                    write hub (partition.ToString())
+                let partitionId = partition.ToString()
 
-                Nata.IO.Subscriber <| fun () ->
-                    subscribe hub (partition.ToString())
-            ]           
+                [
+                    Nata.IO.Reader <| fun () ->
+                        read wait hub partitionId
+                
+                    Nata.IO.Writer <|
+                        write hub partitionId
+
+                    Nata.IO.Subscriber <| fun () ->
+                        subscribe hub partitionId
+                ]           
