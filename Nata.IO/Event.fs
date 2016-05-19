@@ -119,23 +119,33 @@ module Event =
     let withPartition x =  withMetadata (x |> Value.Partition)
     let withIndex x =      withMetadata (x |> Value.Index)
     let withBytes x =      withMetadata (x |> Value.Bytes)
+    
+    let private withOption (fn: 'Value -> 'Event -> 'Event) =
+        function Some value -> fn value | _ -> id
 
-    let private withNull (fn: 'Value -> 'Event -> 'Event) (x: 'Value) =
-        if x = null then id else fn x
-    let private withNullable (fn: 'Value -> 'Event -> 'Event) (x : Nullable<'Value>)  =
-        if x.HasValue then fn x.Value else id
+    let withCreatedAtOption x =  x |> withOption withCreatedAt
+    let withSentAtOption x =     x |> withOption withSentAt
+    let withReceivedAtOption x = x |> withOption withReceivedAt
+    let withEventTypeOption x =  x |> withOption withEventType
+    let withNameOption x =       x |> withOption withName
+    let withStreamOption x =     x |> withOption withStream
+    let withTagOption x =        x |> withOption withTag
+    let withKeyOption x =        x |> withOption withKey
+    let withPartitionOption x =  x |> withOption withPartition
+    let withIndexOption x =      x |> withOption withIndex
+    let withBytesOption x =      x |> withOption withBytes
 
-    let withCreatedAtNullable x =  x |> withNullable withCreatedAt
-    let withSentAtNullable x =     x |> withNullable withSentAt
-    let withReceivedAtNullable x = x |> withNullable withReceivedAt
-    let withEventTypeNullable x =  x |> withNull     withEventType
-    let withNameNullable x =       x |> withNull     withName
-    let withStreamNullable x =     x |> withNull     withStream
-    let withTagNullable x =        x |> withNull     withTag
-    let withKeyNullable x =        x |> withNull     withKey
-    let withPartitionNullable x =  x |> withNullable withPartition
-    let withIndexNullable x =      x |> withNullable withIndex
-    let withBytesNullable x =      x |> withNull     withBytes
+    let withCreatedAtNullable x =  x |> Nullable.toOption |> withCreatedAtOption
+    let withSentAtNullable x =     x |> Nullable.toOption |> withSentAtOption
+    let withReceivedAtNullable x = x |> Nullable.toOption |> withReceivedAtOption
+    let withEventTypeNullable x =  x |> Null.toOption     |> withEventTypeOption
+    let withNameNullable x =       x |> Null.toOption     |> withNameOption
+    let withStreamNullable x =     x |> Null.toOption     |> withStreamOption
+    let withTagNullable x =        x |> Null.toOption     |> withTagOption
+    let withKeyNullable x =        x |> Null.toOption     |> withKeyOption
+    let withPartitionNullable x =  x |> Nullable.toOption |> withPartitionOption
+    let withIndexNullable x =      x |> Nullable.toOption |> withIndexOption
+    let withBytesNullable x =      x |> Null.toOption     |> withBytesOption
 
     let mapData (fn:'DataIn->'DataOut)
                 (e:Event<'DataIn>) : Event<'DataOut> =

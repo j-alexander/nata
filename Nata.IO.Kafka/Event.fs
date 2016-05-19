@@ -34,4 +34,4 @@ module Event =
             |> Event.key
             |> Option.filter (String.IsNullOrWhiteSpace >> not)
             |> Option.map (Encoding.Default.GetBytes)
-            |> Option.bindNone (Guid.NewGuid().ToByteArray) }
+            |> Option.getValueOrYield (Guid.NewGuid().ToByteArray) }

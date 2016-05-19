@@ -11,7 +11,6 @@ module Core =
     let mapFst fn (i,j) = fn i, j
     let mapSnd fn (i,j) = i, fn j
 
-    [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
     module Seq =
 
         let mapFst fn = Seq.map <| mapFst fn
@@ -71,19 +70,42 @@ module Core =
                             raise exn
               }
 
-    [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
     module Option =
         
         let whenTrue fn x = if fn x then Some x else None
         let coalesce snd fst = match fst with None -> snd | Some _ -> fst
         let filter fn = Option.bind(whenTrue fn)
 
-        let bindNone fn = function None -> fn() | Some x -> x
         let getValueOr x = function None -> x | Some x -> x
+        let getValueOrYield fn = function None -> fn() | Some x -> x
+
+    module Null =
         
-    [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+        let toOption = function null -> None | x -> Some x
+        
     module Nullable =
         
         let map (fn : 'T -> 'U) (x : Nullable<'T>) : Nullable<'U> =
             if x.HasValue then Nullable(fn x.Value) else Nullable()
-            
+
+        let toOption (x:Nullable<'T>) : Option<'T> =
+            if x.HasValue then Some x.Value else None
+        let ofOption =
+            function Some x -> Nullable(x) | _ -> Nullable()
+    
+    module Int64 =
+        
+        let ofString = Int64.TryParse >> function true, x -> Some x | _ -> None
+        let toString (x:int64) = x.ToString()
+
+    module Int32 =
+        
+        let ofString = Int32.TryParse >> function true, x -> Some x | _ -> None
+        let toString (x:int32) = x.ToString()
+        
+    [<AutoOpen>]
+    module Patterns =
+
+        let (|Integer64|_|) = Int64.ofString
+        let (|Integer32|_|) = Int32.ofString
+        let (|Nullable|_|) = Nullable.toOption
