@@ -94,11 +94,23 @@ module Core =
             function Some x -> Nullable(x) | _ -> Nullable()
     
     module Int64 =
+
+        let between (left_inclusive:int64, right_inclusive:int64) (x:int64) =
+            let lower, upper =
+                Math.Min(left_inclusive, right_inclusive),
+                Math.Max(left_inclusive, right_inclusive)
+            Math.Max(lower, Math.Min(upper, x))
         
         let ofString = Int64.TryParse >> function true, x -> Some x | _ -> None
         let toString (x:int64) = x.ToString()
 
     module Int32 =
+
+        let between (left_inclusive:int32, right_inclusive:int32) (x:int32) =
+            let lower, upper =
+                Math.Min(left_inclusive, right_inclusive),
+                Math.Max(left_inclusive, right_inclusive)
+            Math.Max(lower, Math.Min(upper, x))
         
         let ofString = Int32.TryParse >> function true, x -> Some x | _ -> None
         let toString (x:int32) = x.ToString()

@@ -27,6 +27,15 @@ module Codec =
     
     let StringToBytes : Codec<string,byte[]> =
         Encoding.UTF8.GetBytes, Encoding.UTF8.GetString
-
     let BytesToString : Codec<byte[],string> =
-        Encoding.UTF8.GetString, Encoding.UTF8.GetBytes
+        reverse StringToBytes
+
+    let Int32ToString : Codec<int32,string> =
+        Int32.toString, Int32.ofString >> Option.getValueOr 0
+    let StringToInt32 : Codec<string,int32> =
+        reverse Int32ToString
+
+    let Int64ToString : Codec<int64,string> =
+        Int64.toString, Int64.ofString >> Option.getValueOr 0L
+    let StringToInt64 : Codec<string,int64> =
+        reverse Int64ToString

@@ -60,3 +60,34 @@ type CoreTests() =
 
         let enumerator = merged.GetEnumerator()
         Assert.True(enumerator.MoveNext())
+
+    [<Test>]
+    member x.TestBetween() =
+
+        let check between input range expected_output =
+            let output =
+                input
+                |> List.map (between range)
+                |> Seq.ofList
+                |> Seq.distinct
+                |> Seq.toList
+            Assert.AreEqual(expected_output, output)
+
+        let check input32 range32 expected32 =
+
+            let input64 = input32 |> List.map int64
+            let range64 = range32 |> mapFst int64 |> mapSnd int64
+            let expected64 = expected32 |> List.map int64
+            
+            check Int32.between input32 range32 expected32
+            check Int64.between input64 range64 expected64
+
+        check [0   .. 10] (  5,  12) [  5 .. 10]
+        check [0   .. 10] ( 12,   5) [  5 .. 10]
+        check [0   .. 10] ( -5,   2) [  0 ..  2]
+        check [0   .. 10] (  2,  -5) [  0 ..  2]
+        check [-10 ..  0] ( -5, -12) [-10 .. -5]
+        check [-10 ..  0] (-12,  -5) [-10 .. -5]
+        check [-10 .. 10] ( -5,   5) [ -5 ..  5]
+        check [-10 .. 10] (  5,  -5) [ -5 ..  5]
+        check [-10 .. 10] (  5,  -5) [ -5 ..  5]
