@@ -54,9 +54,12 @@
     <Content Include="packages.config" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Settings.fs" />
+    <Compile Include="Partition.fs" />
+    <Compile Include="Index.fs" />
+    <Compile Include="Offset.fs" />
     <Compile Include="Receiver.fs" />
     <Compile Include="Hub.fs" />
-    <Compile Include="Partition.fs" />
+    <Compile Include="HubPartition.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Data">

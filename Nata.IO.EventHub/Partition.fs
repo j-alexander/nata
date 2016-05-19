@@ -1,43 +1,21 @@
 ﻿namespace Nata.IO.EventHub
 
 open System
-open Microsoft.ServiceBus.Messaging
 open Nata.IO
+
+type Partition = int
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Partition =
 
-    let write (hub:Hub) (partition:string) =
-        let sender = hub.CreatePartitionedSender(partition)
-        fun (event:Event<byte[]>) ->
-            sender.Send(new EventData(event.Data))
-            
-    let subscribe (hub:Hub) =
-        let group = hub.GetDefaultConsumerGroup()
-        group.CreateReceiver >> Receiver.toSeq (None)
+    let between (range:Partition*Partition) (x:Partition) =
+        Int32.between range x
 
-    let read (wait:TimeSpan) (hub:Hub) =
-        let group = hub.GetDefaultConsumerGroup()
-        group.CreateReceiver >> Receiver.toSeq (Some wait)
+    let parse : string -> Partition =
+        Int32.Parse
 
-    let connect : Connector<Settings,Partition,byte[],unit> =
+    let ofString : string -> Partition option =
+        Int32.ofString
 
-        fun settings ->
-
-            let hub = settings |> Hub.create 
-            let wait = settings.MaximumWaitTimeOnRead
-
-            fun partition ->
-                
-                let partitionId = partition.ToString()
-
-                [
-                    Nata.IO.Reader <| fun () ->
-                        read wait hub partitionId
-                
-                    Nata.IO.Writer <|
-                        write hub partitionId
-
-                    Nata.IO.Subscriber <| fun () ->
-                        subscribe hub partitionId
-                ]           
+    let toString : Partition -> string =
+        Int32.toString

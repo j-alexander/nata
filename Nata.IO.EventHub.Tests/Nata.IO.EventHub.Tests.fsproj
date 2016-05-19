@@ -55,7 +55,7 @@
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="HubTests.fs" />
-    <Compile Include="PartitionTests.fs" />
+    <Compile Include="HubPartitionTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Data">

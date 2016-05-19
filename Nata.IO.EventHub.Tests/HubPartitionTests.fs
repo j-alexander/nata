@@ -7,7 +7,7 @@ open Nata.IO.Capability
 open Nata.IO.EventHub
 
 [<TestFixture(Description="EventHub-Partition"); Ignore("No emulator exists for EventHub")>]
-type PartitionTests() = 
+type HubPartitionTests() = 
 
     let settings = {
         Connection = @"Endpoint=sb://;SharedAccessKeyName=;SharedAccessKey=;EntityPath="
@@ -18,7 +18,7 @@ type PartitionTests() =
     member x.TestReadNone() =
 
         let connectTo =
-            Partition.connect settings
+            HubPartition.connect settings
             |> Source.mapData Codec.BytesToString
             
         let partition =
@@ -35,7 +35,7 @@ type PartitionTests() =
     member x.TestWriteRead() =
 
         let connectTo =
-            Partition.connect settings
+            HubPartition.connect settings
             |> Source.mapData Codec.BytesToString
             
         let write, read, subscribe =
@@ -65,7 +65,7 @@ type PartitionTests() =
     member x.TestWriteSubscribe() =
 
         let connectTo =
-            Partition.connect settings
+            HubPartition.connect settings
             |> Source.mapData Codec.BytesToString
             
         let write, subscribe =
@@ -91,7 +91,7 @@ type PartitionTests() =
             |> Hub.partitions
 
         let connectTo =
-            Partition.connect settings
+            HubPartition.connect settings
             |> Source.mapData Codec.BytesToString
             
         let subscribe, flush =
