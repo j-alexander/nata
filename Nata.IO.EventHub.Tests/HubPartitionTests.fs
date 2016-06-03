@@ -82,7 +82,7 @@ type HubPartitionTests() =
 
         Assert.AreEqual(event.Data, result.Data)
         
-    [<Test; Timeout(30000)>]
+    [<Test; Timeout(60000)>]
     member x.TestPartitionEventIsolation() =
 
         let partitions =
