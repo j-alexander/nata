@@ -34,3 +34,33 @@ type HubTests() =
             |> Seq.head
 
         Assert.AreEqual(event.Data, result.Data)
+
+        
+    [<Test; Timeout(60000)>]
+    member x.TestWriteRead() =
+        let connect =
+            Hub.connect settings
+            |> Source.mapData Codec.BytesToString
+            
+        let write, read, subscribe =
+            let connection = connect()
+            writer connection,
+            reader connection,
+            subscriber connection
+
+        let event = guid() |> Event.create
+        do write event
+
+        let flush = guid() |> Event.create
+        do write flush
+        subscribe()
+        |> Seq.takeWhile (Event.data >> (<>) flush.Data)
+        |> Seq.iter ignore
+
+        let results =
+            read()
+            |> Seq.filter (Event.data >> (=) event.Data)
+            |> Seq.map Event.data
+            |> Seq.toList
+
+        Assert.AreEqual([ event.Data ], results)

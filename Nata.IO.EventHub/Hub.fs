@@ -28,7 +28,14 @@ module Hub =
     let subscribe (hub:Hub) =
         let group = hub.GetDefaultConsumerGroup()
         hub.GetRuntimeInformation().PartitionIds
-        |> Seq.map (group.CreateReceiver >> Receiver.toSeq None)
+        |> Seq.map (group.CreateReceiver >> Receiver.toSeq (None))
+        |> Seq.toList
+        |> Seq.merge
+
+    let read (wait:TimeSpan) (hub:Hub) =
+        let group = hub.GetDefaultConsumerGroup()
+        hub.GetRuntimeInformation().PartitionIds
+        |> Seq.map (group.CreateReceiver >> Receiver.toSeq (Some wait))
         |> Seq.toList
         |> Seq.merge
 
@@ -36,11 +43,15 @@ module Hub =
 
         fun settings ->
         
-            let hub = settings |> create
+            let hub, wait =
+                settings |> create,
+                settings.MaximumWaitTimeOnRead
 
             fun _ ->
-
                 [
+                    Nata.IO.Reader <| fun () ->
+                        read wait hub
+
                     Nata.IO.Writer <|
                         write hub
 

@@ -9,3 +9,5 @@ module Offset =
 
     let partition (x:Offset) = x.Partition
     let index (x:Offset) = x.Index
+
+type Offsets = Offset list
