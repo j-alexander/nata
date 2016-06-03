@@ -36,6 +36,12 @@ module HubPartition =
         >> hub.GetDefaultConsumerGroup().CreateReceiver
         >> Receiver.toSeq (None)
 
+    let subscribeFrom (hub:Hub) =
+        Partition.toString >> fun partition ->
+            Index.toString >> fun index ->
+                hub.GetDefaultConsumerGroup().CreateReceiver (partition, index)
+                |> Receiver.toSeqWithIndex (None)
+
     let read (wait:TimeSpan) (hub:Hub) =
         Partition.toString
         >> hub.GetDefaultConsumerGroup().CreateReceiver
@@ -52,6 +58,12 @@ module HubPartition =
         let positionOf = positionOf hub
         fun (partition:Partition) ->
             positionOf partition >> readFrom partition
+
+    let subscribeFromPosition (hub:Hub) =
+        let subscribeFrom = subscribeFrom hub
+        let positionOf = positionOf hub
+        fun (partition:Partition) ->
+            positionOf partition >> subscribeFrom partition
 
     let connect : Connector<Settings,Partition,byte[],Index> =
         fun settings ->
@@ -73,4 +85,7 @@ module HubPartition =
 
                     Nata.IO.Subscriber <| fun () ->
                         subscribe hub partition
+
+                    Nata.IO.SubscriberFrom <|
+                        subscribeFromPosition hub partition
                 ]           
