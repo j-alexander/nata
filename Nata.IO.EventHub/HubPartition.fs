@@ -6,25 +6,7 @@ open Nata.IO
 
 module HubPartition =
 
-    let positionOf (hub:Hub) (partition:Partition) : Position<Index> -> Index =
-        
-        let index_finish, index_start =
-            let information =
-                partition
-                |> Partition.toString
-                |> hub.GetPartitionRuntimeInformation
-            information.LastEnqueuedOffset
-            |> Index.ofString
-            |> Option.getValueOr Index.start, Index.start
-
-        let rec indexOf = function
-            | Position.Start -> index_start
-            | Position.Before x -> indexOf x - 1L
-            | Position.At x -> x
-            | Position.After x -> indexOf x + 1L
-            | Position.End -> index_finish
-
-        indexOf >> Index.between(index_start, index_finish)
+    let positionOf = Hub.positionOf
 
     let write (hub:Hub) =
         Partition.toString

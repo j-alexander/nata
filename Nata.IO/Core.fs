@@ -8,6 +8,7 @@ module Core =
 
     let guid _ = Guid.NewGuid().ToString("n")
 
+    let swap fn i j = fn j i
     let mapFst fn (i,j) = fn i, j
     let mapSnd fn (i,j) = i, fn j
 
