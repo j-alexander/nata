@@ -18,15 +18,15 @@ nssm.exe install EventStore "C:\Program Files\EventStore\EventStore.ClusterNode.
     net start eventstore
     ```
 2. [Browse](http://localhost:2113/) streams as `admin` with password `changeit`.
-2. Monitor Log Entries
+3. Monitor Log Entries
     ```
     cat -wait "C:\ProgramData\EventStore\logs\2016-06-04\127.0.0.1-2113-cluster-node.log"
     ```
-3. Stop EventStore
+4. Stop EventStore
     ```
     net stop eventstore
     ```
-4. Reset Data
+5. Reset Data
     ```
     rm -recurse "C:\ProgramData\EventStore\data\*"
     ```
