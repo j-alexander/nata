@@ -77,15 +77,48 @@ nssm.exe install Zookeeper "C:\Program Files\Zookeeper\bin\zkServer.cmd"
     /progra~1/kafka/bin/windows/kafka-run-class.bat kafka.Kafka %*
     EndLocal
     ```
+  * Similar changes can also be made to the following:
+    * `kafka-console-consumer.bat`
+    * `kafka-console-producer.bat`
+    * `kafka-topics.bat`
 
-7. Configure the Kafka service:
+9. Configure the Kafka service:
 
 ```powershell
 nssm.exe install Kafka "c:\progra~1\kafka\bin\windows\kafka-server-start.bat" \progra~1\kafka\config\server.properties
 ```
 
+## Life-cycle
+1. Start Zookeeper before Kafka
+    ```
+    net start zookeeper
+    net start kafka
+    ```
+2. Monitor Log Entries (using `baretail` or `cat`)
+    ```
+    cat -wait "C:\ProgramData\Zookeeper\logs\zookeeper.log"
+    cat -wait "C:\ProgramData\Kafka\logs\controller.log"
+    cat -wait "C:\ProgramData\Kafka\logs\kafka-authorizer.log"
+    cat -wait "C:\ProgramData\Kafka\logs\kafka-request.log"
+    cat -wait "C:\ProgramData\Kafka\logs\log-cleaner.log"
+    cat -wait "C:\ProgramData\Kafka\logs\state-change.log"
+    cat -wait "C:\ProgramData\Kafka\logs\server.log"
+    ```
+4. Data is stored in `C:\ProgramData\Kafka\data`
+  * Produce events for the broker @ `tcp://127.0.0.1:9092`
+  * Consume events from zookeeper @ `127.0.0.1:8081`
+5. Stop Kafka before Zookeeper
+    ```
+    net stop kafka
+     net stop zookeeper
+    ```
+6. Reset Data
+    ```
+    rm -recurse "C:\ProgramData\Kafka\data\*"
+    rm -recurse "C:\ProgramData\Zookeeper\version-2\*"
+    ```
 
   [java]: http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html "Java Downloads"
-  [zookeeper]: https://zookeeper.apache.org/releases.html#download "Apache Zookeeper Downloads" 
   [nssm]: https://nssm.cc "Non-Sucking Service Manager"
+  [zookeeper]: https://zookeeper.apache.org/releases.html#download "Apache Zookeeper Downloads"
   [kafka]: http://kafka.apache.org/downloads.html "Apache Kafka Downloads"

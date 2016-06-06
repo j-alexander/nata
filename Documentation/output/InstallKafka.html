@@ -176,6 +176,14 @@ Change <code>C:\Program Files\Zookeeper\bin\zkEnv.cmd</code>
 </tr>
 </table>
 </li>
+<li>
+<p>Similar changes can also be made to the following:</p>
+<ul>
+<li><p><code>kafka-console-consumer.bat</code></p></li>
+<li><p><code>kafka-console-producer.bat</code></p></li>
+<li><p><code>kafka-topics.bat</code></p></li>
+</ul>
+</li>
 </ul>
 </li>
 <li>Configure the Kafka service:</li>
@@ -184,6 +192,70 @@ Change <code>C:\Program Files\Zookeeper\bin\zkEnv.cmd</code>
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="powershell">nssm.exe install Kafka "c:\progra~1\kafka\bin\windows\kafka-server-start.bat" \progra~1\kafka\config\server.properties
 </code></pre></td></tr></table>
+<h2>Life-cycle</h2>
+<ol>
+<li>
+<p>Start Zookeeper before Kafka</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">net</span> <span class="i">start</span> <span class="i">zookeeper</span>
+<span class="i">net</span> <span class="i">start</span> <span class="i">kafka</span>
+</code></pre></td>
+</tr>
+</table>
+</li>
+<li>
+<p>Monitor Log Entries (using <code>baretail</code> or <code>cat</code>)</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">cat</span> <span class="o">-</span><span class="i">wait</span> <span class="s">&quot;C:\ProgramData\Zookeeper\logs\zookeeper.log&quot;</span>
+<span class="i">cat</span> <span class="o">-</span><span class="i">wait</span> <span class="s">&quot;C:\ProgramData\Kafka\logs\controller.log&quot;</span>
+<span class="i">cat</span> <span class="o">-</span><span class="i">wait</span> <span class="s">&quot;C:\ProgramData\Kafka\logs\kafka-authorizer.log&quot;</span>
+<span class="i">cat</span> <span class="o">-</span><span class="i">wait</span> <span class="s">&quot;C:\ProgramData\Kafka\logs\kafka-request.log&quot;</span>
+<span class="i">cat</span> <span class="o">-</span><span class="i">wait</span> <span class="s">&quot;C:\ProgramData\Kafka\logs\log-cleaner.log&quot;</span>
+<span class="i">cat</span> <span class="o">-</span><span class="i">wait</span> <span class="s">&quot;C:\ProgramData\Kafka\logs\state-change.log&quot;</span>
+<span class="i">cat</span> <span class="o">-</span><span class="i">wait</span> <span class="s">&quot;C:\ProgramData\Kafka\logs\server.log&quot;</span>
+</code></pre></td>
+</tr>
+</table>
+</li>
+<li>
+<p>Data is stored in <code>C:\ProgramData\Kafka\data</code></p>
+<ul>
+<li><p>Produce events for the broker @ <code>tcp://127.0.0.1:9092</code></p></li>
+<li><p>Consume events from zookeeper @ <code>127.0.0.1:8081</code></p></li>
+</ul>
+</li>
+<li>
+<p>Stop Kafka before Zookeeper</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">net</span> <span class="i">stop</span> <span class="i">kafka</span>
+<span class="i">net</span> <span class="i">stop</span> <span class="i">zookeeper</span>
+</code></pre></td>
+</tr>
+</table>
+</li>
+<li>
+<p>Reset Data</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">rm</span> <span class="o">-</span><span class="i">recurse</span> <span class="s">&quot;C:\ProgramData\Kafka\data\*&quot;</span>
+<span class="i">rm</span> <span class="o">-</span><span class="i">recurse</span> <span class="s">&quot;C:\ProgramData\Zookeeper\version-2\*&quot;</span>
+</code></pre></td>
+</tr>
+</table>
+</li>
+</ol>
 
                 <div class="tip" id="fs1">val log : value:&#39;T -&gt; &#39;T (requires member Log)<br /><br />Full name: Microsoft.FSharp.Core.Operators.log</div>
 <div class="tip" id="fs2">val set : elements:seq&lt;&#39;T&gt; -&gt; Set&lt;&#39;T&gt; (requires comparison)<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.set</div>
