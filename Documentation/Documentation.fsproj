@@ -61,6 +61,7 @@
     <None Include="Generate.fsx" />
     <None Include="Template.html" />
     <None Include="InstallEventStore.md" />
+    <None Include="InstallKafka.md" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="CSharpFormat">

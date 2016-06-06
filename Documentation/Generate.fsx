@@ -28,5 +28,6 @@ let generate file =
 
 
 generate "InstallEventStore"
+generate "InstallKafka"
 
 
