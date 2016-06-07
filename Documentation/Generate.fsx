@@ -20,12 +20,30 @@ open FSharp.Markdown
 open FSharp.Literate
 
 
+let output =
+    let path = Path.Combine(__SOURCE_DIRECTORY__, "..", "gh-pages")
+    let directory = new DirectoryInfo(path)
+    if not directory.Exists then
+        directory.Create()
+    path
+
+let copy folder file =
+    let input = Path.Combine(__SOURCE_DIRECTORY__, folder, file)
+    let output = Path.Combine(output, folder, file)
+    let file = new FileInfo(output)
+    if not file.Directory.Exists then
+        file.Directory.Create()
+    File.Copy(input, output, true)
+
 let generate file =
     let template = Path.Combine(__SOURCE_DIRECTORY__, "Template.html")
     let source = Path.Combine(__SOURCE_DIRECTORY__, file |> sprintf "%s.md")
-    let target = Path.Combine(__SOURCE_DIRECTORY__, file |> sprintf "output\%s.html")
+    let target = Path.Combine(output, file |> sprintf "%s.html")
     Literate.ProcessMarkdown(source, template, target)
 
+
+copy "content" "style.css"
+copy "content" "tips.js"
 
 generate "InstallEventStore"
 generate "InstallKafka"

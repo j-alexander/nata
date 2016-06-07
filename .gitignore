@@ -186,3 +186,6 @@ FakesAssemblies/
 # Macintosh Files
 .DS_Store
 ._.DS_Store
+
+# Github Pages
+gh-pages/
