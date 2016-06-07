@@ -34,12 +34,15 @@ let copy folder file =
     if not file.Directory.Exists then
         file.Directory.Create()
     File.Copy(input, output, true)
+    
+let generateAs source target =
+    let template = Path.Combine(__SOURCE_DIRECTORY__, "Template.html")
+    let source = Path.Combine(__SOURCE_DIRECTORY__, source)
+    let target = Path.Combine(output, target)
+    Literate.ProcessMarkdown(source, template, target)
 
 let generate file =
-    let template = Path.Combine(__SOURCE_DIRECTORY__, "Template.html")
-    let source = Path.Combine(__SOURCE_DIRECTORY__, file |> sprintf "%s.md")
-    let target = Path.Combine(output, file |> sprintf "%s.html")
-    Literate.ProcessMarkdown(source, template, target)
+    generateAs (file |> sprintf "%s.md") (file |> sprintf "%s.html")
 
 
 copy "content" "style.css"
@@ -47,5 +50,8 @@ copy "content" "tips.js"
 
 generate "InstallEventStore"
 generate "InstallKafka"
+generateAs "Index.md" "index.html"
+
+
 
 

@@ -62,6 +62,7 @@
     <None Include="Template.html" />
     <None Include="InstallEventStore.md" />
     <None Include="InstallKafka.md" />
+    <None Include="Index.md" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="CSharpFormat">
