@@ -4,7 +4,7 @@
 1. Download and install [Java][java] (e.g. `jre1.8.0_91`)
 2. In System Properties -> Environment Variables -> System Variables
   * variable `JAVA_HOME` has value `C:\Program Files\Java\jre1.8.0_91`
-  * variable `PATH` contains value `C:\Program Files\Java\jre1.8.0_91`
+  * variable `PATH` contains value `C:\Program Files\Java\jre1.8.0_91\bin`
 3. Update these values each time you update the JRE
 4. Restart Powershell and verify the `java -version`
 
@@ -55,6 +55,7 @@ nssm.exe install Zookeeper "C:\Program Files\Zookeeper\bin\zkServer.cmd"
     set BASE_DIR=%CD%
     popd
     ```
+
   * _after:_
     ```
     set BASE_DIR=/progra~1/kafka/
@@ -69,6 +70,7 @@ nssm.exe install Zookeeper "C:\Program Files\Zookeeper\bin\zkServer.cmd"
     %~dp0kafka-run-class.bat kafka.Kafka %*
     EndLocal
     ```
+
   * _after:_
     ```
     SetLocal
@@ -77,6 +79,7 @@ nssm.exe install Zookeeper "C:\Program Files\Zookeeper\bin\zkServer.cmd"
     /progra~1/kafka/bin/windows/kafka-run-class.bat kafka.Kafka %*
     EndLocal
     ```
+
   * Similar changes can also be made to the following:
     * `kafka-console-consumer.bat`
     * `kafka-console-producer.bat`
@@ -94,6 +97,7 @@ nssm.exe install Kafka "c:\progra~1\kafka\bin\windows\kafka-server-start.bat" \p
     net start zookeeper
     net start kafka
     ```
+
 2. Monitor Log Entries (using `baretail` or `cat`)
     ```
     cat -wait "C:\ProgramData\Zookeeper\logs\zookeeper.log"
@@ -104,14 +108,16 @@ nssm.exe install Kafka "c:\progra~1\kafka\bin\windows\kafka-server-start.bat" \p
     cat -wait "C:\ProgramData\Kafka\logs\state-change.log"
     cat -wait "C:\ProgramData\Kafka\logs\server.log"
     ```
+
 4. Data is stored in `C:\ProgramData\Kafka\data`
   * Produce events for the broker @ `tcp://127.0.0.1:9092`
   * Consume events from zookeeper @ `127.0.0.1:8081`
 5. Stop Kafka before Zookeeper
     ```
     net stop kafka
-     net stop zookeeper
+    net stop zookeeper
     ```
+
 6. Reset Data
     ```
     rm -recurse "C:\ProgramData\Kafka\data\*"
