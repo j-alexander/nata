@@ -39,7 +39,7 @@ let generateAs source target =
     let template = Path.Combine(__SOURCE_DIRECTORY__, "Template.html")
     let source = Path.Combine(__SOURCE_DIRECTORY__, source)
     let target = Path.Combine(output, target)
-    Literate.ProcessMarkdown(source, template, target)
+    Literate.ProcessMarkdown(source, template, target, generateAnchors=true)
 
 let generate file =
     generateAs (file |> sprintf "%s.md") (file |> sprintf "%s.html")
