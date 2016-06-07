@@ -1,4 +1,5 @@
 ﻿#EventStore Development Environment
+
 ## Installation
 1. Download [EventStore][eventstore] (e.g. `3.6.2.0`)
 2. Download [nssm][nssm] for 64-bit Windows (e.g. `2.24`)
