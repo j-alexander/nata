@@ -1,7 +1,7 @@
 ﻿#EventStore Development Environment
 ## Installation
-1. Download [EventStore][eventstore] for Windows.
-2. Download [nssm][nssm] for Windows.
+1. Download [EventStore][eventstore] (e.g. `3.6.2.0`)
+2. Download [nssm][nssm] for 64-bit Windows (e.g. `2.24`)
 3. Install both to `C:\Program Files\EventStore`
 4. Configure EventStore service:
 
@@ -31,5 +31,5 @@ nssm.exe install EventStore "C:\Program Files\EventStore\EventStore.ClusterNode.
     rm -recurse "C:\ProgramData\EventStore\data\*"
     ```
 
-  [eventstore]: http://geteventstore.com "EventStore Website" 
+  [eventstore]: https://geteventstore.com/downloads/ "EventStore Website" 
   [nssm]: https://nssm.cc "Non-Sucking Service Manager"

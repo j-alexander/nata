@@ -10,7 +10,7 @@
 
 ## Zookeeper Installation
 1. Download [Zookeeper][zookeeper] (e.g. `3.4.8`)
-2. Download [nssm][nssm] for Windows.
+2. Download [nssm][nssm] for 64-bit Windows (e.g. `2.24`)
 3. Extract both to `C:\Program Files\Zookeeper\{bin,conf,etc}`
 4. Change `C:\Program Files\Zookeeper\conf\zoo_sample.cfg` to `zoo.cfg`
   * `dataDir=/ProgramData/Zookeeper`
@@ -26,7 +26,7 @@ nssm.exe install Zookeeper "C:\Program Files\Zookeeper\bin\zkServer.cmd"
 
 ## Kafka Installation
 1. Download [Kafka][kafka] (e.g. `2.11-0.9.0.1`)
-2. Download [nssm][nssm] for Windows.
+2. Download [nssm][nssm] for 64-bit Windows (e.g. `2.24`)
 3. Extract both to `C:\Program Files\Kafka\{bin,config,libs,etc}`
 4. Change `C:\Program Files\Kafka\config\server.properties`
   * for a development workstation:
