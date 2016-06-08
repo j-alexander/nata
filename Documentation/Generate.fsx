@@ -51,7 +51,3 @@ copy "content" "tips.js"
 generate "InstallEventStore"
 generate "InstallKafka"
 generateAs "Index.md" "index.html"
-
-
-
-
