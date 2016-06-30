@@ -115,6 +115,20 @@ module Core =
         
         let ofString = Int32.TryParse >> function true, x -> Some x | _ -> None
         let toString (x:int32) = x.ToString()
+
+    module String =
+        
+        let contains (substring:string) (x:string) =
+            match x, substring with
+            | null, null -> true
+            | null, _ | _, null -> false
+            | x, substring -> x.Contains(substring)
+            
+        let containsIgnoreCase (substring:string) (x:string) =
+            match x, substring with
+            | null, null -> true
+            | null, _ | _, null -> false
+            | x, substring -> x.ToLowerInvariant().Contains(substring.ToLowerInvariant())
         
     [<AutoOpen>]
     module Patterns =
