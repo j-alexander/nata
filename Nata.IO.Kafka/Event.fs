@@ -12,7 +12,7 @@ module Event =
 
     let ofMessage (topic:TopicName) (message:Message) =
         Event.create message.Value
-        |> Event.withKey (message.Key |> Encoding.Default.GetString)
+        |> Event.withKey (message.Key |> fst Codec.BytesToString)
         |> Event.withStream topic
         |> Event.withPartition message.PartitionId
         |> Event.withIndex message.Offset

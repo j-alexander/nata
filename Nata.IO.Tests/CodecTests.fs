@@ -57,3 +57,7 @@ type CodecTests() =
         let value = [| 0x1uy; 0x2uy; 0x3uy |]
         Assert.AreEqual(value, value |> Codec.encoder codec)
         Assert.AreEqual(value, value |> Codec.decoder codec)
+
+    [<Test>]
+    member x.TestNullByteArrayToString() =
+        Assert.AreEqual("", null |> fst Codec.BytesToString)

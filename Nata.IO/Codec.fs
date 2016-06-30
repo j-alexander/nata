@@ -26,7 +26,8 @@ module Codec =
         id, id
     
     let StringToBytes : Codec<string,byte[]> =
-        Encoding.UTF8.GetBytes, Encoding.UTF8.GetString
+        (function null ->  ""  | x -> x) >> Encoding.UTF8.GetBytes,
+        (function null -> [||] | x -> x) >> Encoding.UTF8.GetString
     let BytesToString : Codec<byte[],string> =
         reverse StringToBytes
 

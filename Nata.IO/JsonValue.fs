@@ -8,11 +8,11 @@ open Newtonsoft.Json
 module JsonValue =
 
     let toString (json:JsonValue) = json.ToString(JsonSaveOptions.DisableFormatting)
-    let toBytes = toString >> Encoding.Default.GetBytes
+    let toBytes = toString >> fst Codec.StringToBytes
     let toType (json:JsonValue) : 'T = JsonConvert.DeserializeObject<'T>(toString json)
 
     let ofString (json:string) = JsonValue.Parse json
-    let ofBytes = Encoding.Default.GetString >> ofString
+    let ofBytes = fst Codec.BytesToString >> ofString
     let ofType (t:'T) : JsonValue = JsonConvert.SerializeObject(t) |> ofString
 
     module Codec =
