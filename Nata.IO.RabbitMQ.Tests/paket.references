@@ -1,0 +1,6 @@
+FSharp.Data
+Newtonsoft.Json
+NLog
+NLog.FSharp
+NUnitTestAdapter.WithFramework
+RabbitMQ.Client

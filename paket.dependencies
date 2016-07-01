@@ -1,0 +1,33 @@
+source https://jet.myget.org/F/jenkins/auth/171ef4d0-bb9b-4332-b54b-0f255e105e48
+source https://www.nuget.org/api/v2/
+
+nuget EventStore.Client 3.7.0 framework: >= net452
+nuget FSharp.Compiler.Service 2.0.0.6 framework: >= net452
+nuget FSharp.Data 2.3.1
+nuget FSharp.Formatting 2.14.4 framework: >= net452
+nuget FSharp.Formatting.CommandTool 2.14.4 framework: >= net452
+nuget FSharpVSPowerTools.Core 2.3.0 framework: >= net452
+nuget kafka-net 0.9.0.65 framework: >= net452
+nuget Microsoft.AspNet.WebApi.Client 5.2.3 framework: >= net45
+nuget Microsoft.AspNet.WebApi.Core 5.2.3 framework: >= net45
+nuget Microsoft.AspNet.WebApi.Owin 5.2.3 framework: >= net45
+nuget Microsoft.Azure.KeyVault.Core 1.0.0 framework: >= net452
+nuget Microsoft.Bcl 1.1.10 framework: >= net45
+nuget Microsoft.Bcl.Build 1.0.21 framework: >= net45
+nuget Microsoft.Data.Edm 5.7.0 framework: >= net452
+nuget Microsoft.Data.OData 5.7.0 framework: >= net452
+nuget Microsoft.Data.Services.Client 5.7.0 framework: >= net452
+nuget Microsoft.Net.Http 2.2.29 framework: >= net45
+nuget Microsoft.Owin 3.0.1 framework: >= net45
+nuget Microsoft.Owin.Diagnostics 3.0.1 framework: >= net45
+nuget Microsoft.Owin.Host.HttpListener 3.0.1 framework: >= net45
+nuget Microsoft.Owin.Hosting 3.0.1 framework: >= net45
+nuget Newtonsoft.Json 9.0.1
+nuget NLog 4.3.5
+nuget NLog.FSharp 4.2.3 framework: >= net452
+nuget NUnitTestAdapter.WithFramework 2.0.0 framework: >= net452
+nuget Owin 1.0 framework: >= net45
+nuget RabbitMQ.Client 3.6.2 framework: >= net452
+nuget System.Spatial 5.7.0 framework: >= net452
+nuget WindowsAzure.ServiceBus 3.2.4 framework: >= net452
+nuget WindowsAzure.Storage 7.0.0 framework: >= net452

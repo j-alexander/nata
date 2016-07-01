@@ -1,11 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO", "Nata.IO\Nata.IO.fsproj", "{05933D30-393B-4A8E-8418-B6A141D70040}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{D5F93442-F280-45E1-9224-5BF707244CC8}"
+	ProjectSection(SolutionItems) = preProject
+		paket.dependencies = paket.dependencies
+	EndProjectSection
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.CEP", "Nata.CEP\Nata.CEP.fsproj", "{9498B7A0-2022-4185-9D06-4C740F74B3DF}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO", "Nata.IO\Nata.IO.fsproj", "{05933D30-393B-4A8E-8418-B6A141D70040}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.EventStore", "Nata.IO.EventStore\Nata.IO.EventStore.fsproj", "{B5F580E2-3957-41C3-9F14-F9F8CF636B7E}"
 EndProject
@@ -49,10 +52,6 @@ Global
 		{05933D30-393B-4A8E-8418-B6A141D70040}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05933D30-393B-4A8E-8418-B6A141D70040}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05933D30-393B-4A8E-8418-B6A141D70040}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9498B7A0-2022-4185-9D06-4C740F74B3DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9498B7A0-2022-4185-9D06-4C740F74B3DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9498B7A0-2022-4185-9D06-4C740F74B3DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9498B7A0-2022-4185-9D06-4C740F74B3DF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B5F580E2-3957-41C3-9F14-F9F8CF636B7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B5F580E2-3957-41C3-9F14-F9F8CF636B7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5F580E2-3957-41C3-9F14-F9F8CF636B7E}.Release|Any CPU.ActiveCfg = Release|Any CPU

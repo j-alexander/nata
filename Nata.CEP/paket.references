@@ -1,0 +1,15 @@
+FSharp.Data
+Microsoft.AspNet.WebApi.Client
+Microsoft.AspNet.WebApi.Core
+Microsoft.AspNet.WebApi.Owin
+Microsoft.Bcl
+Microsoft.Bcl.Build
+Microsoft.Net.Http
+Microsoft.Owin
+Microsoft.Owin.Diagnostics
+Microsoft.Owin.Host.HttpListener
+Microsoft.Owin.Hosting
+Newtonsoft.Json
+NLog
+NLog.FSharp
+Owin

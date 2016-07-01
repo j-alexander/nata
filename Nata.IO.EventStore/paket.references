@@ -1,0 +1,5 @@
+EventStore.Client
+FSharp.Data
+Newtonsoft.Json
+NLog
+NLog.FSharp
