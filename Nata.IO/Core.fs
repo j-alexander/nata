@@ -17,6 +17,9 @@ module Core =
         let mapFst fn = Seq.map <| mapFst fn
         let mapSnd fn = Seq.map <| mapSnd fn
           
+        let log fn = Seq.map (fun x -> fn x; x)
+        let logi fn = Seq.mapi (fun i x -> fn i x; x)
+
         let merge (sequences:seq<'T> list) : seq<'T> =
             seq { 
                 let n = sequences.Length
