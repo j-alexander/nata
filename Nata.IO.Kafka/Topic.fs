@@ -27,11 +27,13 @@ module Topic =
         |> Seq.sortBy OffsetRange.partitionId
         |> Seq.toList
 
-    let private produce (topic:Topic) (messages) =
-        topic.Producer().SendMessageAsync(topic.Name, Seq.map Message.toKafka messages)
-        |> Async.AwaitTask
-        |> Async.RunSynchronously
-        |> Seq.map Offset.fromKafka
+    let private produce (topic:Topic) =
+        let producer = topic.Producer()
+        fun messages ->
+            producer.SendMessageAsync(topic.Name, Seq.map Message.toKafka messages)
+            |> Async.AwaitTask
+            |> Async.RunSynchronously
+            |> Seq.map Offset.fromKafka
 
     let private consume (topic:Topic) hasCompleted (position:Position<Offsets>) =
         seq {   
