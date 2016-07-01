@@ -59,6 +59,7 @@
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="LogStoreTests.fs" />
+    <Compile Include="ClusterTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
