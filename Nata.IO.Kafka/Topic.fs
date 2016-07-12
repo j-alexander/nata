@@ -69,10 +69,9 @@ module Topic =
                     |> Option.map get) (ranges, offsets)
         }
 
-    let index topic =
+    let index topic position =
         use consumer = topic.Consumer()
-        fun position ->
-            indexOf (offsetRangesFor(consumer, topic.Name)) position
+        indexOf (offsetRangesFor(consumer, topic.Name)) position
 
     let readFrom topic position =
         consume topic Offsets.completed position
