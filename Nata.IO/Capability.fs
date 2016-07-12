@@ -1,6 +1,7 @@
 ﻿namespace Nata.IO
 
 type Capability<'Data,'Index> =
+    | Indexer           of Indexer<'Index>
     | Writer            of Writer<'Data>
     | WriterTo          of WriterTo<'Data,'Index>
     | Reader            of Reader<'Data>
@@ -15,6 +16,7 @@ module Capability =
     let mapData ((encode,decode):Codec<'DataIn,'DataOut>)
                 (capability:Capability<'DataIn,'Index>) : Capability<'DataOut,'Index> =
         match capability with
+        | Indexer x ->        x |> Indexer
         | Writer x ->         x |> Writer.mapData decode |> Writer
         | WriterTo x ->       x |> WriterTo.mapData decode |> WriterTo
         | Reader x ->         x |> Reader.mapData encode |> Reader
@@ -25,6 +27,7 @@ module Capability =
     let mapIndex (codec:Codec<'IndexIn, 'IndexOut>)
                  (capability:Capability<'Data,'IndexIn>) : Capability<'Data,'IndexOut> =
         match capability with
+        | Indexer x ->        x |> Indexer.mapIndex (Codec.reverse codec) |> Indexer
         | Writer x ->         x |> Writer
         | WriterTo x ->       x |> WriterTo.mapIndex (Codec.reverse codec) |> WriterTo
         | Reader x ->         x |> Reader
@@ -38,6 +41,15 @@ module Capability =
         capability
         |> mapData dataCodec
         |> mapIndex indexCodec
+        
+    let tryIndexer (capabilities:Capability<'Data,'Index> list) : Indexer<'Index> option =
+        capabilities |> List.tryPick (function Indexer x -> Some x | _ -> None)
+        
+    let tryWriter (capabilities:Capability<'Data,'Index> list) : Writer<'Data> option =
+        capabilities |> List.tryPick (function Writer x -> Some x | _ -> None)
+
+    let tryWriterTo (capabilities:Capability<'Data,'Index> list) : WriterTo<'Data,'Index> option =
+        capabilities |> List.tryPick (function WriterTo x -> Some x | _ -> None)
 
     let tryReader (capabilities:Capability<'Data,'Index> list) : Reader<'Data> option =
         capabilities |> List.tryPick (function Reader x -> Some x | _ -> None)
@@ -45,29 +57,26 @@ module Capability =
     let tryReaderFrom (capabilities:Capability<'Data,'Index> list) : ReaderFrom<'Data,'Index> option =
         capabilities |> List.tryPick (function ReaderFrom x -> Some x | _ -> None)
 
-    let tryWriter (capabilities:Capability<'Data,'Index> list) : Writer<'Data> option =
-        capabilities |> List.tryPick (function Writer x -> Some x | _ -> None)
-
-    let tryWriterTo (capabilities:Capability<'Data,'Index> list) : WriterTo<'Data,'Index> option =
-        capabilities |> List.tryPick (function WriterTo x -> Some x | _ -> None)
-
     let trySubscriber (capabilities:Capability<'Data,'Index> list) : Subscriber<'Data> option =
         capabilities |> List.tryPick (function Subscriber x -> Some x | _ -> None)
 
     let trySubscriberFrom (capabilities:Capability<'Data,'Index> list) : SubscriberFrom<'Data,'Index> option =
         capabilities |> List.tryPick (function SubscriberFrom x -> Some x | _ -> None)
         
-    let reader (capabilities:Capability<'Data,'Index> list) =
-        capabilities |> tryReader |> Option.get
-
-    let readerFrom (capabilities:Capability<'Data,'Index> list) =
-        capabilities |> tryReaderFrom |> Option.get
+    let indexer (capabilities:Capability<'Data,'Index> list) =
+        capabilities |> tryIndexer |> Option.get
 
     let writer (capabilities:Capability<'Data,'Index> list) =
         capabilities |> tryWriter |> Option.get
 
     let writerTo (capabilities:Capability<'Data,'Index> list) =
         capabilities |> tryWriterTo |> Option.get
+
+    let reader (capabilities:Capability<'Data,'Index> list) =
+        capabilities |> tryReader |> Option.get
+
+    let readerFrom (capabilities:Capability<'Data,'Index> list) =
+        capabilities |> tryReaderFrom |> Option.get
 
     let subscriber (capabilities:Capability<'Data,'Index> list) =
         capabilities |> trySubscriber |> Option.get

@@ -63,6 +63,7 @@
     <Compile Include="DateTime.fs" />
     <Compile Include="Event.fs" />
     <Compile Include="Position.fs" />
+    <Compile Include="Indexer.fs" />
     <Compile Include="Writer.fs" />
     <Compile Include="WriterTo.fs" />
     <Compile Include="Reader.fs" />

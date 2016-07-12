@@ -59,6 +59,7 @@
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Configuration.fs" />
+    <Compile Include="IndexerTests.fs" />
     <Compile Include="WriterTests.fs" />
     <Compile Include="WriteToTests.fs" />
     <Compile Include="ReaderTests.fs" />

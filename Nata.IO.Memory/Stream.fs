@@ -75,7 +75,10 @@ module Stream =
                     raise (Position.Invalid(Position.At index))
             }
 
-        [   
+        [
+            Capability.Indexer
+                indexOf
+           
             Capability.Reader <| fun () ->
                 readFrom 0L |> Seq.map fst
 
