@@ -37,6 +37,9 @@ module Cluster =
     let topics : Connector<Cluster,TopicName,Data,Offsets>  =
         fun cluster name ->
             [
+                Capability.Indexer <|
+                    (Topic.index (topicFor cluster name))
+
                 Capability.Reader <| fun () ->
                     (Topic.read (topicFor cluster name) |> Seq.map (Event.ofMessage name))
 

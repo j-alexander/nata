@@ -130,6 +130,9 @@ module Stream =
             listenFrom 0L |> Seq.map fst
         
         [   
+            Capability.Indexer
+                indexOf
+
             Capability.Reader
                 read
 

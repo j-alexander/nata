@@ -27,6 +27,13 @@ module Topic =
         |> Seq.sortBy OffsetRange.partitionId
         |> Seq.toList
 
+    let rec private indexOf (ranges:OffsetRanges) = function
+        | Position.Start -> Offsets.start ranges
+        | Position.End -> Offsets.finish ranges
+        | Position.At x -> x
+        | Position.Before x -> Offsets.before ranges (indexOf ranges x)
+        | Position.After x -> Offsets.after ranges (indexOf ranges x)
+
     let private produce (topic:Topic) =
         let producer = topic.Producer()
         fun messages ->
@@ -39,13 +46,7 @@ module Topic =
         seq {   
             use consumer = topic.Consumer()
             let ranges = offsetRangesFor(consumer, topic.Name)
-            let rec start = function
-                | Position.Start -> Offsets.start ranges
-                | Position.End -> Offsets.finish ranges
-                | Position.At x -> x
-                | Position.Before x -> Offsets.before ranges (start x)
-                | Position.After x -> Offsets.after ranges (start x)
-            let offsets = start position
+            let offsets = indexOf ranges position
 
             use enumerator = 
                 consumer.SetOffsetPosition(Offsets.toKafka(offsets))
@@ -67,6 +68,11 @@ module Topic =
                     |> Option.whenTrue (hasCompleted >> not)
                     |> Option.map get) (ranges, offsets)
         }
+
+    let index topic =
+        use consumer = topic.Consumer()
+        fun position ->
+            indexOf (offsetRangesFor(consumer, topic.Name)) position
 
     let readFrom topic position =
         consume topic Offsets.completed position
