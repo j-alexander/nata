@@ -2,3 +2,4 @@ NLog.FSharp
 FSharp.Data
 Newtonsoft.Json
 NUnitTestAdapter.WithFramework
+WebSocket4Net

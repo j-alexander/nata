@@ -29,5 +29,6 @@ nuget NUnitTestAdapter.WithFramework 2.0.0 framework: >= net452
 nuget Owin 1.0 framework: >= net45
 nuget RabbitMQ.Client 3.6.2 framework: >= net452
 nuget System.Spatial 5.7.0 framework: >= net452
+nuget WebSocket4Net
 nuget WindowsAzure.ServiceBus 3.2.4 framework: >= net452
 nuget WindowsAzure.Storage 7.0.0 framework: >= net452
