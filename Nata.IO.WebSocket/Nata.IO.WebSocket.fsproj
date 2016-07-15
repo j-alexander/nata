@@ -64,6 +64,7 @@
   <ItemGroup>
     <None Include="paket.references" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Multicast.fs" />
     <Compile Include="Socket.fs" />
   </ItemGroup>
   <ItemGroup>

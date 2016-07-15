@@ -4,7 +4,7 @@ module Socket =
 
     open System
     open System.IO
-    open System.Collections.Concurrent
+    open System.Threading
     open WebSocket4Net
 
     open Nata.IO
@@ -19,11 +19,13 @@ module Socket =
         | Received of string
         | Closed of exn option
 
-    let receive { Host=host; AutoPingInterval=autoPing } =
-        seq {
-            use received = new BlockingCollection<Status>(100)
-            use socket = new WebSocket(host)
-        
+    let connect : Source<Settings,string,unit> =
+        function
+        | { Host=host; AutoPingInterval=autoPing } ->
+
+            let multicast = new Multicast<Status>()
+            let socket = new WebSocket(host)
+
             match autoPing with
             | None ->
                 socket.EnableAutoSendPing <- false
@@ -31,52 +33,41 @@ module Socket =
                 socket.EnableAutoSendPing <- true
                 socket.AutoSendPingInterval <- interval
             
-            socket.Opened.AddHandler(fun s e -> received.Add(Opened))
-            socket.Closed.AddHandler(fun s e -> received.Add(Closed(None)))
-            socket.Error.AddHandler(fun s e -> received.Add(Closed(Some e.Exception)))
-            socket.MessageReceived.AddHandler(fun s e ->
-                received.Add(Received(e.Message)))
+            socket.Opened.AddHandler(fun s e -> multicast.Publish(Opened))
+            socket.Closed.AddHandler(fun s e -> multicast.Publish(Closed(None)))
+            socket.Error.AddHandler(fun s e -> multicast.Publish(Closed(Some e.Exception)))
+            socket.MessageReceived.AddHandler(fun s e -> multicast.Publish(Received(e.Message)))
 
-            socket.Open()
-        
-            let rec loop() =
+               
+            let initialize =
+                new Lazy<unit>((fun () ->
+                    let events = multicast.Subscribe()
+                    socket.Open()
+                    events
+                    |> Seq.takeWhile(function Status.Opened -> false | _ -> true)
+                    |> Seq.iter ignore),
+                    true)
+
+            let write(message:Event<string>) = 
+                initialize.Force()
+                socket.Send(message |> Event.data)
+
+            let listen() =
+                let events = multicast.Subscribe()
+                initialize.Force()
                 seq {
-                    match received.Take() with
-                    | Closed (None) ->    ()
-                    | Closed (Some e) ->  raise e
-                    | Opened ->           yield! loop()
-                    | Received message -> yield message
-                                          yield! loop()
+                    for event in events do
+                        match event with
+                        | Status.Opened
+                        | Status.Closed(None) -> ()
+                        | Status.Closed(Some exn) ->
+                            raise exn
+                        | Status.Received(message) ->
+                            yield Event.create message
                 }
-            yield! loop()
-        }
 
-    let transmit (messages:seq<string>) { Host=host; AutoPingInterval=autoPing } =
-
-        use received = new BlockingCollection<Status>(100)
-        use socket = new WebSocket(host)
-        
-        match autoPing with
-        | None ->
-            socket.EnableAutoSendPing <- false
-        | Some interval ->
-            socket.EnableAutoSendPing <- true
-            socket.AutoSendPingInterval <- interval
-
-        socket.Open()
-        for message in messages do
-            socket.Send(message)
-
-    let listen = receive >> Seq.map Event.create
-        
-    let write = Event.data >> Seq.singleton >> transmit 
-
-    let connect : Source<Settings,string,unit> =
-        fun (settings:Settings) ->
             [
-                Writer <| fun message ->
-                    write message settings
+                Writer <| write
 
-                Subscriber <| fun () ->
-                    listen settings
+                Subscriber <| listen
             ]
