@@ -19,7 +19,7 @@ module Socket =
         | Received of string
         | Closed of exn option
 
-    let private receive (loop:BlockingCollection<Status>->seq<string>) { Host=host; AutoPingInterval=autoPing } =
+    let receive { Host=host; AutoPingInterval=autoPing } =
         seq {
             use received = new BlockingCollection<Status>(100)
             use socket = new WebSocket(host)
@@ -39,12 +39,19 @@ module Socket =
 
             socket.Open()
         
-            yield!
-                loop received
-                |> Seq.map Event.create
+            let rec loop() =
+                seq {
+                    match received.Take() with
+                    | Closed (None) ->    ()
+                    | Closed (Some e) ->  raise e
+                    | Opened ->           yield! loop()
+                    | Received message -> yield message
+                                          yield! loop()
+                }
+            yield! loop()
         }
 
-    let private transmit (messages:seq<string>) { Host=host; AutoPingInterval=autoPing } =
+    let transmit (messages:seq<string>) { Host=host; AutoPingInterval=autoPing } =
 
         use received = new BlockingCollection<Status>(100)
         use socket = new WebSocket(host)
@@ -60,30 +67,7 @@ module Socket =
         for message in messages do
             socket.Send(message)
 
-    let listen =
-        let rec loop(received:BlockingCollection<Status>) =
-            seq {
-                match received.Take() with
-                | Closed (None) ->    ()
-                | Closed (Some e) ->  raise e
-                | Opened ->           yield! loop received
-                | Received message -> yield message
-                                      yield! loop received
-            }
-        receive loop
-        
-    let read =
-        let rec loop(received:BlockingCollection<Status>) =
-            seq {
-                match received.TryTake() with
-                | false, _ ->            ()
-                | _, Closed (None) ->    ()
-                | _, Closed (Some e) ->  raise e
-                | _, Opened ->           yield! loop received
-                | _, Received message -> yield message
-                                         yield! loop received
-            }
-        receive loop
+    let listen = receive >> Seq.map Event.create
         
     let write = Event.data >> Seq.singleton >> transmit 
 
@@ -92,9 +76,6 @@ module Socket =
             [
                 Writer <| fun message ->
                     write message settings
-
-                Reader <| fun () ->
-                    read settings
 
                 Subscriber <| fun () ->
                     listen settings
