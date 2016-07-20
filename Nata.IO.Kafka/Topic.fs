@@ -20,7 +20,7 @@ type Topic =
 module Topic =
 
     let private offsetRangesFor (consumer:Consumer, topic:TopicName) : OffsetRanges =
-        consumer.GetTopicOffsetAsync(topic)
+        consumer.GetTopicOffsetAsync(topic,1048576,-1)
         |> Async.AwaitTask
         |> Async.RunSynchronously
         |> Seq.map OffsetRange.fromKafka
