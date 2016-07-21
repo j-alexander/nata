@@ -1,0 +1,9 @@
+NLog.FSharp
+FSharp.Data
+Newtonsoft.Json
+WebSocket4Net
+RabbitMQ.Client
+kafka-net
+EventStore.Client
+WindowsAzure.ServiceBus
+WindowsAzure.Storage
