@@ -1,6 +1,7 @@
 ﻿namespace Nata.IO.Tests
 
 open System
+open System.Collections.Concurrent
 open System.Reflection
 open System.Text
 open FSharp.Data
@@ -171,9 +172,9 @@ type LogStoreTests() as x =
             let connection = x.Capabilities()
             writer connection, subscriberFrom connection
         let expected =
-            [| event "TestLateSubscriptionFromIndex-0"
-               event "TestLateSubscriptionFromIndex-1"
-               event "TestLateSubscriptionFromIndex-2" |]
+            [| event "TestSubscriptionFromIndex-0"
+               event "TestSubscriptionFromIndex-1"
+               event "TestSubscriptionFromIndex-2" |]
         for event in expected do
             write event
         subscribeFrom (Position.Start)
@@ -200,3 +201,39 @@ type LogStoreTests() as x =
         |> Array.zip (expected.[2..2])
         |> Array.iter(fun (expected, (actual, index)) ->
             Assert.AreEqual(expected.Data, actual.Data))
+            
+    [<Test; Timeout(120000)>]
+    member x.TestSubscriptionContinuation() =
+        let write, subscribeFrom =
+            let connection = x.Capabilities()
+            writer connection,
+            subscriberFrom connection
+
+        let flag,stop =
+            event "TestSubscriptionContinuation-flag",
+            event "TestSubscriptionContinuation-stop"
+        let results = new BlockingCollection<byte[]>()
+        let subscriber =
+            async {
+                subscribeFrom Position.End
+                |> Seq.takeWhile (fst >> Event.data >> (=) (Event.data flag))
+                |> Seq.iter (fst >> Event.data >> results.Add)
+            } |> Async.StartAsTask
+              |> Async.AwaitTask
+
+        let rec publish() =
+            async {
+                do! Async.Sleep(1000)
+                match results |> Seq.tryFind ((=) (Event.data flag)) with
+                | None ->
+                    write flag
+                    return! publish()
+                | Some x ->
+                    write stop
+                    return ()
+            }
+            
+        publish()
+        |> Async.RunSynchronously
+        subscriber
+        |> Async.RunSynchronously
