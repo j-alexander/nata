@@ -62,13 +62,20 @@ module Stream =
         let from = indexOf position
         let queue = new BlockingCollection<Option<Event*Index>>(new ConcurrentQueue<Option<Event*Index>>())
         let subscription =
-            let start = match from-1 with -1 -> Nullable() | x -> Nullable(x)
             let settings = CatchUpSubscriptionSettings.Default
             let onDropped,onEvent,onLive =
                 Action<_,_,_>(fun _ _ _ -> queue.Add None),
                 Action<_,_>(fun _ -> decode >> Some >> queue.Add),
                 Action<_>(ignore)
-            connection.SubscribeToStreamFrom(stream, start, settings, onEvent, onLive, onDropped)
+            match from with
+            | -1 -> connection.SubscribeToStreamAsync(stream, true, onEvent, onDropped)
+                    |> Async.AwaitTask
+                    |> Async.RunSynchronously
+                    |> Client.Live
+            |  0 -> connection.SubscribeToStreamFrom(stream, Nullable(), settings, onEvent, onLive, onDropped)
+                    |> Client.Catchup
+            |  x -> connection.SubscribeToStreamFrom(stream, Nullable(x-1), settings, onEvent, onLive, onDropped)
+                    |> Client.Catchup
 
         let rec traverse last =
             seq {

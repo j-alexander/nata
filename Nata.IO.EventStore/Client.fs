@@ -10,6 +10,10 @@ open EventStore.ClientAPI.SystemData
 
 module Client =
 
+    type Subscription =
+        | Catchup of EventStoreStreamCatchUpSubscription
+        | Live of EventStoreSubscription
+
     let log = new Logger()
     
     let connect(settings:Settings) : IEventStoreConnection =
