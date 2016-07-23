@@ -144,12 +144,15 @@ module Stream =
         | Position.At x -> x
         | Position.Before x -> (index connection stream x) - 1
         | Position.After x -> (index connection stream x) + 1
-        | Position.Start
-        | Position.End ->
-            let direction = match position with Position.Start -> Direction.Forward | _ -> Direction.Reverse
-            read connection stream direction position
+        | Position.Start ->
+            read connection stream Direction.Forward position
             |> Seq.tryPick Some
             |> Option.map snd
+            |> Option.getValueOr StreamPosition.Start
+        | Position.End ->
+            read connection stream Direction.Reverse position
+            |> Seq.tryPick Some
+            |> Option.map (snd >> (+) 1)
             |> Option.getValueOr StreamPosition.Start
 
 

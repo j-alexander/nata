@@ -93,7 +93,7 @@ type LogStoreTests() as x =
               2L, event "TestWriteTo-2" |> writeTo (Position.At 2L) ]
             |> List.iter Assert.AreEqual
         | _ ->
-            Assert.Pass("WriterTo is reported to be unsupported by this source.")
+            Assert.Ignore("WriterTo is reported to be unsupported by this source.")
 
     [<Test>]
     member x.TestWriteToPosition() =
@@ -115,7 +115,7 @@ type LogStoreTests() as x =
                 Assert.AreEqual(event_2.Data, result_2.Data)
             | _ -> Assert.Fail()
         | _ ->
-            Assert.Pass("ReaderFrom and WriterTo are reported to be unsupported by this source.")
+            Assert.Ignore("ReaderFrom and WriterTo are reported to be unsupported by this source.")
 
     [<Test; ExpectedException(typeof<Position.Invalid<int64>>)>]
     member x.TestWriteToShouldFailWithIndexTooLow() =
@@ -126,7 +126,7 @@ type LogStoreTests() as x =
             event "TestWriteToShouldFailWithIndexTooLow-1" |> writeTo (Position.At 0L) |> ignore
             event "TestWriteToShouldFailWithIndexTooLow-2" |> writeTo (Position.At 0L) |> ignore
         | _ ->
-            Assert.Pass("WriterTo is reported to be unsupported by this source.")
+            Assert.Ignore("WriterTo is reported to be unsupported by this source.")
 
     [<Test; ExpectedException(typeof<Position.Invalid<int64>>)>]
     member x.TestWriteToShouldFailWithIndexTooHigh() =
@@ -137,7 +137,7 @@ type LogStoreTests() as x =
             event "TestWriteToShouldFailWithIndexTooHigh-1" |> writeTo (Position.At 0L) |> ignore
             event "TestWriteToShouldFailWithIndexTooHigh-2" |> writeTo (Position.At 2L) |> ignore
         | _ ->
-            Assert.Pass("WriterTo is reported to be unsupported by this source.")
+            Assert.Ignore("WriterTo is reported to be unsupported by this source.")
         
     [<Test; Timeout(120000)>]
     member x.TestLiveSubscription() =
@@ -247,3 +247,34 @@ type LogStoreTests() as x =
         |> Async.RunSynchronously
         subscriber
         |> Async.RunSynchronously
+
+    [<Test>]
+    member x.TestIndexEmpty() =
+        match x.Capabilities() |> tryIndexer with
+        | None ->
+            Assert.Ignore("Indexer is reported to be unsupported by this source.")
+        | Some index ->
+            Assert.AreEqual(0, index Position.Start)
+            Assert.AreEqual(0, index Position.End)
+
+    [<Test>]
+    member x.TestIndexWithWrites() =
+        let tryIndex, tryWrite =
+            let stream = x.Capabilities()
+            tryIndexer stream,
+            tryWriter stream
+        match tryIndex, tryWrite with
+        | Some index, Some write ->
+            Assert.AreEqual(0, index Position.Start)
+            Assert.AreEqual(0, index Position.End)
+            write(event("TestIndexWithWrites-0"))
+            Assert.AreEqual(0, index Position.Start)
+            Assert.AreEqual(1, index Position.End)
+            write(event("TestIndexWithWrites-1"))
+            Assert.AreEqual(0, index Position.Start)
+            Assert.AreEqual(2, index Position.End)
+            write(event("TestIndexWithWrites-2"))
+            Assert.AreEqual(0, index Position.Start)
+            Assert.AreEqual(3, index Position.End)
+        | _ ->
+            Assert.Ignore("Indexer or Writer is reported to be unsupported by this source.")

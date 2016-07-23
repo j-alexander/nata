@@ -74,7 +74,7 @@ module Offsets =
     let updateWith (message:Message) : Offsets -> Offsets =
         List.map(fun offset ->
             if offset.PartitionId <> message.PartitionId then offset
-            else { offset with Position = 1L + message.Offset })
+            else { offset with Position = message.Offset })
 
     let toKafka : Offsets -> KafkaNet.Protocol.OffsetPosition[] =
         Seq.sortBy Offset.partitionId
@@ -84,7 +84,7 @@ module Offsets =
     let toInt64 (partition) (offsets:Offsets) : int64 =
         offsets
         |> List.filter (fun x -> x.PartitionId = 0)
-        |> List.map (fun x -> x.Position - 1L)
+        |> List.map (fun x -> x.Position)
         |> List.head
 
     let ofInt64 (partition) (position:int64) : Offsets =
