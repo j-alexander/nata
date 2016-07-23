@@ -137,9 +137,28 @@ module Stream =
                     raise exn
             | _ -> raise exn
 
+    let rec index (connection : IEventStoreConnection)
+                  (stream : string)
+                  (position : Position<Index>) : Index =
+        match position with
+        | Position.At x -> x
+        | Position.Before x -> (index connection stream x) - 1
+        | Position.After x -> (index connection stream x) + 1
+        | Position.Start
+        | Position.End ->
+            let direction = match position with Position.Start -> Direction.Forward | _ -> Direction.Reverse
+            read connection stream direction position
+            |> Seq.tryPick Some
+            |> Option.map snd
+            |> Option.getValueOr StreamPosition.Start
+
+
     let connect : Connector<Settings,Name,Data,Index> =
         Client.connect >> (fun connection stream ->
             [   
+                Capability.Indexer <|
+                    index connection stream
+
                 Capability.Reader <| fun () ->
                     read connection stream Direction.Forward Position.Start |> Seq.map fst
 
