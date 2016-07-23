@@ -40,6 +40,11 @@ type LogStoreTests() as x =
         let event = event("TestWrite")
         write event
 
+    [<Test; Timeout(45000)>]
+    member x.TestEmptyRead() =
+        let read = x.Capabilities() |> reader
+        Assert.AreEqual([], read() |> Seq.toList)
+
     [<Test>]
     member x.TestRead() =
         let connection = x.Capabilities()
@@ -50,6 +55,11 @@ type LogStoreTests() as x =
 
         let result = read() |> Seq.head
         Assert.AreEqual(event.Data, result.Data)
+
+    [<Test; Timeout(45000)>]
+    member x.TestEmptyReadFrom() =
+        let readFrom = x.Capabilities() |> readerFrom
+        Assert.AreEqual([], readFrom Position.Start |> Seq.toList)
 
     [<Test>]
     member x.TestReadFrom() =

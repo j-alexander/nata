@@ -20,6 +20,9 @@ module Stream =
     type Name = string
     type Index = int
     type Position = Position<Index>
+    type Direction = Forward | Reverse
+
+    let private log = new Logger()
 
     let private decode (resolvedEvent:ResolvedEvent) =
         Event.create           resolvedEvent.Event.Data
@@ -39,19 +42,25 @@ module Stream =
 
     let rec private read (connection : IEventStoreConnection)
                          (stream : string)
+                         (direction : Direction)
                          (position : Position<Index>) : seq<Event*Index> =
         seq {
             let from = indexOf position
-            let sliceTask = connection.ReadStreamEventsForwardAsync(stream, from, 1000, true)
+            let sliceTask = 
+                match direction with
+                | Direction.Forward -> connection.ReadStreamEventsForwardAsync(stream, from, 1000, true)
+                | Direction.Reverse -> connection.ReadStreamEventsBackwardAsync(stream, from, 1000, true)
             let slice = sliceTask |> Async.AwaitTask |> Async.RunSynchronously
             match slice.Status with
-            | SliceReadStatus.StreamDeleted -> failwith (sprintf "Stream %s at (%d) was deleted." stream from)
-            | SliceReadStatus.StreamNotFound -> failwith (sprintf "Stream %s at (%d) was not found." stream from)
+            | SliceReadStatus.StreamDeleted -> 
+                log.Warn "Stream %s at (%d) was deleted." stream from
+            | SliceReadStatus.StreamNotFound -> 
+                log.Warn "Stream %s at (%d) was not found." stream from
             | SliceReadStatus.Success ->
                 if slice.Events.Length > 0 then
                     for resolvedEvent in slice.Events ->
                         decode resolvedEvent
-                    yield! read connection stream (Position.At slice.NextEventNumber)
+                    yield! read connection stream direction (Position.At slice.NextEventNumber)
             | x -> failwith (sprintf "Stream %s at (%d) produced undocumented response: %A" stream from x)
         }
 
@@ -132,10 +141,10 @@ module Stream =
         Client.connect >> (fun connection stream ->
             [   
                 Capability.Reader <| fun () ->
-                    read connection stream Position.Start |> Seq.map fst
+                    read connection stream Direction.Forward Position.Start |> Seq.map fst
 
                 Capability.ReaderFrom <|
-                    read connection stream
+                    read connection stream Direction.Forward
 
                 Capability.Writer <| fun event ->
                     write connection stream Position.End event |> ignore
