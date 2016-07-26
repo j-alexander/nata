@@ -37,8 +37,11 @@ module Topic =
     let private produce (topic:Topic) =
         let producer = topic.Producer()
         fun messages ->
-            producer.SendMessageAsync(topic.Name, Seq.map Message.toKafka messages)
-            |> Async.AwaitTask
+            async {
+                return!
+                    producer.SendMessageAsync(topic.Name, Seq.map Message.toKafka messages)
+                    |> Async.AwaitTask
+            }
             |> Async.RunSynchronously
             |> Seq.map Offset.fromKafka
 
