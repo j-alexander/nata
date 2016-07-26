@@ -9,7 +9,7 @@ open KafkaNet.Model
 
 open Nata.IO
 
-type Cluster = string
+type Cluster = string list
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Cluster =
@@ -17,7 +17,9 @@ module Cluster =
     let private delay = TimeSpan.FromMilliseconds(500.)
 
     let private connect(cluster) =
-        new BrokerRouter(new KafkaOptions(new Uri(cluster)))
+        new BrokerRouter(
+            new KafkaOptions(
+                [| for x in cluster -> new Uri(x)|]))
 
     let topicFor (cluster:Cluster) (name:TopicName) =
         { Topic.Consumer =
