@@ -14,26 +14,25 @@ module HubPartition =
         >> fun sender (event:Event<byte[]>) -> sender.Send(new EventData(event.Data))
             
     let subscribe (hub:Hub) =
+        let group = hub.GetDefaultConsumerGroup()
         Partition.toString
-        >> hub.GetDefaultConsumerGroup().CreateReceiver
-        >> Receiver.toSeq (None)
+        >> Receiver.toSeq None group None
 
     let subscribeFrom (hub:Hub) =
+        let group = hub.GetDefaultConsumerGroup()
         Partition.toString >> fun partition ->
-            Index.toString >> fun index ->
-                hub.GetDefaultConsumerGroup().CreateReceiver (partition, index)
-                |> Receiver.toSeqWithIndex (None)
+            Index.toString >> Some >> fun index ->
+                Receiver.toSeqWithIndex None group index partition
 
     let read (wait:TimeSpan) (hub:Hub) =
         Partition.toString
-        >> hub.GetDefaultConsumerGroup().CreateReceiver
-        >> Receiver.toSeq (Some wait)
+        >> Receiver.toSeq (Some wait) (hub.GetDefaultConsumerGroup()) None
 
     let readFrom (wait:TimeSpan) (hub:Hub) =
+        let group = hub.GetDefaultConsumerGroup()
         Partition.toString >> fun partition ->
-            Index.toString >> fun index ->
-                hub.GetDefaultConsumerGroup().CreateReceiver(partition, index)
-                |> Receiver.toSeqWithIndex (Some wait)
+            Index.toString >> Some >> fun index ->
+                Receiver.toSeqWithIndex (Some wait) group index partition
 
     let readFromPosition (wait:TimeSpan) (hub:Hub) =
         let readFrom = readFrom wait hub

@@ -3,6 +3,7 @@
 open System
 open Nata.IO
 
+type PartitionId = string
 type Partition = int
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
@@ -11,11 +12,11 @@ module Partition =
     let between (range:Partition*Partition) (x:Partition) =
         Int32.between range x
 
-    let parse : string -> Partition =
+    let parse : PartitionId -> Partition =
         Int32.Parse
 
-    let ofString : string -> Partition option =
+    let ofString : PartitionId -> Partition option =
         Int32.ofString
 
-    let toString : Partition -> string =
+    let toString : Partition -> PartitionId =
         Int32.toString
