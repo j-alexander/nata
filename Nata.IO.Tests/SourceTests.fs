@@ -46,7 +46,7 @@ type SourceTests() as x =
 
         let underlying : Source<string,string,int64> = x.Connect()
         let overlaying : Source<string,int,int64> =
-            Source.map dataCodec indexCodec underlying
+            Source.map Codec.Identity dataCodec indexCodec underlying
             
         let channel = guid()
         underlying channel, overlaying channel

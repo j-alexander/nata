@@ -15,8 +15,7 @@ type LogStoreTests() =
         Path.GetTempFileName()
     let connect() = 
         Stream.connect()
-        |> Source.map JsonValue.Codec.JsonValueToBytes
-                        Codec.Identity
+        |> Source.mapData JsonValue.Codec.JsonValueToBytes
 
     override x.Connect() = connect()
     override x.Channel() = channel()
