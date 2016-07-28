@@ -3,6 +3,7 @@
 open System
 open Nata.IO
 
+type IndexString = string
 type Index = int64
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
@@ -13,11 +14,11 @@ module Index =
     let between (range:Index*Index) (x:Index) =
         Int64.between range x
 
-    let parse : string -> Index =
+    let parse : IndexString -> Index =
         Int64.Parse
 
-    let ofString : string -> Index option =
+    let ofString : IndexString -> Index option =
         Int64.ofString
 
-    let toString : Index -> string =
+    let toString : Index -> IndexString =
         Int64.toString

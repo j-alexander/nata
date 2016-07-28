@@ -12,16 +12,14 @@ module Receiver =
 
     let toSeqWithOffset (wait:TimeSpan option)
                         (group:Group)
-                        (startAt:string option)
-                        (partitionId:PartitionId) =
-
-        let partition = Partition.parse partitionId
-
+                        (startAt:IndexString option)
+                        (partition:PartitionString) =
         seq {
+
             let receiver =
                 match startAt with
-                | None | Some null -> group.CreateReceiver(partitionId)
-                | Some start -> group.CreateReceiver(partitionId, start)
+                | None | Some null -> group.CreateReceiver(partition)
+                | Some start -> group.CreateReceiver(partition, start)
                 
             let receive _ =
                 match wait with
@@ -31,6 +29,8 @@ module Receiver =
             use connection =
                 { new IDisposable with
                     member x.Dispose() = if not receiver.IsClosed then receiver.Close() }
+                    
+            let partition = Partition.parse partition
 
             yield!
                 Seq.unfold(receive >> function null -> None | x -> Some(x,())) ()
