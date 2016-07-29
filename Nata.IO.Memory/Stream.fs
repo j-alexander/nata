@@ -20,6 +20,7 @@ module Stream =
 
         let queue = new BlockingCollection<Event<'Data>>()
         let data = new ConcurrentDictionary<Index, Lazy<Event<'Data>>>()
+        data.[0L] <- lazy(queue.Take())
         
         let rec indexOf = function
             | Position.Start -> 0L
@@ -45,8 +46,6 @@ module Stream =
                         sender.Reply(Failure)
                         wait(count)
             }
-
-            data.[0L] <- lazy(queue.Take())
             wait 0L
             
         let writeTo position event= 
