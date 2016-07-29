@@ -20,3 +20,8 @@ module Partition =
 
     let toString : Partition -> PartitionString =
         Int32.toString
+        
+    module Codec =
+
+        let PartitionToString : Codec<Partition,string> = toString, parse
+        let StringToPartition : Codec<string,Partition> = parse, toString

@@ -22,3 +22,8 @@ module Index =
 
     let toString : Index -> IndexString =
         Int64.toString
+        
+    module Codec =
+
+        let IndexToString : Codec<Index,string> = toString, parse
+        let StringToIndex : Codec<string,Index> = parse, toString
