@@ -12,10 +12,22 @@ module Core =
     let mapFst fn (i,j) = fn i, j
     let mapSnd fn (i,j) = i, fn j
 
+    let filterFst fn (i,j) = fn i
+    let filterSnd fn (i,j) = fn j
+
+    let chooseFst fn (i,j) = fn i |> Option.map (fun i -> i,j)
+    let chooseSnd fn (i,j) = fn j |> Option.map (fun j -> i,j)
+
     module Seq =
 
         let mapFst fn = Seq.map <| mapFst fn
         let mapSnd fn = Seq.map <| mapSnd fn
+
+        let filterFst fn = Seq.filter <| filterFst fn
+        let filterSnd fn = Seq.filter <| filterSnd fn
+
+        let chooseFst fn = Seq.choose <| chooseFst fn
+        let chooseSnd fn = Seq.choose <| chooseSnd fn
           
         let log fn = Seq.map (fun x -> fn x; x)
         let logi fn = Seq.mapi (fun i x -> fn i x; x)

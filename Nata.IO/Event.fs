@@ -154,6 +154,15 @@ module Event =
           At = e.At }
 
     let map : ('DataIn->'DataOut) -> Event<'DataIn> -> Event<'DataOut> = mapData
+
+    let chooseData (fn:'DataIn->'DataOut option)
+                   (e:Event<'DataIn>) : Event<'DataOut> option =
+        fn e.Data
+        |> Option.map (fun data -> {  Data = data
+                                      Metadata = e.Metadata
+                                      At = e.At  })
+
+    let choose : ('DataIn->'DataOut option) -> Event<'DataIn> -> Event<'DataOut> option = chooseData
           
     let toJsonValue (event:Event<JsonValue>) =
         JsonValue.Record [|

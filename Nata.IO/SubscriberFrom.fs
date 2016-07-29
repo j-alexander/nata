@@ -17,3 +17,27 @@ module SubscriberFrom =
     let map (dataFn:'DataIn->'DataOut)
             (indexCodec:Codec<'IndexIn,'IndexOut>) = 
         mapData dataFn >> mapIndex indexCodec
+        
+    let filterData (fn:'Data->bool)
+                   (subscriberFrom:SubscriberFrom<'Data,'Index>) : SubscriberFrom<'Data,'Index> = 
+        subscriberFrom >> Seq.filter (fst >> Event.data >> fn)
+
+    let filterIndex (fn:'Index->bool)
+                    (subscriberFrom:SubscriberFrom<'Data,'Index>) : SubscriberFrom<'Data,'Index> = 
+        subscriberFrom >> Seq.filter (snd >> fn)
+                    
+    let filter (dataFn:'Data->bool)
+               (indexFn:'Index->bool) =
+        filterData dataFn >> filterIndex indexFn
+
+    let chooseData (fn:'DataIn->'DataOut option)
+                   (subscriberFrom:SubscriberFrom<'DataIn,'Index>) : SubscriberFrom<'DataOut,'Index> =
+        subscriberFrom >> Seq.chooseFst (Event.chooseData fn)
+
+    let chooseIndex (fn:'Index->'Index option)
+                    (subscriberFrom:SubscriberFrom<'Data,'Index>) : SubscriberFrom<'Data,'Index> =
+        subscriberFrom >> Seq.chooseSnd fn
+                    
+    let choose (dataFn:'DataIn->'DataOut option)
+               (indexFn:'Index->'Index option) =
+        chooseData dataFn >> chooseIndex indexFn
