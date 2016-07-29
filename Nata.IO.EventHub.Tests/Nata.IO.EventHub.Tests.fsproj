@@ -54,43 +54,6 @@
   <Target Name="AfterBuild" Condition="Exists('..\.paket\paket.exe')">
     <CopyRuntimeDependencies OutputPath="$(OutDir)" TargetFramework="$(TargetFrameworkIdentifier) - $(TargetFrameworkVersion)" ProjectsWithRuntimeLibs="System.Dynamic.Runtime;System.Linq.Expressions;System.Reflection.TypeExtensions;System.Runtime.Serialization.Primitives;System.Threading" />
   </Target>
-  <ItemGroup>
-    <Content Include="paket.references" />
-    <Content Include="App.config" />
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="HubTests.fs" />
-    <Compile Include="HubPartitionTests.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="mscorlib" />
-    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Nata.IO.EventHub\Nata.IO.EventHub.fsproj">
-      <Name>Nata.IO.EventHub</Name>
-      <Project>{3844ea6a-47fb-4828-8d25-7ecff02caa27}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Nata.IO.Tests\Nata.IO.Tests.fsproj">
-      <Name>Nata.IO.Tests</Name>
-      <Project>{b58419f9-0387-4780-99d7-70ca2938da00}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Nata.IO\Nata.IO.fsproj">
-      <Name>Nata.IO</Name>
-      <Project>{05933d30-393b-4a8e-8418-b6a141d70040}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-  </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -552,4 +515,40 @@
       </ItemGroup>
     </When>
   </Choose>
+  <ItemGroup>
+    <Content Include="paket.references" />
+    <Content Include="App.config" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="MaskEnvelope.fs" />
+    <Compile Include="HubTests.fs" />
+    <Compile Include="HubPartitionTests.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <ProjectReference Include="..\Nata.IO.EventHub\Nata.IO.EventHub.fsproj">
+      <Name>Nata.IO.EventHub</Name>
+      <Project>{3844ea6a-47fb-4828-8d25-7ecff02caa27}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Nata.IO.Tests\Nata.IO.Tests.fsproj">
+      <Name>Nata.IO.Tests</Name>
+      <Project>{b58419f9-0387-4780-99d7-70ca2938da00}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Nata.IO\Nata.IO.fsproj">
+      <Name>Nata.IO</Name>
+      <Project>{05933d30-393b-4a8e-8418-b6a141d70040}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

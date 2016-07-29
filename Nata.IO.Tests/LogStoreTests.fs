@@ -68,20 +68,25 @@ type LogStoreTests() as x =
         let readFrom = readerFrom connection
         let event_0 = event("TestReadFrom-0")
         let event_1 = event("TestReadFrom-1")
+        let event_2 = event("TestReadFrom-2")
         write event_0
         write event_1
+        write event_2
         
-        let result, index = readFrom (Position.At 0L) |> Seq.head
+        let result, index_0 = readFrom (Position.Start) |> Seq.head
+        Assert.GreaterOrEqual(index_0, 0L)
         Assert.AreEqual(event_0.Data, result.Data)
-        Assert.AreEqual(0, index)
         
-        let result, index = readFrom (Position.At 1L) |> Seq.head
+        let result, index_1 = readFrom (Position.At (1L+index_0)) |> Seq.head
+        Assert.Greater(index_1, index_0)
         Assert.AreEqual(event_1.Data, result.Data)
-        Assert.AreEqual(1, index)
         
+        let result, index_2 = readFrom (Position.At (1L+index_1)) |> Seq.head
+        Assert.Greater(index_2, index_1)
+        Assert.AreEqual(event_2.Data, result.Data)
+
         let result, index = readFrom (Position.Start) |> Seq.head
         Assert.AreEqual(event_0.Data, result.Data)
-        Assert.AreEqual(0, index)
 
     [<Test>]
     member x.TestWriteTo() =
@@ -187,25 +192,30 @@ type LogStoreTests() as x =
                event "TestSubscriptionFromIndex-2" |]
         for event in expected do
             write event
+        let indexes =
+            subscribeFrom (Position.Start)
+            |> Seq.take 3
+            |> Seq.map snd
+            |> Seq.toList
         subscribeFrom (Position.Start)
         |> Seq.take 3
         |> Seq.toArray
         |> Array.zip expected
         |> Array.iter(fun (expected, (actual, index)) ->
             Assert.AreEqual(expected.Data, actual.Data))
-        subscribeFrom (Position.At 0L)
+        subscribeFrom (Position.At (indexes.[0]))
         |> Seq.take 3
         |> Seq.toArray
         |> Array.zip expected
         |> Array.iter(fun (expected, (actual, index)) ->
             Assert.AreEqual(expected.Data, actual.Data))
-        subscribeFrom (Position.At 1L)
+        subscribeFrom (Position.At (indexes.[1]))
         |> Seq.take 2
         |> Seq.toArray
         |> Array.zip (expected.[1..2])
         |> Array.iter(fun (expected, (actual, index)) ->
             Assert.AreEqual(expected.Data, actual.Data))
-        subscribeFrom (Position.At 2L)
+        subscribeFrom (Position.At (indexes.[2]))
         |> Seq.take 1
         |> Seq.toArray
         |> Array.zip (expected.[2..2])

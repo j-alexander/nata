@@ -12,23 +12,24 @@ module Hub =
 
     let positionOf (hub:Hub) (partition:Partition) : Position<Index> -> Index =
         
-        let index_finish, index_start =
+        let start() = Index.start
+        let finish() =
             let information =
                 partition
                 |> Partition.toString
                 |> hub.GetPartitionRuntimeInformation
             information.LastEnqueuedOffset
             |> Index.ofString
-            |> Option.getValueOr Index.start, Index.start
+            |> Option.getValueOr Index.start
 
         let rec indexOf = function
-            | Position.Start -> index_start
+            | Position.Start -> start()
             | Position.Before x -> indexOf x - 1L
             | Position.At x -> x
             | Position.After x -> indexOf x + 1L
-            | Position.End -> index_finish
+            | Position.End -> finish()
 
-        indexOf >> Index.between(index_start, index_finish)
+        indexOf
 
 
     let positionsOf (hub:Hub) : Position<Offsets> -> Offsets =
@@ -89,7 +90,7 @@ module Hub =
             let start =
                 offsets
                 |> List.tryFind (Offset.partition >> Partition.toString >> (=) partition)
-                |> Option.map (Offset.index >> Index.toString)
+                |> Option.map (Offset.index)
             Receiver.toSeqWithOffset None group start partition)
         |> Seq.toList
         |> Seq.merge

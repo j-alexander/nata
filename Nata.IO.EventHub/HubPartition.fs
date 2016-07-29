@@ -21,7 +21,7 @@ module HubPartition =
     let subscribeFrom (hub:Hub) =
         let group = hub.GetDefaultConsumerGroup()
         Partition.toString >> fun partition ->
-            Index.toString >> Some >> fun index ->
+            Some >> fun index ->
                 Receiver.toSeqWithIndex None group index partition
 
     let read (wait:TimeSpan) (hub:Hub) =
@@ -31,7 +31,7 @@ module HubPartition =
     let readFrom (wait:TimeSpan) (hub:Hub) =
         let group = hub.GetDefaultConsumerGroup()
         Partition.toString >> fun partition ->
-            Index.toString >> Some >> fun index ->
+            Some >> fun index ->
                 Receiver.toSeqWithIndex (Some wait) group index partition
 
     let readFromPosition (wait:TimeSpan) (hub:Hub) =

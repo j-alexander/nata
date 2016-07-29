@@ -12,14 +12,14 @@ module Receiver =
 
     let toSeqWithOffset (wait:TimeSpan option)
                         (group:Group)
-                        (startAt:IndexString option)
+                        (startAt:Index option)
                         (partition:PartitionString) =
         seq {
 
             let receiver =
                 match startAt with
-                | None | Some null -> group.CreateReceiver(partition)
-                | Some start -> group.CreateReceiver(partition, start)
+                | None -> group.CreateReceiver(partition)
+                | Some start -> group.CreateReceiver(partition, Index.toString (start-1L))
                 
             let receive _ =
                 match wait with
@@ -47,10 +47,10 @@ module Receiver =
                       Offset.Index = index })
         }
 
-    let toSeqWithIndex wait group startAt partitionId =
-        toSeqWithOffset wait group startAt partitionId
+    let toSeqWithIndex wait group startAt partition =
+        toSeqWithOffset wait group startAt partition
         |> Seq.mapSnd Offset.index
 
-    let toSeq wait group startAt partitionId =
-        toSeqWithOffset wait group startAt partitionId
+    let toSeq wait group startAt partition =
+        toSeqWithOffset wait group startAt partition
         |> Seq.map fst
