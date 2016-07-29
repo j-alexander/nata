@@ -6,6 +6,10 @@ type Source<'Channel,'Data,'Index> = 'Channel -> List<Capability<'Data,'Index>>
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Source =
 
+    let mapCapabilities (fn:Capability<'Data,'Index>->Capability<'Data,'Index>)
+                        (source:Source<'Channel,'Data,'Index>) : Source<'Channel,'Data,'Index> =
+        source >> List.map fn
+
     let mapChannel (codec:Codec<'ChannelIn,'ChannelOut>)
                    (source:Source<'ChannelIn,'Data,'Index>) : Source<'ChannelOut,'Data,'Index> =
         Codec.decoder codec >> source
