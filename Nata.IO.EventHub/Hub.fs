@@ -69,12 +69,18 @@ module Hub =
 
     let write (hub:Hub) (event:Event<byte[]>) =
         let data = new EventData(event.Data)
-        data.PartitionKey <- 
-            event
-            |> Event.key
-            |> Option.getValueOr (guid())
-        data
-        |> hub.Send
+        match Event.partition event with
+        | None ->
+            data.PartitionKey <- 
+                event
+                |> Event.key
+                |> Option.getValueOr (guid())
+            data
+            |> hub.Send
+        | Some partition ->
+            let sender = hub.CreatePartitionedSender(Partition.toString partition)
+            data
+            |> sender.Send
 
     let subscribe (hub:Hub) =
         let group = hub.GetDefaultConsumerGroup()
@@ -102,9 +108,25 @@ module Hub =
         |> Seq.map (Receiver.toSeq (Some wait) group None)
         |> Seq.toList
         |> Seq.merge
+
+    let readFrom (wait:TimeSpan) (hub:Hub) (offsets:Offsets) =
+        let group = hub.GetDefaultConsumerGroup()
+        hub.GetRuntimeInformation().PartitionIds
+        |> Seq.map(fun partition ->
+            let start =
+                offsets
+                |> List.tryFind (Offset.partition >> Partition.toString >> (=) partition)
+                |> Option.map (Offset.index)
+            Receiver.toSeqWithOffset (Some wait) group start partition)
+        |> Seq.toList
+        |> Seq.merge
+        |> Offsets.merge offsets
         
     let subscribeFromPosition (hub:Hub) =
         positionsOf hub >> subscribeFrom hub
+
+    let readFromPosition (wait:TimeSpan) (hub:Hub) =
+        positionsOf hub >> readFrom wait hub
 
     let connect : Connector<Settings,unit,byte[],Offsets> =
 
@@ -118,6 +140,9 @@ module Hub =
                 [
                     Nata.IO.Reader <| fun () ->
                         read wait hub
+
+                    Nata.IO.ReaderFrom <|
+                        readFromPosition wait hub
 
                     Nata.IO.Writer <|
                         write hub

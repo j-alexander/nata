@@ -21,3 +21,6 @@ module Offsets =
     let merge (offsets:Offsets) =
         Seq.scan (fun (_, os) (e, o) -> Some e, update os o) (None, offsets)
         >> Seq.choose (function Some e, o -> Some(e, o) | _ -> None)
+
+    let partition (partition:Partition) : Offsets -> Offset =
+        List.find (Offset.partition >> (=) partition)
