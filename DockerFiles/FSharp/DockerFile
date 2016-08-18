@@ -1,0 +1,22 @@
+FROM microsoft/windowsservercore
+
+ENV BUILD_TOOLS https://download.microsoft.com/download/E/E/D/EEDF18A8-4AED-4CE0-BEBE-70A83094FC5A/BuildTools_Full.exe
+ENV FSHARP_BUNDLE http://download.microsoft.com/download/9/1/2/9122D406-F1E3-4880-A66D-D6C65E8B1545/FSharp_Bundle.exe
+
+RUN powershell -NoProfile -Command \
+        install-windowsfeature net-framework-45-core
+
+RUN powershell -NoProfile -Command \
+        wget -uri '%BUILD_TOOLS%' -usebasicparsing -outfile 'c:\buildtools_full.exe'
+		
+RUN powershell -NoProfile -Command \
+		start-process -filepath 'c:\buildtools_full.exe' -argumentlist '/passive','/norestart' -wait
+		
+RUN powershell -NoProfile -Command \
+        wget -uri '%FSHARP_BUNDLE%' -usebasicparsing -outfile 'c:\fsharp_bundle.exe'
+		
+RUN powershell -NoProfile -Command \
+		start-process -filepath 'c:\fsharp_bundle.exe' -argumentlist '/install','/quiet' -wait
+		 
+		
+RUN setx /M PATH "%PATH%;%PROGRAMFILES(X86)%\Microsoft SDKs\F#\4.0\Framework\v4.0"

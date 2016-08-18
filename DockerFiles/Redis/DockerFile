@@ -1,0 +1,13 @@
+FROM microsoft/windowsservercore
+
+LABEL Description="Redis"
+
+ADD http://github.com/MSOpenTech/redis/releases/download/win-2.8.2402/Redis-x64-2.8.2402.zip \Redis-x64-2.8.2402.zip
+
+RUN powershell -Command \
+	Expand-Archive -Path \Redis-x64-2.8.2402.zip -DestinationPath \Redis ; \
+	rm -Force \Redis-x64-2.8.2402.zip
+
+WORKDIR /redis
+
+CMD redis-server.exe

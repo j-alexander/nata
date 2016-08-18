@@ -1,0 +1,42 @@
+FROM java
+
+ADD https://nssm.cc/release/nssm-2.24.zip \nssm-2.24.zip
+
+RUN powershell -NoProfile -Command \
+		Expand-Archive -Path \nssm-2.24.zip -DestinationPath \    ; \
+		mv \nssm-2.24\win64 \"%ProgramFiles%\nssm\"               ; \
+		rmdir -r \nssm-2.24                                       ; \
+		rm \nssm-2.24.zip
+		
+RUN setx /M PATH "%PATH%;%ProgramFiles%\nssm"
+
+
+ADD http://www-us.apache.org/dist/kafka/0.10.0.1/kafka_2.11-0.10.0.1.tgz \kafka_2.11-0.10.0.1.tgz
+
+RUN powershell -NoProfile -Command \
+		7z.exe e \kafka_2.11-0.10.0.1.tgz -o\            ; \
+		7z.exe x \kafka_2.11-0.10.0.1.tar -o\            ; \
+		mv \kafka_2.11-0.10.0.1 \"\Kafka\"               ; \
+		rm \kafka_2.11-0.10.0.1.tar                      ; \
+		rm \kafka_2.11-0.10.0.1.tgz
+			
+RUN powershell -NoProfile -Command \
+		$ZKProps = \"c:\kafka\config\zookeeper.properties\"						; \
+		$ZP = [IO.File]::ReadAllText($ZKProps)									; \  
+		$ZP = $ZP.Replace(\"/tmp/zookeeper\",\"/ProgramData/Zookeeper/Data\")   ; \
+		[IO.File]::WriteAllText($ZKProps, $ZP)
+		
+RUN [ "nssm.exe",												    \
+      "install", "Zookeeper",										\
+	  "\"C:\\Kafka\\bin\\windows\\zookeeper-server-start.bat\"",	\
+	  "\"C:\\Kafka\\config\\zookeeper.properties\""	 ]
+	 
+ADD server.properties "C:\Kafka\config\server.properties"
+
+RUN [ "nssm.exe",												    \
+      "install", "Kafka",											\
+	  "\"C:\\Kafka\\bin\\windows\\kafka-server-start.bat\"",		\
+	  "\"C:\\Kafka\\config\\server.properties\""	 ]
+	 
+RUN [ "nssm.exe",												    \
+      "set", "Kafka", "DependOnService", "Zookeeper"	 ]

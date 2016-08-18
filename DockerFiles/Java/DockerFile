@@ -1,0 +1,30 @@
+FROM microsoft/windowsservercore
+
+ADD https://live.sysinternals.com/pslist.exe "c:\windows\system32\pslist.exe"
+ADD https://live.sysinternals.com/psinfo.exe "c:\windows\system32\psinfo.exe"
+ADD https://live.sysinternals.com/pskill.exe "c:\windows\system32\pskill.exe"
+
+ADD http://www.7-zip.org/a/7z1602-x64.exe \7z1602-x64.exe
+
+RUN powershell -NoProfile -Command \
+		start-process -filepath 'c:\7z1602-x64.exe' -argumentlist '/S' -wait ; \
+		rm \7z1602-x64.exe
+		
+RUN setx /M PATH "%PATH%;%ProgramFiles%\7-zip"
+
+ENV JAVA8_URL http://download.oracle.com/otn-pub/java/jdk/8u102-b14/jre-8u102-windows-x64.tar.gz		
+		
+RUN powershell -NoProfile -Command \
+		$client = New-Object System.Net.WebClient                                                                 ; \
+		$client.Headers.Add([System.Net.HttpRequestHeader]::Cookie, \"oraclelicense=accept-securebackup-cookie\") ; \
+		$client.DownloadFile("$env:JAVA8_URL", \"\jre-8u102-windows-x64.tar.gz\")
+
+RUN powershell -NoProfile -Command \
+		7z.exe e \jre-8u102-windows-x64.tar.gz -o\    ; \
+		7z.exe x \jre-8u102-windows-x64.tar -o\       ; \
+		mv \jre1.8.0_102 \"%ProgramFiles%\Java\"      ; \
+		rm \jre-8u102-windows-x64.tar                 ; \
+		rm \jre-8u102-windows-x64.tar.gz
+		
+RUN setx /M PATH "%PATH%;%ProgramFiles%\Java\bin"
+RUN setx /M JAVA_HOME "%ProgramFiles%\Java"

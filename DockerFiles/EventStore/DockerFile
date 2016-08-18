@@ -1,0 +1,21 @@
+FROM microsoft/windowsservercore
+
+RUN powershell -NoProfile -Command \
+        Install-WindowsFeature NET-Framework-45-Core
+
+ADD http://download.geteventstore.com/binaries/EventStore-OSS-Win-v3.8.1.zip \EventStore-OSS-Win-v3.8.1.zip
+
+RUN powershell -NoProfile -Command \
+		Expand-Archive -Path \EventStore-OSS-Win-v3.8.1.zip -DestinationPath $env:ProgramFiles\EventStore
+
+ADD https://nssm.cc/release/nssm-2.24.zip \nssm-2.24.zip
+
+RUN powershell -NoProfile -Command \
+		Expand-Archive -Path \nssm-2.24.zip -DestinationPath $env:ProgramFiles
+	
+RUN ["C:\\Program Files\\nssm-2.24\\win64\\nssm.exe", \
+     "install", "EventStore", "\"C:\\Program Files\\EventStore\\EventStore.ClusterNode.exe\"", \
+         "--db", "\"C:\\ProgramData\\EventStore\\data\"", \
+         "--log", "\"C:\\ProgramData\\EventStore\\logs\"", \
+         "--ext-http-prefixes", "\"http://+:2113/\"", \
+         "--run-projections", "All" ]
