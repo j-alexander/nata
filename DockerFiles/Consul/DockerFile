@@ -1,0 +1,23 @@
+FROM microsoft/windowsservercore
+
+ADD https://nssm.cc/release/nssm-2.24.zip \nssm-2.24.zip
+
+RUN powershell -NoProfile -Command \
+        Expand-Archive -Path \nssm-2.24.zip -DestinationPath \    ; \
+        mv \nssm-2.24\win64 \"%ProgramFiles%\nssm\"               ; \
+        rmdir -r \nssm-2.24                                       ; \
+        rm \nssm-2.24.zip
+        
+RUN setx /M PATH "%PATH%;%ProgramFiles%\nssm"
+
+ADD https://releases.hashicorp.com/consul/0.6.4/consul_0.6.4_windows_amd64.zip \consul_0.6.4_windows_amd64.zip
+
+RUN powershell -Command \
+	Expand-Archive -Path \consul_0.6.4_windows_amd64.zip -DestinationPath \Consul ; \
+	rm -Force \consul_0.6.4_windows_amd64.zip
+
+RUN [ "nssm.exe",                                                     \
+      "install", "Consul",                                            \
+      "\"C:\\Consul\\consul.exe\"",                                   \
+      "agent", "-bootstrap", "-server", "-ui",                        \
+      "-data-dir", "/ProgramData/consul" ]
