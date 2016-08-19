@@ -1,0 +1,36 @@
+FROM microsoft/windowsservercore
+
+#SQL Server Express 2016 w/LocalDB
+ENV SQLEXPR_x64 https://download.microsoft.com/download/E/1/2/E12B3655-D817-49BA-B934-CEB9DAC0BAF3/SQLEXPR_x64_ENU.exe
+ENV SQLLOCALDB  https://download.microsoft.com/download/E/1/2/E12B3655-D817-49BA-B934-CEB9DAC0BAF3/SqlLocalDB.msi
+
+RUN powershell -NoProfile -Command \
+        Write-Host "expected byte count: 315579864"                          ; \
+        Write-Host "md5: 902347c4f97b2cb00007c74ae1a6912e"                   ; \
+        wget -uri "%SQLEXPR_x64%" -usebasicparsing -outfile \SQLEXPR_x64.exe
+		
+RUN powershell -NoProfile -Command \
+        Write-Host "expected byte count:  46149632"                          ; \
+        Write-Host "md5: e02c3613841d58189a404280a407287c"                   ; \
+        wget -uri "%SQLLOCALDB%" -usebasicparsing -outfile \SqlLocalDB.msi
+		
+RUN powershell -NoProfile -Command \
+        Write-Host "This may take some time..."            ; \
+        Start-Process -FilePath '\SQLEXPR_x64.exe'           \
+		-ArgumentList '/Q',                                  \
+		              '/ACTION=Install',                     \
+		              '/FEATURES=SQL',                       \
+					  '/INSTANCENAME=MSSQLServer',           \
+					  '/IAcceptSQLServerLicenseTerms'        \
+		-Wait
+
+RUN powershell -NoProfile -Command \
+        Write-Host "This may take some time..."            ; \
+        Start-Process -FilePath msiexec                      \
+		-ArgumentList '/i',                                  \
+		              '\SqlLocalDB.msi',                     \
+		              '/qn',                                 \
+					  'IACCEPTSQLLOCALDBLICENSETERMS=YES'    \
+		-Wait
+		
+RUN setx /M PATH "%PATH%;%ProgramFiles%\Microsoft SQL Server\130\Tools\Binn"	
