@@ -1,7 +1,8 @@
 FROM microsoft/windowsservercore
 
 #SQL Server Express 2016 w/LocalDB
-ENV SETUP https://download.microsoft.com/download/E/1/2/E12B3655-D817-49BA-B934-CEB9DAC0BAF3/SQLEXPR_x64_ENU.exe
+ENV SETUP    https://download.microsoft.com/download/E/1/2/E12B3655-D817-49BA-B934-CEB9DAC0BAF3/SQLEXPR_x64_ENU.exe
+ENV LOCALDB  https://download.microsoft.com/download/E/1/2/E12B3655-D817-49BA-B934-CEB9DAC0BAF3/SqlLocalDB.msi
 
 RUN powershell -NoProfile -Command \
         Write-Host "expected byte count: 315579864"                               ; \
@@ -9,18 +10,34 @@ RUN powershell -NoProfile -Command \
         wget -uri "%SETUP%" -usebasicparsing -outfile \Setup.exe
 		
 RUN powershell -NoProfile -Command \
+        Write-Host "expected byte count:  46149632"                               ; \
+        Write-Host "md5: e02c3613841d58189a404280a407287c"                        ; \
+        wget -uri "%LOCALDB%" -usebasicparsing -outfile \LocalDB.msi
+		
+RUN powershell -NoProfile -Command \
         Write-Host "This may take some time..."                 ; \
         Start-Process -FilePath '\Setup.exe'                      \
 		-ArgumentList '/Q',                                       \
 		              '/ACTION=Install',                          \
-		              '/FEATURES=SQLEngine,LocalDB',              \
+		              '/FEATURES=SQLEngine',                      \
 					  '/INSTANCENAME=MSSQLServer',                \
 					  '/TCPENABLED=1',                            \
 					  '/IAcceptSQLServerLicenseTerms'             \
 		-Wait                                                   ; \
 		net stop mssqlserver                                    ; \
-		sc.exe config mssqlserver obj=LocalSystem
+		sc.exe config mssqlserver obj=LocalSystem               ; \
+		sc.exe config mssqlserver start=demand
 		
 RUN setx /M PATH "%PATH%;%ProgramFiles%\Microsoft SQL Server\130\Tools\Binn"
 
+RUN powershell -NoProfile -Command \
+        Write-Host "This may take some time..."            ; \
+        Start-Process -FilePath msiexec                      \
+		-ArgumentList '/i',                                  \
+		              '\LocalDB.msi',                        \
+		              '/qn',                                 \
+					  'IACCEPTSQLLOCALDBLICENSETERMS=YES'    \
+		-Wait                                              ; \
+		sc.exe config mssqlserver start=auto
+		
 RUN osql -E -Q "SELECT @@VERSION"
