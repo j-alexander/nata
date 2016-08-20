@@ -1,0 +1,26 @@
+FROM sqlserver
+
+RUN powershell -NoProfile -Command \
+        install-windowsfeature net-framework-45-core
+
+# AzureStorageEmulator 4.4.0.0
+RUN powershell -NoProfile -Command \
+        wget -uri 'https://go.microsoft.com/fwlink/?linkid=717179"&"clcid=0x409'  \
+		     -usebasicparsing                                                     \
+			 -outfile 'C:\MicrosoftAzureStorageEmulator.msi'
+		
+RUN powershell -NoProfile -Command \
+        start-process -filepath msiexec -argumentlist               \
+            '/a',                                                   \
+            'C:\MicrosoftAzureStorageEmulator.msi',                 \
+            '/qb',                                                  \
+            'TARGETDIR=C:\Install'                                  \
+        -wait                                                     ; \
+        mv '\Install\root\Microsoft SDKs' '\Program Files (x86)'  ; \
+        rmdir \Install -recurse
+        	
+RUN setx /M PATH "%PATH%;%PROGRAMFILES(X86)%\Microsoft SDKs\Azure\Storage Emulator"
+
+RUN AzureStorageEmulator.exe init -server localhost -forcecreate -inprocess
+RUN AzureStorageEmulator.exe status
+CMD AzureStorageEmulator.exe start -inprocess
