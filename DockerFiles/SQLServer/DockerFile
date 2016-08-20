@@ -1,6 +1,6 @@
 FROM microsoft/windowsservercore
 
-#SQL Server Express 2016 w/LocalDB
+#SQL Server Express 2016 (64 bit) 13.0.1601.5
 ENV SETUP    https://download.microsoft.com/download/E/1/2/E12B3655-D817-49BA-B934-CEB9DAC0BAF3/SQLEXPR_x64_ENU.exe
 
 RUN powershell -NoProfile -Command \
@@ -11,15 +11,15 @@ RUN powershell -NoProfile -Command \
 RUN powershell -NoProfile -Command \
         Write-Host "This may take some time..."                 ; \
         Start-Process -FilePath '\Setup.exe'                      \
-		-ArgumentList '/Q',                                       \
-		              '/ACTION=Install',                          \
-		              '/FEATURES=SQLEngine',                      \
-					  '/INSTANCENAME=MSSQLServer',                \
-					  '/TCPENABLED=1',                            \
-					  '/IAcceptSQLServerLicenseTerms'             \
-		-Wait                                                   ; \
-		net stop mssqlserver                                    ; \
-		sc.exe config mssqlserver obj=LocalSystem
+        -ArgumentList '/Q',                                       \
+                      '/ACTION=Install',                          \
+                      '/FEATURES=SQLEngine',                      \
+                      '/INSTANCENAME=MSSQLServer',                \
+                      '/TCPENABLED=1',                            \
+                      '/IAcceptSQLServerLicenseTerms'             \
+        -Wait                                                   ; \
+        net stop mssqlserver                                    ; \
+        sc.exe config mssqlserver obj=LocalSystem
 		
 RUN setx /M PATH "%PATH%;%ProgramFiles%\Microsoft SQL Server\130\Tools\Binn"
 		
