@@ -6,8 +6,8 @@ RUN powershell -NoProfile -Command \
 # AzureStorageEmulator 4.4.0.0
 RUN powershell -NoProfile -Command \
         wget -uri 'https://go.microsoft.com/fwlink/?linkid=717179"&"clcid=0x409'  \
-		     -usebasicparsing                                                     \
-			 -outfile 'C:\MicrosoftAzureStorageEmulator.msi'
+             -usebasicparsing                                                     \
+             -outfile 'C:\MicrosoftAzureStorageEmulator.msi'
 		
 RUN powershell -NoProfile -Command \
         start-process -filepath msiexec -argumentlist               \
