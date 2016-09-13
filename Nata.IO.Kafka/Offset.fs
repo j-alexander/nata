@@ -54,8 +54,8 @@ module Offset =
 
     module Codec =
         
-        let OffsetToString : Nata.IO.Codec<Offset,string> = toString, ofString
-        let StringToOffset : Nata.IO.Codec<string,Offset> = ofString, toString
+        let OffsetToString : Codec<Offset,string> = toString, ofString
+        let StringToOffset : Codec<string,Offset> = ofString, toString
 
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
@@ -107,13 +107,20 @@ module Offsets =
         |> Seq.singleton
         |> Seq.toList
 
-    let toString : Offsets -> string = List.sortBy Offset.partitionId >> List.map Offset.toString >> String.concat ","
-    let ofString : string -> Offsets = String.split ',' >> List.choose Offset.(|Offset|_|)
+    let toString : Offsets -> string =
+        List.sortBy Offset.partitionId 
+        >> List.map Offset.toString 
+        >> String.concat ","
+
+    let ofString : string -> Offsets =
+        String.split ',' 
+        >> List.choose Offset.(|Offset|_|) 
+        >> List.sortBy Offset.partitionId
 
     module Codec =
         
-        let OffsetsToInt64 partition : Nata.IO.Codec<Offsets,int64> = toInt64 partition, ofInt64 partition
-        let Int64ToOffsets partition : Nata.IO.Codec<int64,Offsets> = ofInt64 partition, toInt64 partition
+        let OffsetsToInt64 partition : Codec<Offsets,int64> = toInt64 partition, ofInt64 partition
+        let Int64ToOffsets partition : Codec<int64,Offsets> = ofInt64 partition, toInt64 partition
 
-        let OffsetsToString : Nata.IO.Codec<Offsets,string> = toString, ofString
-        let StringToOffsets : Nata.IO.Codec<string,Offsets> = ofString, toString
+        let OffsetsToString : Codec<Offsets,string> = toString, ofString
+        let StringToOffsets : Codec<string,Offsets> = ofString, toString
