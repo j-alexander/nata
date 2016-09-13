@@ -144,6 +144,9 @@ module Core =
             | null, null -> true
             | null, _ | _, null -> false
             | x, substring -> x.ToLowerInvariant().Contains(substring.ToLowerInvariant())
+
+        let split (delimiter:char) : string->string list =
+            function null -> [] | x -> x.Split(delimiter) |> Array.toList
         
     [<AutoOpen>]
     module Patterns =

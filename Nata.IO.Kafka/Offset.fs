@@ -6,6 +6,7 @@ open System.Text
 open NLog.FSharp
 open KafkaNet
 open KafkaNet.Model
+open Nata.IO
     
 type Offset =
     { PartitionId : int 
@@ -42,6 +43,20 @@ module Offset =
         else
             { Offset.PartitionId  = x.PartitionId
               Offset.Position = x.Offset }
+              
+    let (|Offset|_|) =
+        String.split '@' >> function
+        | [ Integer32 p; Integer64 o ] -> Some { Offset.PartitionId = p; Position = o}
+        | _ -> None
+
+    let toString (o:Offset) = sprintf "%d@%d" o.PartitionId o.Position
+    let ofString = (|Offset|_|) >> Option.get
+
+    module Codec =
+        
+        let OffsetToString : Nata.IO.Codec<Offset,string> = toString, ofString
+        let StringToOffset : Nata.IO.Codec<string,Offset> = ofString, toString
+
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Offsets =
@@ -92,7 +107,13 @@ module Offsets =
         |> Seq.singleton
         |> Seq.toList
 
+    let toString : Offsets -> string = List.sortBy Offset.partitionId >> List.map Offset.toString >> String.concat ","
+    let ofString : string -> Offsets = String.split ',' >> List.choose Offset.(|Offset|_|)
+
     module Codec =
         
         let OffsetsToInt64 partition : Nata.IO.Codec<Offsets,int64> = toInt64 partition, ofInt64 partition
         let Int64ToOffsets partition : Nata.IO.Codec<int64,Offsets> = ofInt64 partition, toInt64 partition
+
+        let OffsetsToString : Nata.IO.Codec<Offsets,string> = toString, ofString
+        let StringToOffsets : Nata.IO.Codec<string,Offsets> = ofString, toString
