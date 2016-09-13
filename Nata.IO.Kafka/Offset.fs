@@ -46,7 +46,7 @@ module Offset =
               
     let (|Offset|_|) =
         String.split '@' >> function
-        | [ Integer32 p; Integer64 o ] -> Some { Offset.PartitionId = p; Position = o}
+        | [ Integer32 p; Integer64 o ] -> Some { PartitionId=p; Position=o }
         | _ -> None
 
     let toString (o:Offset) = sprintf "%d@%d" o.PartitionId o.Position
