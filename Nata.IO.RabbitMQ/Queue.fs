@@ -39,7 +39,7 @@ module Queue =
 
 
 
-    let connect : Connector<HostName,Exchange*Name,byte[],unit> =
+    let connect : Connector<HostName,Exchange*Name,byte[],int> =
         create >> fun (channel:IModel) (exchange:Exchange,name:Name) ->
             let result = declare channel name
             [ 

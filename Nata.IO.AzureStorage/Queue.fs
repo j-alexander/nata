@@ -34,14 +34,29 @@ module Queue =
             |> Event.withStream queue.Name
             |> Event.withCreatedAtNullable created
 
-    
+    let length (queue:Queue) =
+        queue.FetchAttributes()
+        queue.ApproximateMessageCount
+        |> Nullable.toOption
 
-    let connect : Connector<Account,Name,byte[],unit> =
+    let rec index (queue:Queue) = function
+        | Position.Start -> 0
+        | Position.End -> length queue |> Option.getValueOr 0
+        | Position.At x -> x
+        | Position.Before x -> -1 + index queue x
+        | Position.After x -> 1 + index queue x
+
+
+
+    let connect : Connector<Account,Name,byte[],int> =
         fun account -> create account >> fun queue ->
                 [ 
                     Capability.Writer <|
                         write queue
 
                     Capability.Subscriber <| fun () ->
-                        subscribe queue    
+                        subscribe queue
+
+                    Capability.Indexer <|
+                        index queue
                 ]

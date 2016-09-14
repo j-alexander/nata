@@ -22,7 +22,7 @@ type QueueTests<'Channel>() =
         |> Event.create
         |> Event.map JsonValue.toBytes
 
-    abstract member Connect : unit -> Source<'Channel,byte[],unit>
+    abstract member Connect : unit -> Source<'Channel,byte[],int>
     abstract member Channel : unit -> 'Channel
     abstract member Stream : 'Channel -> string
 
@@ -61,3 +61,23 @@ type QueueTests<'Channel>() =
             Assert.AreEqual(before.Data, after.Data)
             Assert.AreEqual(name |> x.Stream |> Some, after |> Event.stream)
             Assert.True(after |> Event.createdAt |> Option.isSome)
+
+    [<Test;Timeout(25000)>]
+    member x.TestWriteIncreasesIndex() =
+        let name = x.Channel()
+        let queue = name |> x.Connect()
+
+        match tryIndexer queue with
+        | None ->
+            Assert.Ignore("Indexer is reported to be unsupported by this source.")
+        | Some indexOf ->
+            let range() = 
+                indexOf Position.Start,
+                indexOf Position.End
+            Assert.AreEqual((0,0), range())
+
+            event() |> writer queue
+
+            // wait for the range to be updated in the queue
+            while range() <> (0,1) do Thread.Sleep(100)
+            Assert.Pass("Adding a new message increases Position.End.")
