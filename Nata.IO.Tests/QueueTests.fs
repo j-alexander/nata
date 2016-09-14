@@ -22,7 +22,7 @@ type QueueTests<'Channel>() =
         |> Event.create
         |> Event.map JsonValue.toBytes
 
-    abstract member Connect : unit -> Source<'Channel,byte[],int>
+    abstract member Connect : unit -> Source<'Channel,byte[],int64>
     abstract member Channel : unit -> 'Channel
     abstract member Stream : 'Channel -> string
 
@@ -74,10 +74,17 @@ type QueueTests<'Channel>() =
             let range() = 
                 indexOf Position.Start,
                 indexOf Position.End
-            Assert.AreEqual((0,0), range())
+            Assert.AreEqual((0L,0L), range())
 
-            event() |> writer queue
+            for numberOfMessagesInQueue in 1L..5L do
+                event() |> writer queue
+                // wait for the range to be updated in the queue
+                while range() <> (0L,numberOfMessagesInQueue) do Thread.Sleep(100)
 
-            // wait for the range to be updated in the queue
-            while range() <> (0,1) do Thread.Sleep(100)
+            for numberOfMessagesInQueue in 4L..0L do
+                let event = subscriber queue () |> Seq.head
+                // wait for the range to be updated in the queue
+                while range() <> (0L,numberOfMessagesInQueue) do Thread.Sleep(100)
+
+
             Assert.Pass("Adding a new message increases Position.End.")

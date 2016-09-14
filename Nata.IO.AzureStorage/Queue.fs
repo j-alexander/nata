@@ -38,17 +38,18 @@ module Queue =
         queue.FetchAttributes()
         queue.ApproximateMessageCount
         |> Nullable.toOption
+        |> Option.map Convert.ToInt64
 
     let rec index (queue:Queue) = function
-        | Position.Start -> 0
-        | Position.End -> length queue |> Option.getValueOr 0
+        | Position.Start -> 0L
+        | Position.End -> length queue |> Option.getValueOr 0L
         | Position.At x -> x
-        | Position.Before x -> -1 + index queue x
-        | Position.After x -> 1 + index queue x
+        | Position.Before x -> -1L + index queue x
+        | Position.After x -> 1L + index queue x
 
 
 
-    let connect : Connector<Account,Name,byte[],int> =
+    let connect : Connector<Account,Name,byte[],int64> =
         fun account -> create account >> fun queue ->
                 [ 
                     Capability.Writer <|
