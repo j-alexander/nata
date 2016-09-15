@@ -22,11 +22,11 @@ module Client =
             configuration.Datacenter <- dataCenter)
         client.KV
     
-    let toEvent : KVPair -> Event<Key*Value> option =
+    let toEvent (prefix:string) : KVPair -> Event<Key*Value> option =
         function
         | null -> None
         | pair ->
-            (pair.Key, pair.Value)
+            (pair.Key.Substring(prefix.Length), pair.Value)
             |> Event.create
             |> Some
 
@@ -36,25 +36,23 @@ module Client =
             pair.Value <- value
             pair
         
-    let list (client:Client) prefix = 
+    let read (client:Client) prefix = 
         let result =
             client.List(prefix)
             |> Async.AwaitTask
             |> Async.RunSynchronously
         result.Response
-        |> Seq.choose toEvent
+        |> Seq.choose (toEvent prefix)
 
-    let read (client:Client) key =
-        let result=
-            client.Get(key)
-            |> Async.AwaitTask
-            |> Async.RunSynchronously
-        result.Response
-        |> toEvent
-
-    let write (client:Client) event =
+    let write (client:Client) prefix (event:Event<Key*Value>) =
         let result =
-            client.Put(ofEvent event)
+            event
+            |> Event.mapData (fun (k,v) ->
+                if k.StartsWith(prefix) then k, v
+                elif prefix.EndsWith("/") then prefix + k, v
+                else prefix + "/" + k, v)
+            |> ofEvent
+            |> client.Put
             |> Async.AwaitTask
             |> Async.RunSynchronously
         if not result.Response then
@@ -70,8 +68,8 @@ module Client =
         fun prefix ->
             [
                 Nata.IO.Capability.Reader <| fun () ->
-                    list client prefix
+                    read client prefix
 
                 Nata.IO.Capability.Writer <|
-                    write client
+                    write client prefix
             ]

@@ -126,6 +126,9 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <PreBuildEvent>xcopy /y /d /f "$(ProjectDir)..\packages\FSharp.Data\lib\net40\*.*" "$(TargetDir)"</PreBuildEvent>
+  </PropertyGroup>
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2')">
       <ItemGroup>
@@ -709,7 +712,4 @@
       </ItemGroup>
     </When>
   </Choose>
-  <PropertyGroup>
-    <PreBuildEvent>xcopy /y /d /f "$(ProjectDir)..\packages\FSharp.Data\lib\net40\*.*" "$(TargetDir)"</PreBuildEvent>
-  </PropertyGroup>
 </Project>

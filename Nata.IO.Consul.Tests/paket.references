@@ -3,3 +3,4 @@ FSharp.Data
 NLog.FSharp
 NLog
 Consul
+NUnitTestAdapter.WithFramework
