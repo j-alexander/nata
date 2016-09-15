@@ -42,7 +42,9 @@ open Nata.IO.RabbitMQ
 // Azure Storage:
 #r @"bin/Debug/Microsoft.WindowsAzure.Storage.dll"
 #r @"bin/Debug/Nata.IO.AzureStorage.dll"
-open Nata.IO.AzureStorage.Account
-open Nata.IO.AzureStorage.Blob
-open Nata.IO.AzureStorage.Queue
+open Nata.IO.AzureStorage
 
+// Web Sockets:
+#r @"bin/Debug/WebSocket4Net.dll"
+#r @"bin/Debug/Nata.IO.WebSocket.dll"
+open Nata.IO.WebSocket
