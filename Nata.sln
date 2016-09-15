@@ -50,6 +50,10 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.WebSocket.Tests", "
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Script", "Nata.Script\Nata.Script.fsproj", "{61FE0825-3FA2-411E-9DB8-DD1515708230}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Consul", "Nata.IO.Consul\Nata.IO.Consul.fsproj", "{C986164E-EB5E-477D-9465-23C4ACC88430}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Consul.Tests", "Nata.IO.Consul.Tests\Nata.IO.Consul.Tests.fsproj", "{DDA34256-5DD9-4F5F-B4DC-7E7650D3DADC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -140,6 +144,14 @@ Global
 		{61FE0825-3FA2-411E-9DB8-DD1515708230}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61FE0825-3FA2-411E-9DB8-DD1515708230}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61FE0825-3FA2-411E-9DB8-DD1515708230}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C986164E-EB5E-477D-9465-23C4ACC88430}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C986164E-EB5E-477D-9465-23C4ACC88430}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C986164E-EB5E-477D-9465-23C4ACC88430}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C986164E-EB5E-477D-9465-23C4ACC88430}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DDA34256-5DD9-4F5F-B4DC-7E7650D3DADC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDA34256-5DD9-4F5F-B4DC-7E7650D3DADC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDA34256-5DD9-4F5F-B4DC-7E7650D3DADC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDA34256-5DD9-4F5F-B4DC-7E7650D3DADC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
