@@ -1,6 +1,6 @@
 NUGET
   remote: https://www.nuget.org/api/v2
-    Consul (0.7)
+    Consul (0.7.0.2)
       Newtonsoft.Json (>= 9.0.1) - framework: >= netstandard13
       System.Collections (>= 4.0.11) - framework: >= netstandard13
       System.Linq (>= 4.1) - framework: >= netstandard13
@@ -12,7 +12,7 @@ NUGET
       System.Threading (>= 4.0.11) - framework: >= netstandard13
       System.Threading.Thread (>= 4.0) - framework: >= netstandard13
     EventStore.Client (3.9)
-    FSharp.Compiler.Service (6.0.2)
+    FSharp.Compiler.Service (8.0)
       System.Collections.Immutable (>= 1.2)
       System.Reflection.Metadata (>= 1.4.1-beta-24227-04)
     FSharp.Data (2.3.2)
@@ -146,7 +146,7 @@ NUGET
       System.Threading.Tasks (>= 4.0.11) - framework: >= netstandard10
       System.Xml.ReaderWriter (>= 4.0.11) - framework: >= netstandard10
       System.Xml.XDocument (>= 4.0.11) - framework: >= netstandard10
-    NLog (4.3.8)
+    NLog (4.3.10)
     NLog.FSharp (4.2.3)
       NLog (>= 4.2.3)
     NUnitTestAdapter.WithFramework (2.0)
@@ -276,7 +276,7 @@ NUGET
       System.Runtime (>= 4.1) - framework: dnxcore50, netstandard10, netstandard13, >= netstandard15
       System.Text.Encoding (>= 4.0.11) - framework: dnxcore50, netstandard10, netstandard13, >= netstandard15
       System.Threading.Tasks (>= 4.0.11) - framework: dnxcore50, netstandard10, netstandard13, >= netstandard15
-    System.IO.Compression (4.1) - framework: >= netstandard13
+    System.IO.Compression (4.1) - framework: >= netstandard11
       Microsoft.NETCore.Platforms (>= 1.0.1) - framework: >= netstandard13
       runtime.native.System (>= 4.0) - framework: >= netstandard13
       runtime.native.System.IO.Compression (>= 4.1) - framework: >= netstandard13
@@ -473,12 +473,13 @@ NUGET
       Microsoft.NETCore.Targets (>= 1.0.1) - framework: dnxcore50, >= netstandard10
       System.Reflection (>= 4.1) - framework: dnxcore50, >= netstandard10
       System.Runtime (>= 4.1) - framework: dnxcore50, >= netstandard10
-    System.Reflection.Metadata (1.4.1-beta-24227-04)
+    System.Reflection.Metadata (1.4.1-beta-24430-01)
       System.Collections (>= 4.0.11) - framework: >= netstandard11
       System.Collections.Immutable (>= 1.1.37) - framework: portable-net45+win8
       System.Collections.Immutable (>= 1.2) - framework: >= net45, >= netstandard11, monoandroid, monotouch, xamarinios, xamarinmac, winv4.5, wpav8.1
       System.Diagnostics.Debug (>= 4.0.11) - framework: >= netstandard11
       System.IO (>= 4.1) - framework: >= netstandard11
+      System.IO.Compression (>= 4.1) - framework: >= netstandard11
       System.Linq (>= 4.1) - framework: >= netstandard11
       System.Reflection (>= 4.1) - framework: >= netstandard11
       System.Reflection.Extensions (>= 4.0.1) - framework: >= netstandard11
@@ -730,8 +731,8 @@ NUGET
       System.Threading (>= 4.0.11) - framework: dnxcore50, >= netstandard13
       System.Xml.ReaderWriter (>= 4.0.11) - framework: dnxcore50, netstandard10, >= netstandard13
     WebSocket4Net (0.14.1)
-    WindowsAzure.ServiceBus (3.3.2)
-    WindowsAzure.Storage (7.2)
+    WindowsAzure.ServiceBus (3.4)
+    WindowsAzure.Storage (7.2.1)
       Microsoft.Azure.KeyVault.Core (>= 1.0) - framework: >= net40, wpv8.0
       Microsoft.Data.OData (>= 5.6.4) - framework: >= net40, >= netstandard13, winv4.5, wpv8.0, wpav8.1
       Microsoft.Data.Services.Client (>= 5.6.4) - framework: >= net40, >= netstandard13
