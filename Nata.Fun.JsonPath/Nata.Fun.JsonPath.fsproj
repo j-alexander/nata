@@ -63,7 +63,8 @@
   -->
   <ItemGroup>
     <None Include="paket.references" />
-    <Compile Include="JsonPath.fs" />
+    <Compile Include="Query.fs" />
+    <Compile Include="JsonValue.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

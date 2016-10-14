@@ -1,4 +1,4 @@
-﻿namespace Nata.Fun
+﻿namespace Nata.Fun.JsonPath
 
 open System
 open System.IO
@@ -9,7 +9,7 @@ open Newtonsoft.Json
 open Newtonsoft.Json.Linq
 open FSharp.Data
 
-module JsonPath =
+module Query =
 
     let minimize (json : string) =
         match json with
