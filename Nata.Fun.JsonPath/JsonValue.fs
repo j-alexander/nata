@@ -9,6 +9,8 @@ open FSharp.Data
 module JsonValue =
 
     type Query = string
+    and Index = int
+    and Length = int
 
     type Levels = Level list
     and Level = Quantifier * Type
@@ -41,14 +43,21 @@ module JsonValue =
                         quantifier, Type.Node (name)
             ]
 
-    type FSA = Match | Automaton of (Name->List<FSA>)
+    type FSA = Match | Automaton of Automaton
+    and Automata = Automaton list
+    and Automaton = FSAType->List<FSA>
+    and FSAType =
+        | FSANode of Name
+        | FSAArray of Name * Index * Length
 
     let rec create (levels:Levels) =
         match levels with
         | [] -> fun _ -> []
 
         | (q,Node(n)) :: tail ->
-            fun name ->
+            function
+            | FSAArray _ -> []
+            | FSANode name ->
                 match name with
                 | x when x=n || "*"=n ->
                     match tail with
@@ -60,11 +69,12 @@ module JsonValue =
                 | All -> [ Automaton (create levels) ]
                 | Exists -> []
                 
-        // TODO: apply predicate for array
         | (q,Array(n,p)) :: tail ->
-            fun name ->
+            function
+            | FSANode _ -> []
+            | FSAArray (name,index,length) ->
                 match name with
-                | x when x=n || "*"=n ->
+                | x when (x=n || "*"=n) && "*"=p ->
                     match tail with
                     | [] -> [ Match ]
                     | xs -> [ Automaton (create xs) ]
@@ -78,7 +88,7 @@ module JsonValue =
 
     let find = 
 
-        let rec recurse (fsas,json) =
+        let rec recurse (key,fsas,value) =
             let isMatch, automata =
                 fsas
                 |> List.exists (function
@@ -90,20 +100,36 @@ module JsonValue =
                     | _ -> None)
             seq {
                 if isMatch then
-                    yield json
-                match json with
+                    yield value
+                match value with
                 | JsonValue.Record xs ->
                     yield!
                         xs
                         |> Seq.map(fun (name,json) ->
+                            name,
                             automata
-                            |> List.collect(fun a -> a name),
+                            |> List.collect(fun a -> a (FSANode name)),
+                            json)
+                        |> Seq.collect recurse
+                | JsonValue.Array xs ->
+                    yield!
+                        xs
+                        |> Seq.mapi(fun i json ->
+                            key,
+                            automata
+                            |> List.collect(fun a -> a (FSAArray(key,i,xs.Length))),
                             json)
                         |> Seq.collect recurse
                 | _ -> ()           
             }
                 
 
-        levelsFor >> create >> fun fsas json ->
-            recurse([Automaton(fsas)],json)
-            |> Seq.toList
+        function
+        | "$." -> fun json -> [json]
+        | query ->
+            query 
+            |> levelsFor 
+            |> create
+            |> fun fsas json ->
+                recurse(String.Empty,[Automaton(fsas)],json)
+                |> Seq.toList

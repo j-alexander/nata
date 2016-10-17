@@ -59,7 +59,7 @@ type JsonValueTests() =
 
         for i, example, expected in examples |> Seq.mapi (fun i (e,x) -> i,e,x) do
             Assert.AreEqual(levelsFor example, expected, sprintf "Example #%d" i)
-            
+
     [<Test>]
     member x.FindExactAtRoot() =
         Assert.AreEqual(
@@ -283,3 +283,44 @@ type JsonValueTests() =
                  }
             """
             |> JsonValue.find "$..c.*.b")
+            
+    [<Test>]
+    member x.Identity() =
+        let record = JsonValue.Parse """
+            {"b":1,
+             "a":{"c":{"e":5},
+                  "b":4}}
+        """
+        Assert.AreEqual([record], JsonValue.find "$." record)
+        let array = JsonValue.Parse """[{"a":3}]"""
+        Assert.AreEqual([array], JsonValue.find "$." array)
+
+    [<Test>]
+    member x.FindRootArray() =
+        Assert.AreEqual(
+            [ JsonValue.String "abc" ],
+            JsonValue.Parse """["abc"]"""
+            |> JsonValue.find "$.[*]")
+
+    [<Test>]
+    member x.FindRootArrayChild() =
+        Assert.AreEqual(
+            [ JsonValue.Number 3m ],
+            JsonValue.Parse """[{"a":3}]"""
+            |> JsonValue.find "$.[*].a")
+
+    [<Test>]
+    member x.FindArrayAtRoot() =
+        Assert.AreEqual(
+            [ JsonValue.Parse """[1,2,3]""" ],
+            JsonValue.Parse """{"a":4,"b":[1,2,3],"c":{"b":[5,6]}}"""
+            |> JsonValue.find "$.b")
+
+    [<Test>]
+    member x.FindAllArrayChildrenAtRoot() =
+        Assert.AreEqual(
+            [ JsonValue.Number 1m
+              JsonValue.Number 2m
+              JsonValue.Number 3m ],
+            JsonValue.Parse """{"a":4,"b":[1,2,3],"c":{"b":[5,6]}}"""
+            |> JsonValue.find "$.b[*]")
