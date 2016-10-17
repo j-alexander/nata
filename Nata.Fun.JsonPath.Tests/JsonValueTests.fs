@@ -291,13 +291,16 @@ type JsonValueTests() =
             |> JsonValue.find "$..c.*.b")
             
     [<Test>]
-    member x.Identity() =
+    member x.IdentityOfRecord() =
         let record = JsonValue.Parse """
             {"b":1,
              "a":{"c":{"e":5},
                   "b":4}}
         """
         Assert.AreEqual([record], JsonValue.find "$." record)
+
+    [<Test>]
+    member x.IdentityOfArray() =
         let array = JsonValue.Parse """[{"a":3}]"""
         Assert.AreEqual([array], JsonValue.find "$." array)
 

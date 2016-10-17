@@ -123,13 +123,11 @@ module JsonValue =
                 | _ -> ()           
             }
                 
-
-        function
-        | "$." -> fun json -> [json]
-        | query ->
-            query 
-            |> levelsFor 
-            |> create
+        levelsFor >> function
+        | [Exists,Property ""] -> fun json -> [json]
+        | (Exists,Property "")::levels
+        | levels ->
+            create levels
             |> fun fsas json ->
                 recurse([Automaton(fsas)],json)
                 |> Seq.toList
