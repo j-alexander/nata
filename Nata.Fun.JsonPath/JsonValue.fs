@@ -90,7 +90,7 @@ module JsonValue =
 
     let find = 
 
-        let rec recurse (key,fsas,value) =
+        let rec recurse (fsas,value) =
             let isMatch, automata =
                 fsas
                 |> List.exists (function
@@ -108,7 +108,6 @@ module JsonValue =
                     yield!
                         xs
                         |> Seq.map(fun (name,json) ->
-                            name,
                             automata
                             |> List.collect(fun a -> a (FSANode name)),
                             json)
@@ -117,7 +116,6 @@ module JsonValue =
                     yield!
                         xs
                         |> Seq.mapi(fun i json ->
-                            key,
                             automata
                             |> List.collect(fun a -> a (FSAArray(i,xs.Length))),
                             json)
@@ -133,5 +131,5 @@ module JsonValue =
             |> levelsFor 
             |> create
             |> fun fsas json ->
-                recurse(String.Empty,[Automaton(fsas)],json)
+                recurse([Automaton(fsas)],json)
                 |> Seq.toList
