@@ -21,7 +21,7 @@ type JsonValueTests() =
         // https://jsonpath.curiousconcept.com/
         let examples =
             [ "$.store.book[*].author",
-              [Exists,Node("store"); Exists,Array("book","[*]"); Exists,Node("author")]
+              [Exists,Node("store"); Exists,Array("book","*"); Exists,Node("author")]
 
               "$..author",
               [All,Node("author")]
@@ -33,25 +33,25 @@ type JsonValueTests() =
               [Exists,Node("store");All,Node("price")]
 
               "$..book[2]",
-              [All,Array("book","[2]")]
+              [All,Array("book","2")]
 
               "$..book[(@.length-1)]",
-              [All,Array("book","[(@.length-1)]")]
+              [All,Array("book","(@.length-1)")]
 
               "$..book[-1:]",
-              [All,Array("book","[-1:]")]
+              [All,Array("book","-1:")]
 
               "$..book[0,1]",
-              [All,Array("book","[0,1]")]
+              [All,Array("book","0,1")]
 
               "$..book[:2]",
-              [All,Array("book","[:2]")]
+              [All,Array("book",":2")]
 
               "$..book[?(@.isbn)]",
-              [All,Array("book","[?(@.isbn)]")]
+              [All,Array("book","?(@.isbn)")]
 
               "$..book[?(@.price<10)]",
-              [All,Array ("book","[?(@.price<10)]")]
+              [All,Array ("book","?(@.price<10)")]
 
               "$..*",
               [All,Node("*")]
