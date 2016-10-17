@@ -343,3 +343,26 @@ type JsonValueTests() =
               JsonValue.Number 4m ],
             JsonValue.Parse """{"a":4,"b":[[1],[2],[3,4]],"c":{"b":[5,6]}}"""
             |> JsonValue.find "$.b[*][*]")
+
+    [<Test>]
+    member x.FindAllArrayChildren() =
+        Assert.AreEqual(
+            [ JsonValue.Number 1m
+              JsonValue.Number 2m
+              JsonValue.Number 3m
+              JsonValue.Number 5m
+              JsonValue.Number 6m ],
+            JsonValue.Parse """{"a":4,"b":[1,2,3],"c":{"b":[5,6]}}"""
+            |> JsonValue.find "$..b[*]")
+
+    [<Test>]
+    member x.FindAllArrayOfArrayChildren() =
+        Assert.AreEqual(
+            [ JsonValue.Number 1m
+              JsonValue.Number 2m
+              JsonValue.Number 3m
+              JsonValue.Number 4m
+              JsonValue.Number 5m
+              JsonValue.Number 6m ],
+            JsonValue.Parse """{"a":4,"b":[[1],[2],[3,4]],"c":{"b":[[5],[6]]}}"""
+            |> JsonValue.find "$..b[*][*]")

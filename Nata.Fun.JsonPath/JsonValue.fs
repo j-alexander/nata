@@ -103,24 +103,23 @@ module JsonValue =
             seq {
                 if isMatch then
                     yield value
-                match value with
-                | JsonValue.Record xs ->
-                    yield!
+                yield!
+                    match value with
+                    | JsonValue.Record xs ->
                         xs
                         |> Seq.map(fun (name,json) ->
                             automata
                             |> List.collect(fun a -> a (FSANode name)),
                             json)
                         |> Seq.collect recurse
-                | JsonValue.Array xs ->
-                    yield!
+                    | JsonValue.Array xs ->
                         xs
                         |> Seq.mapi(fun i json ->
                             automata
                             |> List.collect(fun a -> a (FSAArray(i,xs.Length))),
                             json)
                         |> Seq.collect recurse
-                | _ -> ()           
+                    | _ -> Seq.empty         
             }
                 
         levelsFor >> function
