@@ -160,3 +160,126 @@ type JsonValueTests() =
             """
             |> JsonValue.find "$..a.b")
         
+    [<Test>]
+    member x.FindWildcardAtRoot() =
+        Assert.AreEqual(
+            [ JsonValue.Number 1m
+              JsonValue.Number 2m 
+              JsonValue.Parse """{"a":{"d":3,"b":5}}"""
+              JsonValue.Parse """{"a":{"a":{"b":4}}}""" ],
+            JsonValue.Parse """
+                {"a":1,
+                 "b":2,
+                 "c":{"a":{"d":3,
+                           "b":5}},
+                 "e":{"a":{"a":{"b":4}}}
+                 }
+            """
+            |> JsonValue.find "$.*")
+        
+    [<Test>]
+    member x.FindWildcardAt1stGenerationChild() =
+        Assert.AreEqual(
+            [ JsonValue.Number 6m
+              JsonValue.Parse """{"d":3,"b":5}""" ],
+            JsonValue.Parse """
+                {"a":1,
+                 "b":2,
+                 "c":{"d":6,
+                      "a":{"d":3,
+                           "b":5}},
+                 "e":{"c":{"a":{"b":4}}}
+                 }
+            """
+            |> JsonValue.find "$.c.*")
+        
+    [<Test>]
+    member x.FindWildcardAt2ndGenerationChild() =
+        Assert.AreEqual(
+            [ JsonValue.Number 3m
+              JsonValue.Number 5m ],
+            JsonValue.Parse """
+                {"a":1,
+                 "b":2,
+                 "c":{"d":6,
+                      "a":{"d":3,
+                           "b":5}},
+                 "e":{"c":{"a":{"b":4}}}
+                 }
+            """
+            |> JsonValue.find "$.c.a.*")
+
+    [<Test>]
+    member x.FindAllWildcard() =
+        Assert.AreEqual(
+            [ JsonValue.Number 1m
+              JsonValue.Number 2m 
+              JsonValue.Parse """{"d":6,"a":{"d":3,"b":5}}"""
+              JsonValue.Number 6m 
+              JsonValue.Parse """{"d":3,"b":5}"""
+              JsonValue.Number 3m 
+              JsonValue.Number 5m 
+              JsonValue.Parse """{"c":{"a":{"b":4}}}"""
+              JsonValue.Parse """{"a":{"b":4}}"""
+              JsonValue.Parse """{"b":4}"""
+              JsonValue.Number 4m ],
+            JsonValue.Parse """
+                {"a":1,
+                 "b":2,
+                 "c":{"d":6,
+                      "a":{"d":3,
+                           "b":5}},
+                 "e":{"c":{"a":{"b":4}}}
+                 }
+            """
+            |> JsonValue.find "$..*")
+
+    [<Test>]
+    member x.FindAllWildcard2Level() =
+        Assert.AreEqual(
+            [ JsonValue.Number 6m 
+              JsonValue.Parse """{"d":3,"b":5}"""
+              JsonValue.Parse """{"b":4}""" ],
+            JsonValue.Parse """
+                {"a":1,
+                 "b":2,
+                 "c":{"d":6,
+                      "a":{"d":3,
+                           "b":5}},
+                 "e":{"c":{"a":{"b":4}}}
+                 }
+            """
+            |> JsonValue.find "$..c.*")
+
+    [<Test>]
+    member x.FindAllWildcard3Level() =
+        Assert.AreEqual(
+            [ JsonValue.Number 3m
+              JsonValue.Number 5m
+              JsonValue.Number 4m ],
+            JsonValue.Parse """
+                {"a":1,
+                 "b":2,
+                 "c":{"d":6,
+                      "a":{"d":3,
+                           "b":5}},
+                 "e":{"c":{"a":{"b":4}}}
+                 }
+            """
+            |> JsonValue.find "$..c.a.*")
+
+    [<Test>]
+    member x.FindAllWildcardWithChild() =
+        Assert.AreEqual(
+            [ JsonValue.Number 5m
+              JsonValue.Number 4m ],
+            JsonValue.Parse """
+                {"a":1,
+                 "b":2,
+                 "c":{"d":6,
+                      "a":{"d":3,
+                           "b":5}},
+                 "e":{"c":{"a":{"b":4}}}
+                 }
+            """
+            |> JsonValue.find "$..c.*.b")

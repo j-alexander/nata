@@ -50,7 +50,7 @@ module JsonValue =
         | (q,Node(n)) :: tail ->
             fun name ->
                 match name with
-                | x when x=n ->
+                | x when x=n || "*"=n ->
                     match tail with
                     | [] -> [ Match ]
                     | xs -> [ Automaton (create xs) ]
@@ -64,7 +64,7 @@ module JsonValue =
         | (q,Array(n,p)) :: tail ->
             fun name ->
                 match name with
-                | x when x=n ->
+                | x when x=n || "*"=n ->
                     match tail with
                     | [] -> [ Match ]
                     | xs -> [ Automaton (create xs) ]
