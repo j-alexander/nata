@@ -8,13 +8,16 @@ open FSharp.Data
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module JsonValue =
 
-    type Level = Quantifier * Type
+    type Query = string
+
+    type Levels = Level list
+    and Level = Quantifier * Type
     and Type = Node of Name | Array of Name * Predicate
     and Quantifier = All | Exists
     and Name = string
     and Predicate = string
 
-    let levelsFor : string -> Level list =
+    let levelsFor : Query -> Levels =
         let pattern = 
             "(?<quantifier>[\.]+)"+     // 1 or more '.' symbols
             "(?<name>([^.\[])*)"+       // anything other than a '.' or '['
@@ -37,7 +40,70 @@ module JsonValue =
                     else
                         quantifier, Type.Node (name)
             ]
-    
-    let find (path:string) (json:JsonValue) =
 
-        []
+    type FSA = Match | Automaton of (Name->List<FSA>)
+
+    let rec create (levels:Levels) =
+        match levels with
+        | [] -> fun _ -> []
+
+        | (q,Node(n)) :: tail ->
+            fun name ->
+                match name with
+                | x when x=n ->
+                    match tail with
+                    | [] -> [ Match ]
+                    | xs -> [ Automaton (create xs) ]
+                | _ -> []
+                @
+                match q with
+                | All -> [ Automaton (create levels) ]
+                | Exists -> []
+                
+        // TODO: apply predicate for array
+        | (q,Array(n,p)) :: tail ->
+            fun name ->
+                match name with
+                | x when x=n ->
+                    match tail with
+                    | [] -> [ Match ]
+                    | xs -> [ Automaton (create xs) ]
+                | _ -> []
+                @
+                match q with
+                | All -> [ Automaton (create levels) ]
+                | Exists -> []
+
+
+
+    let find = 
+
+        let rec recurse (fsas,json) =
+            let isMatch, automata =
+                fsas
+                |> List.exists (function
+                    | Match -> true
+                    | _ -> false),
+                fsas
+                |> List.choose (function
+                    | Automaton x -> Some(x)
+                    | _ -> None)
+            seq {
+                if isMatch then
+                    yield json
+                match json with
+                | JsonValue.Record xs ->
+                    yield!
+                        xs
+                        |> Seq.map(fun (name,json) ->
+                            automata
+                            |> List.collect(fun a -> a name),
+                            json)
+                        |> Seq.collect recurse
+                | _ -> ()           
+            }
+                
+
+        levelsFor >> create >> fun fsas json ->
+            recurse([Automaton(fsas)],json)
+            |> Seq.toList
