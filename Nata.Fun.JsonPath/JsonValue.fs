@@ -14,7 +14,7 @@ module JsonValue =
 
     type Levels = Level list
     and Level = Quantifier * Type
-    and Type = Node of Name | Array of Name * Predicate
+    and Type = Property of Name | Array of Predicate
     and Quantifier = All | Exists
     and Name = string
     and Predicate = string
@@ -23,24 +23,26 @@ module JsonValue =
         let pattern = 
             "(?<quantifier>[\.]+)"+       // 1 or more '.' symbols
             "(?<name>([^.\[])*)"+         // anything other than a '.' or '['
-            "(\[(?<predicate>[^\]]*)\])?" // and optionally:
+            "(\[(?<predicate>[^\]]*)\])*" // and optionally:
                                           //   '['
                                           //   anything other than ']'
                                           //   ']'
         let regex = new Regex(pattern, RegexOptions.Compiled)
         fun (path:string) ->
             [
-                for x in regex.Matches(path) ->
+                for x in regex.Matches(path) do
                     let name, quantifier =
                         x.Groups.["name"].Value,
                         x.Groups.["quantifier"].Value
                         |> function "." -> Exists | _ -> All
                     
                     if (x.Groups.["predicate"].Success) then
-                        let predicate = x.Groups.["predicate"].Value
-                        quantifier, Type.Array (name,predicate)
+                        let predicates = x.Groups.["predicate"].Captures
+                        yield quantifier, Type.Property(name)
+                        for predicate in predicates do
+                            yield Exists, Type.Array (predicate.Value)
                     else
-                        quantifier, Type.Node (name)
+                        yield quantifier, Type.Property(name)
             ]
 
     type FSA = Match | Automaton of Automaton
@@ -48,13 +50,13 @@ module JsonValue =
     and Automaton = FSAType->List<FSA>
     and FSAType =
         | FSANode of Name
-        | FSAArray of Name * Index * Length
+        | FSAArray of Index * Length
 
     let rec create (levels:Levels) =
         match levels with
         | [] -> fun _ -> []
 
-        | (q,Node(n)) :: tail ->
+        | (q,Property(n)) :: tail ->
             function
             | FSAArray _ -> []
             | FSANode name ->
@@ -69,12 +71,12 @@ module JsonValue =
                 | All -> [ Automaton (create levels) ]
                 | Exists -> []
                 
-        | (q,Array(n,p)) :: tail ->
+        | (q,Array(p)) :: tail ->
             function
             | FSANode _ -> []
-            | FSAArray (name,index,length) ->
-                match name with
-                | x when (x=n || "*"=n) && "*"=p ->
+            | FSAArray (index,length) ->
+                match (index,length) with
+                | _ when "*"=p ->
                     match tail with
                     | [] -> [ Match ]
                     | xs -> [ Automaton (create xs) ]
@@ -117,7 +119,7 @@ module JsonValue =
                         |> Seq.mapi(fun i json ->
                             key,
                             automata
-                            |> List.collect(fun a -> a (FSAArray(key,i,xs.Length))),
+                            |> List.collect(fun a -> a (FSAArray(i,xs.Length))),
                             json)
                         |> Seq.collect recurse
                 | _ -> ()           

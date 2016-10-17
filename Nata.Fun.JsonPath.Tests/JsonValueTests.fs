@@ -21,40 +21,46 @@ type JsonValueTests() =
         // https://jsonpath.curiousconcept.com/
         let examples =
             [ "$.store.book[*].author",
-              [Exists,Node("store"); Exists,Array("book","*"); Exists,Node("author")]
+              [Exists,Property("store");Exists,Property("book");Exists,Array("*");Exists,Property("author")]
 
               "$..author",
-              [All,Node("author")]
+              [All,Property("author")]
 
               "$.store.*",
-              [Exists,Node("store");Exists,Node("*")]
+              [Exists,Property("store");Exists,Property("*")]
 
               "$.store..price",
-              [Exists,Node("store");All,Node("price")]
+              [Exists,Property("store");All,Property("price")]
 
               "$..book[2]",
-              [All,Array("book","2")]
+              [All,Property("book");Exists,Array("2")]
 
               "$..book[(@.length-1)]",
-              [All,Array("book","(@.length-1)")]
+              [All,Property("book");Exists,Array("(@.length-1)")]
 
               "$..book[-1:]",
-              [All,Array("book","-1:")]
+              [All,Property("book");Exists,Array("-1:")]
 
               "$..book[0,1]",
-              [All,Array("book","0,1")]
+              [All,Property("book");Exists,Array("0,1")]
 
               "$..book[:2]",
-              [All,Array("book",":2")]
+              [All,Property("book");Exists,Array(":2")]
 
               "$..book[?(@.isbn)]",
-              [All,Array("book","?(@.isbn)")]
+              [All,Property("book");Exists,Array("?(@.isbn)")]
 
               "$..book[?(@.price<10)]",
-              [All,Array ("book","?(@.price<10)")]
+              [All,Property("book");Exists,Array("?(@.price<10)")]
 
               "$..*",
-              [All,Node("*")]
+              [All,Property("*")]
+
+              "$.store.book[*]",
+              [Exists,Property("store");Exists,Property("book");Exists,Array("*")]
+
+              "$.store.book[*][*]",
+              [Exists,Property("store");Exists,Property("book");Exists,Array("*");Exists,Array("*")]
             ]
 
         for i, example, expected in examples |> Seq.mapi (fun i (e,x) -> i,e,x) do
@@ -317,10 +323,20 @@ type JsonValueTests() =
             |> JsonValue.find "$.b")
 
     [<Test>]
-    member x.FindAllArrayChildrenAtRoot() =
+    member x.FindArrayChildrenAtRoot() =
         Assert.AreEqual(
             [ JsonValue.Number 1m
               JsonValue.Number 2m
               JsonValue.Number 3m ],
             JsonValue.Parse """{"a":4,"b":[1,2,3],"c":{"b":[5,6]}}"""
             |> JsonValue.find "$.b[*]")
+
+    [<Test>]
+    member x.FindArrayOfArrayChildren() =
+        Assert.AreEqual(
+            [ JsonValue.Number 1m
+              JsonValue.Number 2m
+              JsonValue.Number 3m
+              JsonValue.Number 4m ],
+            JsonValue.Parse """{"a":4,"b":[[1],[2],[3,4]],"c":{"b":[5,6]}}"""
+            |> JsonValue.find "$.b[*][*]")
