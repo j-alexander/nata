@@ -58,6 +58,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Fun.Schema", "Nata.Fun
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Fun.Schema.Tests", "Nata.Fun.Schema.Tests\Nata.Fun.Schema.Tests.fsproj", "{69CF4095-C7B4-4CA8-A309-9A1BC163E7E4}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Fun.JsonPath.Tests", "Nata.Fun.JsonPath.Tests\Nata.Fun.JsonPath.Tests.fsproj", "{B8747390-219E-4755-97B7-A45659A4821B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -164,6 +166,10 @@ Global
 		{69CF4095-C7B4-4CA8-A309-9A1BC163E7E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{69CF4095-C7B4-4CA8-A309-9A1BC163E7E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{69CF4095-C7B4-4CA8-A309-9A1BC163E7E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8747390-219E-4755-97B7-A45659A4821B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8747390-219E-4755-97B7-A45659A4821B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8747390-219E-4755-97B7-A45659A4821B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8747390-219E-4755-97B7-A45659A4821B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

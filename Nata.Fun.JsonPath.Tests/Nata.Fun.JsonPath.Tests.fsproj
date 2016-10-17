@@ -5,14 +5,14 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>69cf4095-c7b4-4ca8-a309-9a1bc163e7e4</ProjectGuid>
+    <ProjectGuid>b8747390-219e-4755-97b7-a45659a4821b</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Nata.Fun.Schema.Tests</RootNamespace>
-    <AssemblyName>Nata.Fun.Schema.Tests</AssemblyName>
+    <RootNamespace>Nata.Fun.JsonPath.Tests</RootNamespace>
+    <AssemblyName>Nata.Fun.JsonPath.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.3.1.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Name>Nata.Fun.Schema.Tests</Name>
+    <Name>Nata.Fun.JsonPath.Tests</Name>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -23,7 +23,7 @@
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Debug\Nata.Fun.Schema.Tests.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\Nata.Fun.JsonPath.Tests.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,7 +32,7 @@
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
-    <DocumentationFile>bin\Release\Nata.Fun.Schema.Tests.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\Nata.Fun.JsonPath.Tests.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
@@ -65,7 +65,7 @@
     <None Include="paket.references" />
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="SchemaTests.fs" />
+    <Compile Include="JsonValueTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -313,9 +313,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Nata.Fun.Schema\Nata.Fun.Schema.fsproj">
-      <Name>Nata.Fun.Schema</Name>
-      <Project>{d8210f06-e733-461e-b943-70ef90a5d320}</Project>
+    <ProjectReference Include="..\Nata.Fun.JsonPath\Nata.Fun.JsonPath.fsproj">
+      <Name>Nata.Fun.JsonPath</Name>
+      <Project>{714846ef-7b39-40dd-bf6a-ae694ceba160}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>

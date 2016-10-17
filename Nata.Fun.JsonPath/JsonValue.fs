@@ -1,28 +1,12 @@
-﻿namespace Nata.Fun
+﻿namespace Nata.Fun.JsonPath
 
 open System
 open System.Text
 open System.Text.RegularExpressions
 open FSharp.Data
 
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module JsonValue =
-
-
-    // http://goessner.net/articles/JsonPath/
-    // https://jsonpath.curiousconcept.com/
-    let examples =
-        [ "$.store.book[*].author"
-          "$..author"
-          "$.store.*"
-          "$.store..price"
-          "$..book[2]"
-          "$..book[(@.length-1)]"
-          "$..book[-1:]"
-          "$..book[0,1]"
-          "$..book[:2]"
-          "$..book[?(@.isbn)]"
-          "$..book[?(@.price<10)]"
-          "$..*" ]
 
     type Level = Quantifier * Type
     and Type = Node of Name | Array of Name * Predicate
