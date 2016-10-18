@@ -22,7 +22,7 @@ type JsonValueTests() =
         // https://jsonpath.curiousconcept.com/
         let examples =
             [ "$.store.book[*].author",
-              [Exists,Property("store");Exists,Property("book");Exists,Array("*");Exists,Property("author")]
+              [Exists,Property("store");Exists,Property("book");Exists,Array(Predicate.Wildcard);Exists,Property("author")]
 
               "$..author",
               [All,Property("author")]
@@ -34,34 +34,34 @@ type JsonValueTests() =
               [Exists,Property("store");All,Property("price")]
 
               "$..book[2]",
-              [All,Property("book");Exists,Array("2")]
+              [All,Property("book");Exists,Array(Predicate.Index[2])]
 
               "$..book[(@.length-1)]",
-              [All,Property("book");Exists,Array("(@.length-1)")]
+              [All,Property("book");Exists,Array(Predicate.Expression "(@.length-1)")]
 
               "$..book[-1:]",
-              [All,Property("book");Exists,Array("-1:")]
+              [All,Property("book");Exists,Array(Predicate.Expression "-1:")]
 
               "$..book[0,1]",
-              [All,Property("book");Exists,Array("0,1")]
+              [All,Property("book");Exists,Array(Predicate.Index [0;1])]
 
               "$..book[:2]",
-              [All,Property("book");Exists,Array(":2")]
+              [All,Property("book");Exists,Array(Predicate.Expression ":2")]
 
               "$..book[?(@.isbn)]",
-              [All,Property("book");Exists,Array("?(@.isbn)")]
+              [All,Property("book");Exists,Array(Predicate.Expression "?(@.isbn)")]
 
               "$..book[?(@.price<10)]",
-              [All,Property("book");Exists,Array("?(@.price<10)")]
+              [All,Property("book");Exists,Array(Predicate.Expression "?(@.price<10)")]
 
               "$..*",
               [All,Property("*")]
 
               "$.store.book[*]",
-              [Exists,Property("store");Exists,Property("book");Exists,Array("*")]
+              [Exists,Property("store");Exists,Property("book");Exists,Array(Predicate.Wildcard)]
 
               "$.store.book[*][*]",
-              [Exists,Property("store");Exists,Property("book");Exists,Array("*");Exists,Array("*")]
+              [Exists,Property("store");Exists,Property("book");Exists,Array(Predicate.Wildcard);Exists,Array(Predicate.Wildcard)]
             ]
 
         for i, example, expected in examples |> Seq.mapi (fun i (e,x) -> i,e,x) do
@@ -367,3 +367,38 @@ type JsonValueTests() =
               JsonValue.Number 6m ],
             JsonValue.Parse """{"a":4,"b":[[1],[2],[3,4]],"c":{"b":[[5],[6]]}}"""
             |> JsonValue.find "$..b[*][*]")
+
+    [<Test>]
+    member x.FindArrayIndicesAtRoot() =
+        Assert.AreEqual(
+            [ JsonValue.Number 1m
+              JsonValue.Number 3m
+              JsonValue.Number 5m ],
+            JsonValue.Parse """[1,2,3,4,5]"""
+            |> JsonValue.find "$.[0,2,-1]")
+
+    [<Test>]
+    member x.FindArrayIndices1stGeneration() =
+        Assert.AreEqual(
+            [ JsonValue.Number 1m
+              JsonValue.Number 3m
+              JsonValue.Number 5m ],
+            JsonValue.Parse """{"a":[1,2,3,4,5]}"""
+            |> JsonValue.find "$.a[0,2,-1]")
+
+    [<Test>]
+    member x.FindArrayIndices2ndGeneration() =
+        Assert.AreEqual(
+            [ JsonValue.Number 1m
+              JsonValue.Number 3m
+              JsonValue.Number 5m ],
+            JsonValue.Parse """{"a":{"b":[1,2,3,4,5]}}"""
+            |> JsonValue.find "$.a.b[0,2,-1]")
+
+    [<Test>]
+    member x.FindArrayWithInvalidIndices() =
+        Assert.AreEqual(
+            [ JsonValue.Number 5m ],
+            JsonValue.Parse """{"a":{"b":[1,2,3,4,5]}}"""
+            |> JsonValue.find "$.a.b[-2,4,9]")
+        

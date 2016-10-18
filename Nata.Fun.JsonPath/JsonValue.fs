@@ -19,9 +19,25 @@ module JsonValue =
         and Type = Property of Name | Array of Predicate
         and Quantifier = All | Exists
         and Name = string
-        and Predicate = string
+        and Predicate =
+            | Expression of string
+            | Wildcard
+            //| Slice of start:int * finish:int * step:int
+            | Index of int list
 
         let levelsFor : Query -> Levels =
+
+            let predicateFor : string -> Predicate =
+                let index = new Regex("^(?<i>-?\d+)(,(?<i>-?\d+))*$", RegexOptions.Compiled)
+                fun input ->
+                    if input = "*" then Predicate.Wildcard
+                    else
+                        let index = index.Match(input)
+                        if index.Success then
+                            Predicate.Index [ for g in index.Groups.["i"].Captures -> Int32.Parse g.Value]
+                        else
+                            Predicate.Expression input
+
             let pattern = 
                 "(?<quantifier>[\.]+)"+       // 1 or more '.' symbols
                 "(?<name>([^.\[])*)"+         // anything other than a '.' or '['
@@ -30,6 +46,7 @@ module JsonValue =
                                               //   anything other than ']'
                                               //   ']'
             let regex = new Regex(pattern, RegexOptions.Compiled)
+
             fun (path:string) ->
                 [
                     for x in regex.Matches(path) do
@@ -41,8 +58,8 @@ module JsonValue =
                         if (x.Groups.["predicate"].Success) then
                             let predicates = x.Groups.["predicate"].Captures
                             yield quantifier, Type.Property(name)
-                            for predicate in predicates do
-                                yield Exists, Type.Array (predicate.Value)
+                            for x in predicates do
+                                yield Exists, Type.Array (predicateFor x.Value)
                         else
                             yield quantifier, Type.Property(name)
                 ]
@@ -81,8 +98,15 @@ module JsonValue =
                 function
                 | Input.Property _ -> []
                 | Input.Array (index,length) ->
-                    match (index,length) with
-                    | _ when "*"=p ->
+                    match p with
+                    | Query.Predicate.Wildcard ->
+                        match tail with
+                        | [] -> [ Match ]
+                        | xs -> [ Automaton (transition xs) ]
+                    | Query.Predicate.Index xs when
+                        (xs
+                         |> List.map (function -1 -> length-1 | x -> x)
+                         |> List.exists ((=) index)) ->
                         match tail with
                         | [] -> [ Match ]
                         | xs -> [ Automaton (transition xs) ]
