@@ -11,6 +11,7 @@ open FSharp.Data
 open NUnit.Framework
 open Nata.Fun.JsonPath
 open Nata.Fun.JsonPath.JsonValue
+open Nata.Fun.JsonPath.JsonValue.Query
 
 [<TestFixture>]
 type JsonValueTests() =
