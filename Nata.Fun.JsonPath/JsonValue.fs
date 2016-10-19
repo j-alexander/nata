@@ -105,7 +105,7 @@ module JsonValue =
                         | xs -> [ Automaton (transition xs) ]
                     | Query.Predicate.Index xs when
                         (xs
-                         |> List.map (function -1 -> length-1 | x -> x)
+                         |> List.map (function x when x < 0 -> length+x | x -> x)
                          |> List.exists ((=) index)) ->
                         match tail with
                         | [] -> [ Match ]

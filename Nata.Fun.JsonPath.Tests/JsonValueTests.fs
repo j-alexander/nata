@@ -367,9 +367,17 @@ type JsonValueTests() =
               JsonValue.Number 6m ],
             JsonValue.Parse """{"a":4,"b":[[1],[2],[3,4]],"c":{"b":[[5],[6]]}}"""
             |> JsonValue.find "$..b[*][*]")
+            
+    [<Test>]
+    member x.FindIndexAtRoot() =
+        Assert.AreEqual(
+            [ JsonValue.Number 1m
+              JsonValue.Number 3m ],
+            JsonValue.Parse """[1,2,3,4,5]"""
+            |> JsonValue.find "$.[0,2]")
 
     [<Test>]
-    member x.FindArrayIndicesAtRoot() =
+    member x.FindNegativeIndexAtRoot() =
         Assert.AreEqual(
             [ JsonValue.Number 1m
               JsonValue.Number 3m
@@ -378,7 +386,15 @@ type JsonValueTests() =
             |> JsonValue.find "$.[0,2,-1]")
 
     [<Test>]
-    member x.FindArrayIndices1stGeneration() =
+    member x.FindIndex1stGeneration() =
+        Assert.AreEqual(
+            [ JsonValue.Number 1m
+              JsonValue.Number 3m ],
+            JsonValue.Parse """{"a":[1,2,3,4,5]}"""
+            |> JsonValue.find "$.a[0,2]")
+
+    [<Test>]
+    member x.FindNegativeIndex1stGeneration() =
         Assert.AreEqual(
             [ JsonValue.Number 1m
               JsonValue.Number 3m
@@ -387,7 +403,15 @@ type JsonValueTests() =
             |> JsonValue.find "$.a[0,2,-1]")
 
     [<Test>]
-    member x.FindArrayIndices2ndGeneration() =
+    member x.FindIndex2ndGeneration() =
+        Assert.AreEqual(
+            [ JsonValue.Number 1m
+              JsonValue.Number 3m ],
+            JsonValue.Parse """{"a":{"b":[1,2,3,4,5]}}"""
+            |> JsonValue.find "$.a.b[0,2]")
+
+    [<Test>]
+    member x.FindNegativeIndex2ndGeneration() =
         Assert.AreEqual(
             [ JsonValue.Number 1m
               JsonValue.Number 3m
@@ -396,9 +420,23 @@ type JsonValueTests() =
             |> JsonValue.find "$.a.b[0,2,-1]")
 
     [<Test>]
-    member x.FindArrayWithInvalidIndices() =
+    member x.FindInvalidIndex() =
         Assert.AreEqual(
             [ JsonValue.Number 5m ],
             JsonValue.Parse """{"a":{"b":[1,2,3,4,5]}}"""
-            |> JsonValue.find "$.a.b[-2,4,9]")
+            |> JsonValue.find "$.a.b[4,8,9]")
+
+    [<Test>]
+    member x.FindNegativeIndex() =
+        Assert.AreEqual(
+            [ JsonValue.Number 4m ],
+            JsonValue.Parse """{"a":{"b":[1,2,3,4,5]}}"""
+            |> JsonValue.find "$.a.b[-2]")
+    [<Test>]
+    member x.FindInvalidNegativeIndex() =
+        Assert.AreEqual(
+            [ JsonValue.Number 1m
+              JsonValue.Number 2m ],
+            JsonValue.Parse """{"a":{"b":[1,2,3,4,5]}}"""
+            |> JsonValue.find "$.a.b[1,-9,0]")
         
