@@ -22,21 +22,43 @@ module JsonValue =
         and Predicate =
             | Expression of string
             | Wildcard
-            //| Slice of start:int * finish:int * step:int
+            | Slice of start:int option * finish:int option * step:int option
             | Index of int list
 
         let levelsFor : Query -> Levels =
 
             let predicateFor : string -> Predicate =
-                let index = new Regex("^(?<i>-?\d+)(,(?<i>-?\d+))*$", RegexOptions.Compiled)
-                fun input ->
-                    if input = "*" then Predicate.Wildcard
-                    else
-                        let index = index.Match(input)
-                        if index.Success then
-                            Predicate.Index [ for g in index.Groups.["i"].Captures -> Int32.Parse g.Value]
-                        else
-                            Predicate.Expression input
+
+                let values (m:Match) (group:string) =
+                    [ for g in m.Groups.[group].Captures -> Int32.Parse g.Value]
+
+                let (|Wildcard|_|) = function "*" -> Some Predicate.Wildcard | _ -> None
+                let (|Index|_|) =
+                    let pattern = "^(?<i>-?\d+)(,(?<i>-?\d+))*$"
+                    let regex = new Regex(pattern, RegexOptions.Compiled)
+                    fun input ->
+                        let index = regex.Match(input)
+                        if index.Success then Some(Predicate.Index(values index "i"))
+                        else None
+                let (|Slice|_|) =
+                    let pattern = "^(?<start>-?\d+)?:(?<finish>-?\d+)?(:(?<step>-?\d+))?$"
+                    let regex = new Regex(pattern, RegexOptions.Compiled)
+                    fun input ->
+                        let slice = regex.Match(input)
+                        if slice.Success then
+                            let start, finish, step =
+                                Seq.tryPick Some (values slice "start"),
+                                Seq.tryPick Some (values slice "finish"),
+                                Seq.tryPick Some (values slice "step")
+                            Some(Predicate.Slice(start,finish,step))
+                        else None
+                let (|Expression|) input = Predicate.Expression input
+
+                function
+                | Wildcard x -> x
+                | Index x -> x
+                | Slice x -> x
+                | Expression x -> x
 
             let pattern = 
                 "(?<quantifier>[\.]+)"+       // 1 or more '.' symbols

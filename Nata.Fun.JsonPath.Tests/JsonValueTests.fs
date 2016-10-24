@@ -40,13 +40,22 @@ type JsonValueTests() =
               [All,Property("book");Exists,Array(Predicate.Expression "(@.length-1)")]
 
               "$..book[-1:]",
-              [All,Property("book");Exists,Array(Predicate.Expression "-1:")]
+              [All,Property("book");Exists,Array(Predicate.Slice(Some -1,None,None))]
+
+              "$..book[:2]",
+              [All,Property("book");Exists,Array(Predicate.Slice(None,Some 2,None))]
+
+              "$..book[1:2]",
+              [All,Property("book");Exists,Array(Predicate.Slice(Some 1,Some 2,None))]
+
+              "$..book[::1]",
+              [All,Property("book");Exists,Array(Predicate.Slice(None,None,Some 1))]
+
+              "$..book[1:2:3]",
+              [All,Property("book");Exists,Array(Predicate.Slice(Some 1,Some 2,Some 3))]
 
               "$..book[0,1]",
               [All,Property("book");Exists,Array(Predicate.Index [0;1])]
-
-              "$..book[:2]",
-              [All,Property("book");Exists,Array(Predicate.Expression ":2")]
 
               "$..book[?(@.isbn)]",
               [All,Property("book");Exists,Array(Predicate.Expression "?(@.isbn)")]
