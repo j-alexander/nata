@@ -8,6 +8,13 @@ open FSharp.Data
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module JsonValue =
 
+            
+    let private values (m:Match) (group:string) =
+        [ for g in m.Groups.[group].Captures -> Int32.Parse g.Value ]
+
+    let private valueOr (defaultValue:int) =
+        function Some x -> x | None -> defaultValue
+
 
     type Query = string
 
@@ -22,15 +29,12 @@ module JsonValue =
         and Predicate =
             | Expression of string
             | Wildcard
-            | Slice of start:int option * finish:int option * step:int option
+            | Slice of start:int option * finish:int option * step:int
             | Index of int list
 
         let levelsFor : Query -> Levels =
 
             let predicateFor : string -> Predicate =
-
-                let values (m:Match) (group:string) =
-                    [ for g in m.Groups.[group].Captures -> Int32.Parse g.Value]
 
                 let (|Wildcard|_|) = function "*" -> Some Predicate.Wildcard | _ -> None
                 let (|Index|_|) =
@@ -46,11 +50,14 @@ module JsonValue =
                     fun input ->
                         let slice = regex.Match(input)
                         if slice.Success then
-                            let start, finish, step =
+                            let step =
+                                Seq.tryPick Some (values slice "step") |> valueOr 1
+                            let start,finish =
                                 Seq.tryPick Some (values slice "start"),
-                                Seq.tryPick Some (values slice "finish"),
-                                Seq.tryPick Some (values slice "step")
-                            Some(Predicate.Slice(start,finish,step))
+                                Seq.tryPick Some (values slice "finish")
+                            match step with
+                            | 0 -> Some(Predicate.Index[])
+                            | i -> Some(Predicate.Slice(start,finish,step))
                         else None
                 let (|Expression|) input = Predicate.Expression input
 
@@ -132,6 +139,21 @@ module JsonValue =
                         match tail with
                         | [] -> [ Match ]
                         | xs -> [ Automaton (transition xs) ]
+                    | Query.Predicate.Slice(start,finish,step) when (step > 0) ->
+                        let start =
+                            match start |> valueOr 0 with
+                            | x when x < 0 -> length+x
+                            | x -> x
+                        let finish =
+                            match finish |> valueOr length with
+                            | x when x <= 0 -> length+x
+                            | x -> x
+                        if (finish > index && index >= start) &&
+                           (0 = (index-start) % step) then
+                            match tail with
+                            | [] -> [ Match ]
+                            | xs -> [ Automaton (transition xs) ]
+                        else []
                     | _ -> []
                     @
                     match q with

@@ -40,19 +40,19 @@ type JsonValueTests() =
               [All,Property("book");Exists,Array(Predicate.Expression "(@.length-1)")]
 
               "$..book[-1:]",
-              [All,Property("book");Exists,Array(Predicate.Slice(Some -1,None,None))]
+              [All,Property("book");Exists,Array(Predicate.Slice(Some -1,None,1))]
 
               "$..book[:2]",
-              [All,Property("book");Exists,Array(Predicate.Slice(None,Some 2,None))]
+              [All,Property("book");Exists,Array(Predicate.Slice(None,Some 2,1))]
 
               "$..book[1:2]",
-              [All,Property("book");Exists,Array(Predicate.Slice(Some 1,Some 2,None))]
+              [All,Property("book");Exists,Array(Predicate.Slice(Some 1,Some 2,1))]
 
               "$..book[::1]",
-              [All,Property("book");Exists,Array(Predicate.Slice(None,None,Some 1))]
+              [All,Property("book");Exists,Array(Predicate.Slice(None,None,1))]
 
               "$..book[1:2:3]",
-              [All,Property("book");Exists,Array(Predicate.Slice(Some 1,Some 2,Some 3))]
+              [All,Property("book");Exists,Array(Predicate.Slice(Some 1,Some 2,3))]
 
               "$..book[0,1]",
               [All,Property("book");Exists,Array(Predicate.Index [0;1])]
@@ -448,4 +448,84 @@ type JsonValueTests() =
               JsonValue.Number 2m ],
             JsonValue.Parse """{"a":{"b":[1,2,3,4,5]}}"""
             |> JsonValue.find "$.a.b[1,-9,0]")
+        
+    [<Test>]
+    member x.TestArraySlicesWithPositiveStep() =
+        let check query list =
+            Assert.AreEqual(
+                List.map (decimal >> JsonValue.Number) list,
+                JsonValue.Parse """[0,1,2,3]"""
+                |> JsonValue.find query)
+        check "$.[0:]" [0..3]
+        check "$.[1:]" [1..3]
+        check "$.[2:]" [2;3]
+        check "$.[3:]" [3]
+        check "$.[4:]" []
+
+        check "$.[-4:]" [0..3]
+        check "$.[-3:]" [1..3]
+        check "$.[-2:]" [2;3]
+        check "$.[-1:]" [3]
+
+        check "$.[:0]" [0..3]
+        check "$.[:1]" [0]
+        check "$.[:2]" [0;1]
+        check "$.[:3]" [0..2]
+        check "$.[:4]" [0..3]
+        check "$.[:5]" [0..3]
+
+        check "$.[1:1]" []
+        check "$.[1:2]" [1]
+        check "$.[1:3]" [1;2]
+        check "$.[1:4]" [1..3]
+        check "$.[1:5]" [1..3]
+
+        check "$.[0:-1]" [0;1;2]
+        check "$.[1:-1]" [1;2]
+        check "$.[2:-1]" [2]
+        check "$.[3:-1]" []
+
+        check "$.[0:-2]" [0;1]
+        check "$.[1:-2]" [1]
+        check "$.[2:-2]" []
+
+        check "$.[0:-3]" [0]
+        check "$.[1:-3]" []
+        
+        check "$.[0:0]" [0..3]
+        check "$.[1:0]" [1..3]
+        check "$.[2:0]" [2;3]
+        check "$.[3:0]" [3]
+        check "$.[4:0]" []
+
+        check "$.[::1]" [0..3]
+        check "$.[::2]" [0;2]
+        check "$.[::3]" [0;3]
+        check "$.[::4]" [0]
+
+        check "$.[0::1]" [0..3]
+        check "$.[0::2]" [0;2]
+        check "$.[0::3]" [0;3]
+        check "$.[0::4]" [0]
+
+        check "$.[1::1]" [1..3]
+        check "$.[1::2]" [1;3]
+        check "$.[1::3]" [1]
+
+        check "$.[2::1]" [2..3]
+        check "$.[2::2]" [2]
+        check "$.[2::3]" [2]
+
+        check "$.[3::1]" [3]
+        check "$.[3::2]" [3]
+        check "$.[3::3]" [3]
+        
+        check "$.[0:-1:1]" [0..2]
+        check "$.[1:-1:1]" [1;2]
+        check "$.[2:-1:1]" [2]
+        check "$.[3:-1:1]" []
+
+        check "$.[0:-2:1]" [0;1]
+        check "$.[1:-2:1]" [1]
+        check "$.[2:-2:1]" []
         
