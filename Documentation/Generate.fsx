@@ -2,16 +2,16 @@
 #r "System.dll"
 #r "System.Numerics.dll"
 
-#r "../packages/FSharp.Formatting.2.14.4/lib/net40/RazorEngine.dll"
-#r "../packages/FSharp.Formatting.2.14.4/lib/net40/System.Web.Razor.dll"
-#r "../packages/FSharp.Formatting.2.14.4/lib/net40/CSharpFormat.dll"
-#r "../packages/FSharp.Formatting.2.14.4/lib/net40/FSharp.CodeFormat.dll"
-#r "../packages/FSharp.Compiler.Service.2.0.0.6/lib/net45/FSharp.Compiler.Service.dll"
-#r "../packages/FSharpVSPowerTools.Core.2.3.0/lib/net45/FSharpVSPowerTools.Core.dll"
-#r "../packages/FSharp.Formatting.2.14.4/lib/net40/FSharp.Formatting.Common.dll"
-#r "../packages/FSharp.Formatting.2.14.4/lib/net40/FSharp.MetadataFormat.dll"
-#r "../packages/FSharp.Formatting.2.14.4/lib/net40/FSharp.Markdown.dll"
-#r "../packages/FSharp.Formatting.2.14.4/lib/net40/FSharp.Literate.dll"
+#r "../packages/FSharp.Formatting/lib/net40/RazorEngine.dll"
+#r "../packages/FSharp.Formatting/lib/net40/System.Web.Razor.dll"
+#r "../packages/FSharp.Formatting/lib/net40/CSharpFormat.dll"
+#r "../packages/FSharp.Formatting/lib/net40/FSharp.CodeFormat.dll"
+#r "../packages/FSharp.Compiler.Service/lib/net45/FSharp.Compiler.Service.dll"
+#r "../packages/FSharpVSPowerTools.Core/lib/net45/FSharpVSPowerTools.Core.dll"
+#r "../packages/FSharp.Formatting/lib/net40/FSharp.Formatting.Common.dll"
+#r "../packages/FSharp.Formatting/lib/net40/FSharp.MetadataFormat.dll"
+#r "../packages/FSharp.Formatting/lib/net40/FSharp.Markdown.dll"
+#r "../packages/FSharp.Formatting/lib/net40/FSharp.Literate.dll"
 
 open System
 open System.IO

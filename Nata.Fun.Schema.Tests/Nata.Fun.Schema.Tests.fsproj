@@ -76,6 +76,13 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nata.Fun.Schema\Nata.Fun.Schema.fsproj">
+      <Name>Nata.Fun.Schema</Name>
+      <Project>{d8210f06-e733-461e-b943-70ef90a5d320}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
   <Choose>
     <When Condition="($(TargetFrameworkIdentifier) == '.NETCore') Or ($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'MonoTouch') Or ($(TargetFrameworkIdentifier) == 'Xamarin.iOS') Or ($(TargetFrameworkIdentifier) == 'Xamarin.Mac') Or ($(TargetFrameworkProfile) == 'Profile7') Or ($(TargetFrameworkProfile) == 'Profile44')">
       <ItemGroup>
@@ -311,13 +318,6 @@
       <Private>True</Private>
       <Paket>True</Paket>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Nata.Fun.Schema\Nata.Fun.Schema.fsproj">
-      <Name>Nata.Fun.Schema</Name>
-      <Project>{d8210f06-e733-461e-b943-70ef90a5d320}</Project>
-      <Private>True</Private>
-    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETStandard' And ($(TargetFrameworkVersion) == 'v1.3' Or $(TargetFrameworkVersion) == 'v1.4' Or $(TargetFrameworkVersion) == 'v1.5')">
