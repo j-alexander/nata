@@ -6,12 +6,12 @@ ENV SETUP    https://download.microsoft.com/download/E/1/2/E12B3655-D817-49BA-B9
 RUN powershell -NoProfile -Command \
         Write-Host "Downloading may take some time..."             ; \
         wget -uri "%SETUP%" -usebasicparsing -outfile \Setup.exe   ; \
-		$file = Get-Item \Setup.exe                                ; \
+        $file = Get-Item \Setup.exe                                ; \
         Write-Host "bytes expect : 315579864"                      ; \
-		Write-Host "bytes actual :" $file.Length                   ; \
-		$md5 = Get-FileHash -Algorithm MD5 -Path \Setup.exe        ; \
+        Write-Host "bytes actual :" $file.Length                   ; \
+        $md5 = Get-FileHash -Algorithm MD5 -Path \Setup.exe        ; \
         Write-Host "md5 expect : 902347C4F97B2CB00007C74AE1A6912E" ; \
-		Write-Host "md5 actual :" $md5.Hash
+        Write-Host "md5 actual :" $md5.Hash
 		
 RUN powershell -NoProfile -Command \
         Write-Host "Installing may take some time..."           ; \
@@ -21,8 +21,8 @@ RUN powershell -NoProfile -Command \
                       '/FEATURES=SQLEngine',                      \
                       '/INSTANCENAME=MSSQLServer',                \
                       '/TCPENABLED=1',                            \
-					  '/SECURITYMODE=SQL',                        \
-					  '/SAPWD=docker_13.0.1601.5',                \
+                      '/SECURITYMODE=SQL',                        \
+                      '/SAPWD=docker_13.0.1601.5',                \
                       '/IAcceptSQLServerLicenseTerms'             \
         -Wait                                                   ; \
         net stop mssqlserver                                    ; \
