@@ -21,6 +21,20 @@ RUN powershell -NoProfile -Command \
         	
 RUN setx /M PATH "%PATH%;%PROGRAMFILES(X86)%\Microsoft SDKs\Azure\Storage Emulator"
 
+RUN powershell -NoProfile -Command \
+        $File = '%PROGRAMFILES(X86)%\Microsoft SDKs\Azure\Storage Emulator\AzureStorageEmulator.exe.config'  ; \
+		$X = Get-Content $File                              ; \
+		$X = $X.Replace(':10000',':20000')                  ; \
+		$X = $X.Replace(':10001',':20001')                  ; \
+		$X = $X.Replace(':10002',':20002')                  ; \
+		$X = $X.Replace('devstoreaccount1','dockerstorage') ; \
+		Set-Content $File $X
+
 RUN AzureStorageEmulator.exe init -server localhost -forcecreate -inprocess
 RUN AzureStorageEmulator.exe status
+
+RUN netsh interface portproxy add v4tov4 listenport=10000 connectaddress=127.0.0.1 connectport=20000 protocol=tcp
+RUN netsh interface portproxy add v4tov4 listenport=10001 connectaddress=127.0.0.1 connectport=20001 protocol=tcp
+RUN netsh interface portproxy add v4tov4 listenport=10002 connectaddress=127.0.0.1 connectport=20002 protocol=tcp
+
 CMD AzureStorageEmulator.exe start -inprocess
