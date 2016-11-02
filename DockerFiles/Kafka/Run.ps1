@@ -1,1 +1,1 @@
-docker run -it -m 2G -p 9092:9092 -p 2181:2181 kafka powershell.exe
+docker run -it -m 4G -p 9092:9092 -p 2181:2181 kafka powershell.exe
