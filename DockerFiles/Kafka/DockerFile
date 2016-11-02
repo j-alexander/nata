@@ -21,10 +21,10 @@ RUN powershell -NoProfile -Command \
         rm \kafka_2.11-0.10.0.1.tgz
             
 RUN powershell -NoProfile -Command \
-        $ZKProps = \"c:\kafka\config\zookeeper.properties\"                      ; \
-        $ZP = [IO.File]::ReadAllText($ZKProps)                                   ; \  
-        $ZP = $ZP.Replace(\"/tmp/zookeeper\",\"/ProgramData/Zookeeper/Data\")    ; \
-        [IO.File]::WriteAllText($ZKProps, $ZP)
+        $ZKProps = '/kafka/config/zookeeper.properties'                   ; \
+        $ZP = Get-Content $ZKProps                                        ; \
+        $ZP = $ZP.Replace('/tmp/zookeeper','/ProgramData/Zookeeper/Data') ; \
+        Set-Content $ZKProps $ZP
         
 RUN [ "nssm.exe",                                                    \
       "install", "Zookeeper",                                        \
