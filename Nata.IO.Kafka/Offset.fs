@@ -11,8 +11,35 @@ open Nata.IO
 type Offset =
     { PartitionId : int 
       Position : int64 }
+with
+    static member (+) (o:Offset, delta) : Offset = { o with Position=o.Position+delta }
+    static member (-) (o:Offset, delta) : Offset = { o with Position=o.Position-delta }
 
-type Offsets = Offset list
+type Offsets = Offsets of Offset list
+with
+    static member (+) (Offsets offsets, deltaPerPartition) : Offsets =
+        offsets
+        |> List.map (fun x -> x + deltaPerPartition)
+        |> Offsets
+
+    static member (-) (Offsets offsets, deltaPerPartition) : Offsets =
+        offsets
+        |> List.map (fun x -> x - deltaPerPartition)
+        |> Offsets
+
+    static member (+) (offsets:Offsets, deltaPerPartition:int) =
+        Offsets.op_Addition(offsets, int64 deltaPerPartition)
+
+    static member (-) (offsets:Offsets, deltaPerPartition:int) =
+        Offsets.op_Subtraction(offsets, int64 deltaPerPartition)
+
+    static member (-) (Offsets l, Offsets r) =
+        Seq.sum <| query {
+            for l in l do
+            join r in r on (l.PartitionId = r.PartitionId)
+            select (l.Position - Math.Min(l.Position, r.Position))
+        }
+    
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Offset =
@@ -61,7 +88,7 @@ module Offset =
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Offsets =
 
-    let private join (ranges:OffsetRanges, offsets:Offsets) =
+    let private join (ranges:OffsetRanges, Offsets offsets) =
         query { for p in ranges do
                 for o in offsets do
                 where (p.PartitionId = o.PartitionId)
@@ -75,10 +102,10 @@ module Offsets =
     let neverCompleted _ = false
 
     let start : OffsetRanges -> Offsets =
-        List.map Offset.start
+        List.map Offset.start >> Offsets
 
     let finish : OffsetRanges -> Offsets =
-        List.map Offset.finish
+        List.map Offset.finish >> Offsets
 
     let before (range:OffsetRanges) (offsets:Offsets) =
         raise (new NotImplementedException())
@@ -86,17 +113,25 @@ module Offsets =
     let after (range:OffsetRanges) (offsets:Offsets) =
         raise (new NotImplementedException())
 
-    let updateWith (message:Message) : Offsets -> Offsets =
-        List.map(fun offset ->
+    let rewind (perPartition:int64) (Offsets offsets) =
+        offsets
+        |> List.map(fun x -> { x with Position=x.Position-perPartition })
+        |> Offsets
+
+    let updateWith (message:Message) (Offsets offsets) =
+        offsets
+        |> List.map(fun offset ->
             if offset.PartitionId <> message.PartitionId then offset
             else { offset with Position = message.Offset })
+        |> Offsets
 
-    let toKafka : Offsets -> KafkaNet.Protocol.OffsetPosition[] =
-        Seq.sortBy Offset.partitionId
-        >> Seq.map Offset.toKafka
-        >> Seq.toArray
+    let toKafka (Offsets offsets) : KafkaNet.Protocol.OffsetPosition[] =
+        offsets
+        |> Seq.sortBy Offset.partitionId
+        |> Seq.map Offset.toKafka
+        |> Seq.toArray
 
-    let toInt64 (partition) (offsets:Offsets) : int64 =
+    let toInt64 (partition) (Offsets offsets) : int64 =
         offsets
         |> List.filter (fun x -> x.PartitionId = 0)
         |> List.map (fun x -> x.Position)
@@ -106,16 +141,19 @@ module Offsets =
         { Offset.PartitionId=partition; Offset.Position=position }
         |> Seq.singleton
         |> Seq.toList
+        |> Offsets
 
-    let toString : Offsets -> string =
-        List.sortBy Offset.partitionId 
-        >> List.map Offset.toString 
-        >> String.concat ","
+    let toString (Offsets offsets) : string =
+        offsets
+        |> List.sortBy Offset.partitionId 
+        |> List.map Offset.toString 
+        |> String.concat ","
 
     let ofString : string -> Offsets =
         String.split ',' 
         >> List.choose Offset.(|Offset|_|) 
         >> List.sortBy Offset.partitionId
+        >> Offsets
 
     module Codec =
         
