@@ -1,7 +1,8 @@
 ﻿namespace Nata.IO
 
-type Source<'Channel,'Data,'Index> = 'Channel -> List<Capability<'Data,'Index>>
-    
+open Nata.Core
+
+type Source<'Channel,'Data,'Index> = 'Channel -> List<Capability<'Data,'Index>> 
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Source =

@@ -1,5 +1,7 @@
 ﻿namespace Nata.IO
 
+open Nata.Core
+
 type Capability<'Data,'Index> =
     | Indexer           of Indexer<'Index>
     | Writer            of Writer<'Data>

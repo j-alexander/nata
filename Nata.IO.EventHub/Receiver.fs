@@ -2,6 +2,7 @@
 
 open System
 open Microsoft.ServiceBus.Messaging
+open Nata.Core
 open Nata.IO
 
 type Group = EventHubConsumerGroup

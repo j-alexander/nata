@@ -77,6 +77,11 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
+      <Name>Nata.Core</Name>
+      <Project>{48b92604-e152-4ec9-8c25-fef849785944}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Nata.Fun.JsonPath\Nata.Fun.JsonPath.fsproj">
       <Name>Nata.Fun.JsonPath</Name>
       <Project>{714846ef-7b39-40dd-bf6a-ae694ceba160}</Project>

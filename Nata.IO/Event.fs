@@ -2,6 +2,7 @@
 
 open System
 open FSharp.Data
+open Nata.Core
 
 type Event<'Data> = {
     Data : 'Data

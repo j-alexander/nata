@@ -4,6 +4,7 @@ open System
 open System.IO
 open Microsoft.WindowsAzure.Storage
 open Microsoft.WindowsAzure.Storage.Blob
+open Nata.Core
 open Nata.IO
 
 module Blob =

@@ -9,9 +9,11 @@ open System.IO
 open FSharp.Data
 
 // IO Library & JsonPath
+#r @"bin/Debug/Nata.Core.dll"
 #r @"bin/Debug/Nata.Fun.JsonPath.dll"
 #r @"bin/Debug/Nata.IO.dll"
 open Nata
+open Nata.Core
 open Nata.Fun.JsonPath
 open Nata.IO
 open Nata.IO.Capability

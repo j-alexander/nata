@@ -6,9 +6,10 @@ open System.Collections.Concurrent
 open System.Reflection
 open System.Threading
 open System.Threading.Tasks
-
 open FSharp.Data
 open NUnit.Framework
+
+open Nata.Core
 open Nata.IO
 open Nata.IO.Capability
 open Nata.IO.AzureStorage

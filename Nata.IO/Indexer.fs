@@ -1,5 +1,7 @@
 ﻿namespace Nata.IO
 
+open Nata.Core
+
 type Indexer<'Index> = Position<'Index> -> 'Index
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]

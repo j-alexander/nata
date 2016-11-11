@@ -72,6 +72,11 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
+      <Name>Nata.Core</Name>
+      <Project>{48b92604-e152-4ec9-8c25-fef849785944}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Nata.IO.File\Nata.IO.File.fsproj">
       <Name>Nata.IO.File</Name>
       <Project>{093513eb-1c6c-40c6-a0af-f71baa6a827e}</Project>

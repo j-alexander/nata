@@ -7,6 +7,7 @@ open NLog.FSharp
 open KafkaNet
 open KafkaNet.Model
 
+open Nata.Core
 open Nata.IO
 
 type Cluster = string list

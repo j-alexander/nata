@@ -6,11 +6,12 @@ open System.Collections.Concurrent
 open System.Reflection
 open System.Threading
 open System.Threading.Tasks
-
 open FSharp.Data
 open NUnit.Framework
+
+open Nata.Core
+open Nata.Core.JsonValue.Codec
 open Nata.IO
-open Nata.IO.JsonValue.Codec
 open Nata.IO.Capability
 open Nata.IO.AzureStorage
 open Nata.IO.AzureStorage.Blob.Append

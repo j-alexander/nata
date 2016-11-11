@@ -1,6 +1,7 @@
 ﻿namespace Nata.IO.EventStore.Tests
 
 open System
+open Nata.Core
 open Nata.IO
 open Nata.IO.EventStore
 

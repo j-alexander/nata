@@ -75,6 +75,11 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
+    <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
+      <Name>Nata.Core</Name>
+      <Project>{48b92604-e152-4ec9-8c25-fef849785944}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Nata.IO.Tests\Nata.IO.Tests.fsproj">
       <Name>Nata.IO.Tests</Name>
       <Project>{b58419f9-0387-4780-99d7-70ca2938da00}</Project>

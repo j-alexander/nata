@@ -1,5 +1,7 @@
 ﻿namespace Nata.IO
 
+open Nata.Core
+
 type WriterTo<'Data,'Index> = Position<'Index> -> Event<'Data> -> 'Index
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]

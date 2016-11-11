@@ -2,6 +2,8 @@
 
 open System
 open System.Text
+
+open Nata.Core
 open Nata.IO
 
 type Data = byte[]

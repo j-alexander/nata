@@ -1,9 +1,11 @@
 ﻿namespace Nata.IO.RabbitMQ
 
 open System
-open RabbitMQ.Client
-open Nata.IO
 open System.Text
+open RabbitMQ.Client
+
+open Nata.Core
+open Nata.IO
 
 type HostName = string
 

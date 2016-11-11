@@ -77,6 +77,11 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
+      <Name>Nata.Core</Name>
+      <Project>{48b92604-e152-4ec9-8c25-fef849785944}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Nata.IO.AzureStorage\Nata.IO.AzureStorage.fsproj">
       <Name>Nata.IO.AzureStorage</Name>
       <Project>{b193db82-958b-403a-b4d4-6369adb1e6ef}</Project>

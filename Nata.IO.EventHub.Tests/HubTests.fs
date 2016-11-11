@@ -2,6 +2,7 @@
 
 open System
 open NUnit.Framework
+open Nata.Core
 open Nata.IO
 open Nata.IO.Capability
 open Nata.IO.EventHub

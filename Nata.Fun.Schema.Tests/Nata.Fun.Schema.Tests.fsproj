@@ -77,6 +77,11 @@
     <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
+      <Name>Nata.Core</Name>
+      <Project>{48b92604-e152-4ec9-8c25-fef849785944}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Nata.Fun.Schema\Nata.Fun.Schema.fsproj">
       <Name>Nata.Fun.Schema</Name>
       <Project>{d8210f06-e733-461e-b943-70ef90a5d320}</Project>

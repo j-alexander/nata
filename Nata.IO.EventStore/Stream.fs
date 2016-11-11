@@ -7,6 +7,7 @@ open System.Net
 open System.Net.Sockets
 open System.Threading
 open NLog.FSharp
+open Nata.Core
 open Nata.IO
 open EventStore.ClientAPI
 open EventStore.ClientAPI.Exceptions

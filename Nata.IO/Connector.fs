@@ -1,5 +1,7 @@
 ﻿namespace Nata.IO
 
+open Nata.Core
+
 type Connector<'Configuration,'Channel,'Data,'Index> = 'Configuration -> Source<'Channel,'Data,'Index>
     
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]

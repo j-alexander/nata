@@ -1,5 +1,6 @@
 ﻿namespace Nata.IO.EventHub
 
+open Nata.Core
 open Nata.IO
 
 type Offset =

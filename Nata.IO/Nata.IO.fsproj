@@ -57,10 +57,6 @@
   <ItemGroup>
     <Content Include="paket.references" />
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Core.fs" />
-    <Compile Include="Codec.fs" />
-    <Compile Include="JsonValue.fs" />
-    <Compile Include="DateTime.fs" />
     <Compile Include="Event.fs" />
     <Compile Include="Position.fs" />
     <Compile Include="Indexer.fs" />
@@ -83,6 +79,13 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
+      <Name>Nata.Core</Name>
+      <Project>{48b92604-e152-4ec9-8c25-fef849785944}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

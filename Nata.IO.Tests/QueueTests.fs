@@ -9,8 +9,9 @@ open System.Threading.Tasks
 
 open FSharp.Data
 open NUnit.Framework
+open Nata.Core
+open Nata.Core.JsonValue.Codec
 open Nata.IO
-open Nata.IO.JsonValue.Codec
 open Nata.IO.Capability
 
 [<AbstractClass>]

@@ -4,6 +4,7 @@ open System
 open System.IO
 open Microsoft.WindowsAzure.Storage
 open Microsoft.WindowsAzure.Storage.Queue
+open Nata.Core
 open Nata.IO
 
 type Queue = CloudQueue

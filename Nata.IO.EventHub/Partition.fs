@@ -1,6 +1,7 @@
 ﻿namespace Nata.IO.EventHub
 
 open System
+open Nata.Core
 open Nata.IO
 
 type PartitionString = string

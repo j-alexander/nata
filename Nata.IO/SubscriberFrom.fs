@@ -1,5 +1,7 @@
 ﻿namespace Nata.IO
 
+open Nata.Core
+
 type SubscriberFrom<'Data,'Index> = Position<'Index> -> seq<Event<'Data> * 'Index>
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]

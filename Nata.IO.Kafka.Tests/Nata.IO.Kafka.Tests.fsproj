@@ -78,6 +78,11 @@
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
+    <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
+      <Name>Nata.Core</Name>
+      <Project>{48b92604-e152-4ec9-8c25-fef849785944}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Nata.IO.Kafka\Nata.IO.Kafka.fsproj">
       <Name>Nata.IO.Kafka</Name>
       <Project>{b771e50d-567e-44a7-a8a2-8f6fe159abf6}</Project>

@@ -82,6 +82,11 @@
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
+      <Name>Nata.Core</Name>
+      <Project>{48b92604-e152-4ec9-8c25-fef849785944}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Nata.IO.EventHub\Nata.IO.EventHub.fsproj">
       <Name>Nata.IO.EventHub</Name>
       <Project>{3844ea6a-47fb-4828-8d25-7ecff02caa27}</Project>

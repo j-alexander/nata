@@ -1,4 +1,4 @@
-﻿namespace Nata.IO
+﻿namespace Nata.Core
 
 open System.Text
 open FSharp.Data
