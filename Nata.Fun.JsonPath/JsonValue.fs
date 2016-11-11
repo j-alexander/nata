@@ -164,7 +164,7 @@ module JsonValue =
             Automaton (transition levels)
 
 
-    let find = 
+    let findSeq = 
 
         let rec recurse (states:Pattern.State list,value:JsonValue) =
             let isMatch, automata =
@@ -201,10 +201,17 @@ module JsonValue =
             }
                 
         Query.levelsFor >> function
-        | [Query.Exists,Query.Property ""] -> fun json -> [json]
+        | [Query.Exists,Query.Property ""] -> Seq.singleton
         | (Query.Exists,Query.Property "")::levels
         | levels ->
             let start = Pattern.create levels
-            fun json ->
-                recurse([start],json)
-                |> Seq.toList
+            fun json -> recurse([start],json)
+            
+    let findList query =
+        findSeq query >> Seq.toList
+
+    let find query =
+        findSeq query >> Seq.head
+
+    let tryFind query =
+        findSeq query >> Seq.tryPick Some

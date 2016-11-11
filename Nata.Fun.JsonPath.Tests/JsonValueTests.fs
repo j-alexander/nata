@@ -81,21 +81,21 @@ type JsonValueTests() =
         Assert.AreEqual(
             [ JsonValue.Number 2m ],
             JsonValue.Parse """{"b":1,"a":2}"""
-            |> JsonValue.find "$.a")
+            |> JsonValue.findList "$.a")
 
     [<Test>]
     member x.FindExact1stGenerationChild() =
         Assert.AreEqual(
             [ JsonValue.Number 3m ],
             JsonValue.Parse """{"b":1,"a":{"c":3,"d":4}}"""
-            |> JsonValue.find "$.a.c")
+            |> JsonValue.findList "$.a.c")
 
     [<Test>]
     member x.FindExact2stGenerationChild() =
         Assert.AreEqual(
             [ JsonValue.Number 5m ],
             JsonValue.Parse """{"b":1,"a":{"c":{"e":5},"d":4}}"""
-            |> JsonValue.find "$.a.c.e")
+            |> JsonValue.findList "$.a.c.e")
 
     [<Test>]
     member x.FindAll1Level() =
@@ -107,7 +107,7 @@ type JsonValueTests() =
                  "a":{"c":{"e":5},
                       "b":4}}
             """
-            |> JsonValue.find "$..b")
+            |> JsonValue.findList "$..b")
         Assert.AreEqual(
             [ JsonValue.Parse """{"f":{"b":6,"g":2}}"""
               JsonValue.Number 6m
@@ -117,7 +117,7 @@ type JsonValueTests() =
                  "a":{"c":{"e":5},
                       "b":4}}
             """
-            |> JsonValue.find "$..b")
+            |> JsonValue.findList "$..b")
             
     [<Test>]
     member x.FindAll2Level() =
@@ -132,7 +132,7 @@ type JsonValueTests() =
                  "e":{"a":{"a":{"b":4}}}
                  }
             """
-            |> JsonValue.find "$..a.b")
+            |> JsonValue.findList "$..a.b")
         Assert.AreEqual(
             [ JsonValue.Parse """
                 { "b":{
@@ -153,7 +153,7 @@ type JsonValueTests() =
                       "c":2
                 }}}}}}
             """
-            |> JsonValue.find "$..a.b")
+            |> JsonValue.findList "$..a.b")
         Assert.AreEqual(
             [ JsonValue.Parse """
                 { "a":{
@@ -174,7 +174,7 @@ type JsonValueTests() =
                       "c":2
                 }}}}}}
             """
-            |> JsonValue.find "$..a.b")
+            |> JsonValue.findList "$..a.b")
         
     [<Test>]
     member x.FindWildcardAtRoot() =
@@ -191,7 +191,7 @@ type JsonValueTests() =
                  "e":{"a":{"a":{"b":4}}}
                  }
             """
-            |> JsonValue.find "$.*")
+            |> JsonValue.findList "$.*")
         
     [<Test>]
     member x.FindWildcardAt1stGenerationChild() =
@@ -207,7 +207,7 @@ type JsonValueTests() =
                  "e":{"c":{"a":{"b":4}}}
                  }
             """
-            |> JsonValue.find "$.c.*")
+            |> JsonValue.findList "$.c.*")
         
     [<Test>]
     member x.FindWildcardAt2ndGenerationChild() =
@@ -223,7 +223,7 @@ type JsonValueTests() =
                  "e":{"c":{"a":{"b":4}}}
                  }
             """
-            |> JsonValue.find "$.c.a.*")
+            |> JsonValue.findList "$.c.a.*")
 
     [<Test>]
     member x.FindAllWildcard() =
@@ -248,7 +248,7 @@ type JsonValueTests() =
                  "e":{"c":{"a":{"b":4}}}
                  }
             """
-            |> JsonValue.find "$..*")
+            |> JsonValue.findList "$..*")
 
     [<Test>]
     member x.FindAllWildcard2Level() =
@@ -265,7 +265,7 @@ type JsonValueTests() =
                  "e":{"c":{"a":{"b":4}}}
                  }
             """
-            |> JsonValue.find "$..c.*")
+            |> JsonValue.findList "$..c.*")
 
     [<Test>]
     member x.FindAllWildcard3Level() =
@@ -282,7 +282,7 @@ type JsonValueTests() =
                  "e":{"c":{"a":{"b":4}}}
                  }
             """
-            |> JsonValue.find "$..c.a.*")
+            |> JsonValue.findList "$..c.a.*")
 
     [<Test>]
     member x.FindAllWildcardWithChild() =
@@ -298,7 +298,7 @@ type JsonValueTests() =
                  "e":{"c":{"a":{"b":4}}}
                  }
             """
-            |> JsonValue.find "$..c.*.b")
+            |> JsonValue.findList "$..c.*.b")
             
     [<Test>]
     member x.IdentityOfRecord() =
@@ -307,33 +307,33 @@ type JsonValueTests() =
              "a":{"c":{"e":5},
                   "b":4}}
         """
-        Assert.AreEqual([record], JsonValue.find "$." record)
+        Assert.AreEqual([record], JsonValue.findList "$." record)
 
     [<Test>]
     member x.IdentityOfArray() =
         let array = JsonValue.Parse """[{"a":3}]"""
-        Assert.AreEqual([array], JsonValue.find "$." array)
+        Assert.AreEqual([array], JsonValue.findList "$." array)
 
     [<Test>]
     member x.FindRootArray() =
         Assert.AreEqual(
             [ JsonValue.String "abc" ],
             JsonValue.Parse """["abc"]"""
-            |> JsonValue.find "$.[*]")
+            |> JsonValue.findList "$.[*]")
 
     [<Test>]
     member x.FindRootArrayChild() =
         Assert.AreEqual(
             [ JsonValue.Number 3m ],
             JsonValue.Parse """[{"a":3}]"""
-            |> JsonValue.find "$.[*].a")
+            |> JsonValue.findList "$.[*].a")
 
     [<Test>]
     member x.FindArrayAtRoot() =
         Assert.AreEqual(
             [ JsonValue.Parse """[1,2,3]""" ],
             JsonValue.Parse """{"a":4,"b":[1,2,3],"c":{"b":[5,6]}}"""
-            |> JsonValue.find "$.b")
+            |> JsonValue.findList "$.b")
 
     [<Test>]
     member x.FindArrayChildrenAtRoot() =
@@ -342,7 +342,7 @@ type JsonValueTests() =
               JsonValue.Number 2m
               JsonValue.Number 3m ],
             JsonValue.Parse """{"a":4,"b":[1,2,3],"c":{"b":[5,6]}}"""
-            |> JsonValue.find "$.b[*]")
+            |> JsonValue.findList "$.b[*]")
 
     [<Test>]
     member x.FindArrayOfArrayChildren() =
@@ -352,7 +352,7 @@ type JsonValueTests() =
               JsonValue.Number 3m
               JsonValue.Number 4m ],
             JsonValue.Parse """{"a":4,"b":[[1],[2],[3,4]],"c":{"b":[5,6]}}"""
-            |> JsonValue.find "$.b[*][*]")
+            |> JsonValue.findList "$.b[*][*]")
 
     [<Test>]
     member x.FindAllArrayChildren() =
@@ -363,7 +363,7 @@ type JsonValueTests() =
               JsonValue.Number 5m
               JsonValue.Number 6m ],
             JsonValue.Parse """{"a":4,"b":[1,2,3],"c":{"b":[5,6]}}"""
-            |> JsonValue.find "$..b[*]")
+            |> JsonValue.findList "$..b[*]")
 
     [<Test>]
     member x.FindAllArrayOfArrayChildren() =
@@ -375,7 +375,7 @@ type JsonValueTests() =
               JsonValue.Number 5m
               JsonValue.Number 6m ],
             JsonValue.Parse """{"a":4,"b":[[1],[2],[3,4]],"c":{"b":[[5],[6]]}}"""
-            |> JsonValue.find "$..b[*][*]")
+            |> JsonValue.findList "$..b[*][*]")
             
     [<Test>]
     member x.FindIndexAtRoot() =
@@ -383,7 +383,7 @@ type JsonValueTests() =
             [ JsonValue.Number 1m
               JsonValue.Number 3m ],
             JsonValue.Parse """[1,2,3,4,5]"""
-            |> JsonValue.find "$.[0,2]")
+            |> JsonValue.findList "$.[0,2]")
 
     [<Test>]
     member x.FindNegativeIndexAtRoot() =
@@ -392,7 +392,7 @@ type JsonValueTests() =
               JsonValue.Number 3m
               JsonValue.Number 5m ],
             JsonValue.Parse """[1,2,3,4,5]"""
-            |> JsonValue.find "$.[0,2,-1]")
+            |> JsonValue.findList "$.[0,2,-1]")
 
     [<Test>]
     member x.FindIndex1stGeneration() =
@@ -400,7 +400,7 @@ type JsonValueTests() =
             [ JsonValue.Number 1m
               JsonValue.Number 3m ],
             JsonValue.Parse """{"a":[1,2,3,4,5]}"""
-            |> JsonValue.find "$.a[0,2]")
+            |> JsonValue.findList "$.a[0,2]")
 
     [<Test>]
     member x.FindNegativeIndex1stGeneration() =
@@ -409,7 +409,7 @@ type JsonValueTests() =
               JsonValue.Number 3m
               JsonValue.Number 5m ],
             JsonValue.Parse """{"a":[1,2,3,4,5]}"""
-            |> JsonValue.find "$.a[0,2,-1]")
+            |> JsonValue.findList "$.a[0,2,-1]")
 
     [<Test>]
     member x.FindIndex2ndGeneration() =
@@ -417,7 +417,7 @@ type JsonValueTests() =
             [ JsonValue.Number 1m
               JsonValue.Number 3m ],
             JsonValue.Parse """{"a":{"b":[1,2,3,4,5]}}"""
-            |> JsonValue.find "$.a.b[0,2]")
+            |> JsonValue.findList "$.a.b[0,2]")
 
     [<Test>]
     member x.FindNegativeIndex2ndGeneration() =
@@ -426,28 +426,28 @@ type JsonValueTests() =
               JsonValue.Number 3m
               JsonValue.Number 5m ],
             JsonValue.Parse """{"a":{"b":[1,2,3,4,5]}}"""
-            |> JsonValue.find "$.a.b[0,2,-1]")
+            |> JsonValue.findList "$.a.b[0,2,-1]")
 
     [<Test>]
     member x.FindInvalidIndex() =
         Assert.AreEqual(
             [ JsonValue.Number 5m ],
             JsonValue.Parse """{"a":{"b":[1,2,3,4,5]}}"""
-            |> JsonValue.find "$.a.b[4,8,9]")
+            |> JsonValue.findList "$.a.b[4,8,9]")
 
     [<Test>]
     member x.FindNegativeIndex() =
         Assert.AreEqual(
             [ JsonValue.Number 4m ],
             JsonValue.Parse """{"a":{"b":[1,2,3,4,5]}}"""
-            |> JsonValue.find "$.a.b[-2]")
+            |> JsonValue.findList "$.a.b[-2]")
     [<Test>]
     member x.FindInvalidNegativeIndex() =
         Assert.AreEqual(
             [ JsonValue.Number 1m
               JsonValue.Number 2m ],
             JsonValue.Parse """{"a":{"b":[1,2,3,4,5]}}"""
-            |> JsonValue.find "$.a.b[1,-9,0]")
+            |> JsonValue.findList "$.a.b[1,-9,0]")
         
     [<Test>]
     member x.TestArraySlicesWithPositiveStep() =
@@ -455,7 +455,7 @@ type JsonValueTests() =
             Assert.AreEqual(
                 List.map (decimal >> JsonValue.Number) list,
                 JsonValue.Parse """[0,1,2,3]"""
-                |> JsonValue.find query)
+                |> JsonValue.findList query)
         check "$.[0:]" [0..3]
         check "$.[1:]" [1..3]
         check "$.[2:]" [2;3]
