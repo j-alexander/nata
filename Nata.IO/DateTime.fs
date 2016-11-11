@@ -4,7 +4,7 @@ open System
 open FSharp.Data
 
 module DateTime =
-
+        
     type Unix = int64
 
     let epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
@@ -23,6 +23,33 @@ module DateTime =
 
     let ofJsonValue (text:JsonValue) = 
         text.AsDateTime()
+
+    let toLocal (x:DateTime) = x.ToLocalTime()
+
+    let toUtc (x:DateTime) = x.ToUniversalTime()
+        
+    module Resolution =
+
+        let year (x:DateTime) =
+            new DateTime(x.Year,0,0,0,0,0,0,x.Kind)
+
+        let month (x:DateTime) =
+            new DateTime(x.Year,x.Month,0,0,0,0,0,x.Kind)
+
+        let day (x:DateTime) =
+            new DateTime(x.Year,x.Month,x.Day,0,0,0,0,x.Kind)
+
+        let hour (x:DateTime) =
+            new DateTime(x.Year,x.Month,x.Day,x.Hour,0,0,0,x.Kind)
+
+        let minute (x:DateTime) =
+            new DateTime(x.Year,x.Month,x.Day,x.Hour,x.Minute,0,0,x.Kind)
+
+        let second (x:DateTime) =
+            new DateTime(x.Year,x.Month,x.Day,x.Hour,x.Minute,x.Second,0,x.Kind)
+
+        let ms (x:DateTime) =
+            new DateTime(x.Year,x.Month,x.Day,x.Hour,x.Minute,x.Second,x.Millisecond,x.Kind)
 
     module Codec =
 
