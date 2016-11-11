@@ -7,6 +7,13 @@ open Newtonsoft.Json
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module JsonValue =
 
+    let tryGet (json:JsonValue) (property:string) = json.TryGetProperty(property)
+    let get (json:JsonValue) (property:string) = Option.get <| json.TryGetProperty(property)
+
+    let properties (json:JsonValue) = json.Properties()
+    let keys (json:JsonValue) = json.Properties() |> Array.map fst
+    let values (json:JsonValue) = json.Properties() |> Array.map snd
+
     let toString (json:JsonValue) = json.ToString(JsonSaveOptions.DisableFormatting)
     let toBytes = toString >> fst Codec.StringToBytes
     let toType (json:JsonValue) : 'T = JsonConvert.DeserializeObject<'T>(toString json)
