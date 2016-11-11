@@ -34,10 +34,10 @@ with
         Offsets.op_Subtraction(offsets, int64 deltaPerPartition)
 
     static member (-) (Offsets l, Offsets r) =
-        Seq.sum <| query {
+        query {
             for l in l do
             join r in r on (l.PartitionId = r.PartitionId)
-            select (l.Position - Math.Min(l.Position, r.Position))
+            sumBy (l.Position - Math.Min(l.Position, r.Position))
         }
     
 
