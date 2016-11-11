@@ -147,6 +147,11 @@ module Core =
 
         let split (delimiter:char) : string->string list =
             function null -> [] | x -> x.Split(delimiter) |> Array.toList
+
+    module DateTime =
+
+        let toLocal (x:DateTime) = x.ToLocalTime()
+        let toUtc (x:DateTime) = x.ToUniversalTime()
         
     [<AutoOpen>]
     module Patterns =
