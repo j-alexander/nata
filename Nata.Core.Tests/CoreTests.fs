@@ -57,7 +57,7 @@ type CoreTests() =
                     yield! [1..3]
                 }
             Seq.merge [ sequence ]
-
+            
         let enumerator = merged.GetEnumerator()
         Assert.True(enumerator.MoveNext())
 

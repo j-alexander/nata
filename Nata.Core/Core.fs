@@ -147,10 +147,3 @@ module Core =
 
         let split (delimiter:char) : string->string list =
             function null -> [] | x -> x.Split(delimiter) |> Array.toList
-        
-    [<AutoOpen>]
-    module Patterns =
-
-        let (|Integer64|_|) = Int64.ofString
-        let (|Integer32|_|) = Int32.ofString
-        let (|Nullable|_|) = Nullable.toOption

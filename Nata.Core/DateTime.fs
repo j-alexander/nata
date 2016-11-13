@@ -18,6 +18,11 @@ module DateTime =
     let ofOffset (offset:DateTimeOffset) =
         offset.UtcDateTime
 
+    let ofString (x:string) =
+        match DateTime.TryParse x with
+        | true, date -> Some date
+        | _ -> None
+
     let toJsonValue (date:DateTime) =
         JsonValue.String (date.ToUniversalTime().ToString("o"))
 
