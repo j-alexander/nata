@@ -25,5 +25,5 @@ type TopicTests() =
     
     override x.Channel() = guid()
     override x.Connect() =
-        Cluster.topics cluster
+        Topic.connect cluster
         |> Source.mapIndex (Offsets.Codec.OffsetsToInt64 0)

@@ -25,6 +25,6 @@ type TopicPartitionTests() =
     
     override x.Channel() = guid()
     override x.Connect() =
-        Cluster.partitions cluster
+        TopicPartition.connect cluster
         |> Source.mapChannel (fst, (fun (x) -> x,0))
         |> Source.mapIndex (Offset.position,(fun x -> {Offset.PartitionId=0;Position=x}))

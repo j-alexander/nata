@@ -23,7 +23,7 @@ type ClusterTests() =
     // auto.create.topics.enable=true
     
     let connect() =
-        Cluster.topics cluster
+        Topic.connect cluster
         |> Source.mapIndex (Offsets.Codec.OffsetsToInt64 0)
         |> Source.mapData (Codec.BytesToString)
         |> Source.mapData (Codec.StringToInt32)

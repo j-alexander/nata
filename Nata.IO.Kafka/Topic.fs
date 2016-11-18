@@ -11,7 +11,6 @@ open KafkaNet.Model
 open Nata.Core
 open Nata.IO
 
-type TopicName = string
 type Topic =
     { Consumer : unit -> Consumer
       Producer : unit -> Producer
@@ -19,6 +18,21 @@ type Topic =
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Topic =
+
+    let internal create (cluster:Cluster) (name:TopicName) =
+        { Topic.Consumer =
+            fun () ->
+                new Consumer(
+                    new ConsumerOptions(
+                        name,
+                        Cluster.connect cluster,
+                        MaxWaitTimeForMinimumBytes=Cluster.delay))
+          Topic.Producer =
+            fun () ->
+                new Producer(
+                    Cluster.connect cluster,
+                    BatchDelayTime=Cluster.delay)
+          Topic.Name = name }
 
     let private offsetRangesFor (consumer:Consumer, topic:TopicName) : OffsetRanges =
         consumer.GetTopicOffsetAsync(topic,1048576,-1)
@@ -97,3 +111,25 @@ module Topic =
 
     let write topic =
         Seq.singleton >> produce topic >> ignore
+        
+    let connect : Connector<Cluster,TopicName,Data,Offsets>  =
+        fun cluster name ->
+            [
+                Capability.Indexer <|
+                    (index (create cluster name))
+
+                Capability.Reader <| fun () ->
+                    (read (create cluster name) |> Seq.map (Event.ofMessage name))
+
+                Capability.ReaderFrom <|
+                    (readFrom (create cluster name) >> Seq.mapFst (Event.ofMessage name))
+
+                Capability.Writer <|
+                    (Event.toMessage >> write (create cluster name))
+
+                Capability.Subscriber <| fun () ->
+                    (listen (create cluster name) |> Seq.map (Event.ofMessage name))
+
+                Capability.SubscriberFrom <|
+                    (listenFrom (create cluster name) >> Seq.mapFst (Event.ofMessage name))
+            ]

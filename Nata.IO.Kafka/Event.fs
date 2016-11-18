@@ -6,6 +6,7 @@ open System.Text
 open Nata.Core
 open Nata.IO
 
+type TopicName = string
 type Data = byte[]
 type Event = Event<Data> 
 

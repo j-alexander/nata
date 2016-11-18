@@ -60,10 +60,10 @@
     <Compile Include="Message.fs" />
     <Compile Include="OffsetRange.fs" />
     <Compile Include="Offset.fs" />
-    <Compile Include="Topic.fs" />
-    <Compile Include="TopicPartition.fs" />
     <Compile Include="Event.fs" />
     <Compile Include="Cluster.fs" />
+    <Compile Include="Topic.fs" />
+    <Compile Include="TopicPartition.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

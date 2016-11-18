@@ -18,6 +18,10 @@ type TopicPartition =
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module TopicPartition =
 
+    let internal create (cluster:Cluster) (name:TopicName) (partitionId:int) =
+        { TopicPartition.Topic = Topic.create cluster name
+          TopicPartition.Partition = partitionId }
+
     let private offsetRangeFor (consumer:Consumer, topic:TopicName, partition:int) : OffsetRange =
         consumer.GetTopicOffsetAsync(topic,1048576,-1)
         |> Async.AwaitTask
@@ -98,3 +102,25 @@ module TopicPartition =
 
     let write topic =
         Seq.singleton >> produce topic >> ignore
+        
+    let connect : Connector<Cluster,TopicName*int,Data,Offset> =
+        fun cluster (name,partition) ->
+            [
+                Capability.Indexer <|
+                    (index (create cluster name partition))
+
+                Capability.Reader <| fun () ->
+                    (read (create cluster name partition) |> Seq.map (Event.ofMessage name))
+
+                Capability.ReaderFrom <|
+                    (readFrom (create cluster name partition) >> Seq.mapFst (Event.ofMessage name))
+
+                Capability.Writer <|
+                    (Event.toMessage >> write (create cluster name partition))
+
+                Capability.Subscriber <| fun () ->
+                    (listen (create cluster name partition) |> Seq.map (Event.ofMessage name))
+
+                Capability.SubscriberFrom <|
+                    (listenFrom (create cluster name partition) >> Seq.mapFst (Event.ofMessage name))
+            ]
