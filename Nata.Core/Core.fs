@@ -147,3 +147,19 @@ module Core =
 
         let split (delimiter:char) : string->string list =
             function null -> [] | x -> x.Split(delimiter) |> Array.toList
+
+        let trySubstring index length (x:string) =
+            match x with
+            | null -> None
+            | x when (x.Length < index ||
+                      x.Length < index+length) -> None
+            | x when (0 > index ||
+                      0 > length) -> None
+            | x -> Some(x.Substring(index, length))
+
+        let tryStartAt index (x:string) =
+            match x with
+            | null -> None
+            | x when (index > x.Length ||
+                      index < 0) -> None
+            | x -> Some(x.Substring(index))

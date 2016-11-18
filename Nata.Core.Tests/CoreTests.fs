@@ -91,3 +91,46 @@ type CoreTests() =
         check [-10 .. 10] ( -5,   5) [ -5 ..  5]
         check [-10 .. 10] (  5,  -5) [ -5 ..  5]
         check [-10 .. 10] (  5,  -5) [ -5 ..  5]
+
+    [<Test>]
+    member x.TestStringTrySubstring() =
+        Assert.AreEqual(Some "", "" |> String.trySubstring 0 0)
+        Assert.AreEqual(None, "" |> String.trySubstring 0 1)
+
+        Assert.AreEqual(Some "", "abc" |> String.trySubstring 0 0)
+        Assert.AreEqual(Some "a", "abc" |> String.trySubstring 0 1)
+        Assert.AreEqual(Some "ab", "abc" |> String.trySubstring 0 2)
+        Assert.AreEqual(Some "abc", "abc" |> String.trySubstring 0 3)
+        Assert.AreEqual(None, "abc" |> String.trySubstring 0 4)
+
+        Assert.AreEqual(Some "", "abc" |> String.trySubstring 1 0)
+        Assert.AreEqual(Some "b", "abc" |> String.trySubstring 1 1)
+        Assert.AreEqual(Some "bc", "abc" |> String.trySubstring 1 2)
+        Assert.AreEqual(None, "abc" |> String.trySubstring 1 3)
+
+        Assert.AreEqual(Some "", "abc" |> String.trySubstring 2 0)
+        Assert.AreEqual(Some "c", "abc" |> String.trySubstring 2 1)
+        Assert.AreEqual(None, "abc" |> String.trySubstring 2 2)
+
+        Assert.AreEqual(Some "", "abc" |> String.trySubstring 3 0)
+        Assert.AreEqual(None, "abc" |> String.trySubstring 3 1)
+
+        Assert.AreEqual(None, "abc" |> String.trySubstring 4 0)
+
+        Assert.AreEqual(None, "abc" |> String.trySubstring -1 0)
+        Assert.AreEqual(None, "abc" |> String.trySubstring -1 3)
+
+        Assert.AreEqual(None, "abc" |> String.trySubstring 0 -1)
+        Assert.AreEqual(None, "abc" |> String.trySubstring 3 -1)
+        
+    [<Test>]
+    member x.TestStringTryStartAt() =
+        Assert.AreEqual(None, "" |> String.tryStartAt -1)
+        Assert.AreEqual(Some "", "" |> String.tryStartAt 0)
+        
+        Assert.AreEqual(None, "abc" |> String.tryStartAt -1)
+        Assert.AreEqual(Some "abc", "abc" |> String.tryStartAt 0)
+        Assert.AreEqual(Some "bc", "abc" |> String.tryStartAt 1)
+        Assert.AreEqual(Some "c", "abc" |> String.tryStartAt 2)
+        Assert.AreEqual(Some "", "abc" |> String.tryStartAt 3)
+        Assert.AreEqual(None, "abc" |> String.tryStartAt 4)
