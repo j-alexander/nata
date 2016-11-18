@@ -1,5 +1,6 @@
 ﻿namespace Nata.Core
 
+open System
 open System.Text
 
 type Codec<'In,'Out> = ('In->'Out)*('Out->'In)
@@ -40,3 +41,6 @@ module Codec =
         Int64.toString, Int64.ofString >> Option.getValueOr 0L
     let StringToInt64 : Codec<string,int64> =
         reverse Int64ToString
+        
+    let inline NotImplemented x =
+        raise(new NotImplementedException(sprintf "Codec From:%A" x))

@@ -22,7 +22,7 @@ module Cluster =
             new KafkaOptions(
                 [| for x in cluster -> new Uri(x)|]))
 
-    let topicFor (cluster:Cluster) (name:TopicName) =
+    let private topicFor (cluster:Cluster) (name:TopicName) =
         { Topic.Consumer =
             fun () ->
                 new Consumer(

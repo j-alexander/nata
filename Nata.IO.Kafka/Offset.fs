@@ -129,6 +129,12 @@ module Offsets =
         offsets
         |> List.map Offset.partitionId
 
+    let position (partition:int) (Offsets offsets) =
+        offsets
+        |> Seq.filter(Offset.partitionId >> (=) partition)
+        |> Seq.map Offset.position
+        |> Seq.head
+
     let updateWith (message:Message) (Offsets offsets) =
         offsets
         |> List.map(fun offset ->
