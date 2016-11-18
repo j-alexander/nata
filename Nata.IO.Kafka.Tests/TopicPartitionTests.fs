@@ -12,7 +12,7 @@ open Nata.IO.Capability
 open Nata.IO.Kafka
 
 [<TestFixture>]
-type LogStoreTests() =
+type TopicPartitionTests() =
     inherit Nata.IO.Tests.LogStoreTests()
 
     let cluster = ["tcp://127.0.0.1:9092"]
@@ -25,5 +25,6 @@ type LogStoreTests() =
     
     override x.Channel() = guid()
     override x.Connect() =
-        Cluster.topics cluster
-        |> Source.mapIndex (Offsets.Codec.OffsetsToInt64 0)
+        Cluster.partitions cluster
+        |> Source.mapChannel (fst, (fun (x) -> x,0))
+        |> Source.mapIndex (Offset.position,(fun x -> {Offset.PartitionId=0;Position=x}))

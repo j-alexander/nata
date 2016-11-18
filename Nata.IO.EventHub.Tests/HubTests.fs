@@ -16,7 +16,6 @@ type HubTests() =
         MaximumWaitTimeOnRead = TimeSpan.FromSeconds(10.0)
     }
 
-
     override x.Channel() = ""
     override x.Connect() =
         let toPartition p i = [{Partition=p; Index=i}]
@@ -28,7 +27,6 @@ type HubTests() =
         |> Source.mapChannel ((fun _ -> ""), ignore)
         |> Source.mapIndex (ofPartition 0, toPartition 0)
         |> Source.mapCapabilities (MaskEnvelope.mapCapability (guid()) >> onPartition 0)
-
 
     [<Test; Timeout(30000)>]
     member x.TestWriteSubscribe() =
@@ -50,8 +48,7 @@ type HubTests() =
             |> Seq.head
 
         Assert.AreEqual(event.Data, result.Data)
-
-        
+  
     [<Test; Timeout(60000)>]
     member x.TestWriteRead() =
         let connect =

@@ -62,6 +62,10 @@ module Offset =
 
     let completed (range:OffsetRange, offset:Offset) =
         remaining (range, offset) <= 0L
+        
+    let updateWith (message:Message) (offset:Offset) =
+        if offset.PartitionId <> message.PartitionId then offset
+        else { offset with Position = message.Offset }
 
     let toKafka (x:Offset) =
         new KafkaNet.Protocol.OffsetPosition(x.PartitionId, x.Position)
@@ -137,9 +141,7 @@ module Offsets =
 
     let updateWith (message:Message) (Offsets offsets) =
         offsets
-        |> List.map(fun offset ->
-            if offset.PartitionId <> message.PartitionId then offset
-            else { offset with Position = message.Offset })
+        |> List.map(Offset.updateWith message)
         |> Offsets
 
     let toKafka (Offsets offsets) : KafkaNet.Protocol.OffsetPosition[] =

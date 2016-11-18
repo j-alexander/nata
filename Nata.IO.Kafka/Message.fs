@@ -21,6 +21,11 @@ module Message =
     let key (x:Message) = x.Key
     let value (x:Message) = x.Value
 
+    let withPartitionId id (x:Message) = { x with PartitionId = id }
+    let withOffset offset (x:Message) =  { x with Offset = offset }
+    let withKey key (x:Message) =        { x with Key = key }
+    let withValue value (x:Message) =    { x with Value = value }
+
     let fromKafka (x:KafkaNet.Protocol.Message) =
         { Message.PartitionId = x.Meta.PartitionId
           Message.Offset = x.Meta.Offset

@@ -37,6 +37,10 @@ module Cluster =
                     BatchDelayTime=delay)
           Topic.Name = name }
 
+    let private topicPartitionFor (cluster:Cluster) (name:TopicName) (partitionId:int) =
+        { TopicPartition.Topic = topicFor cluster name
+          TopicPartition.Partition = partitionId }
+
     let topics : Connector<Cluster,TopicName,Data,Offsets>  =
         fun cluster name ->
             [
@@ -58,6 +62,25 @@ module Cluster =
                 Capability.SubscriberFrom <|
                     (Topic.listenFrom (topicFor cluster name) >> Seq.mapFst (Event.ofMessage name))
             ]
-            
-        
-        
+
+    let partitions : Connector<Cluster,TopicName*int,Data,Offset> =
+        fun cluster (name,partition) ->
+            [
+                Capability.Indexer <|
+                    (TopicPartition.index (topicPartitionFor cluster name partition))
+
+                Capability.Reader <| fun () ->
+                    (TopicPartition.read (topicPartitionFor cluster name partition) |> Seq.map (Event.ofMessage name))
+
+                Capability.ReaderFrom <|
+                    (TopicPartition.readFrom (topicPartitionFor cluster name partition) >> Seq.mapFst (Event.ofMessage name))
+
+                Capability.Writer <|
+                    (Event.toMessage >> TopicPartition.write (topicPartitionFor cluster name partition))
+
+                Capability.Subscriber <| fun () ->
+                    (TopicPartition.listen (topicPartitionFor cluster name partition) |> Seq.map (Event.ofMessage name))
+
+                Capability.SubscriberFrom <|
+                    (TopicPartition.listenFrom (topicPartitionFor cluster name partition) >> Seq.mapFst (Event.ofMessage name))
+            ]
