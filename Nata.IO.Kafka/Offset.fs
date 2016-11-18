@@ -120,6 +120,15 @@ module Offsets =
         |> List.map(fun x -> { x with Position=x.Position-perPartition })
         |> Offsets
 
+    let filter (partition:int) (Offsets offsets) =
+        offsets
+        |> List.filter(Offset.partitionId >> (=) partition)
+        |> Offsets
+
+    let partitions (Offsets offsets) =
+        offsets
+        |> List.map Offset.partitionId
+
     let updateWith (message:Message) (Offsets offsets) =
         offsets
         |> List.map(fun offset ->
