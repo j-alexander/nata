@@ -192,3 +192,6 @@ gh-pages/
 
 # Current Packet Version
 .paket/paket.exe
+
+# Visual Studio Config Files
+.vs/
