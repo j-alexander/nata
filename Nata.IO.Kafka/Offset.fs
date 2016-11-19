@@ -82,10 +82,16 @@ module Offset =
         | [ Integer32 p; Integer64 o ] -> Some { PartitionId=p; Position=o }
         | _ -> None
 
+    let ofInt64 (partitionId:int) (position:int64) = { PartitionId=partitionId; Position=position }
+    let toInt64 = position
+
     let toString (o:Offset) = sprintf "%d@%d" o.PartitionId o.Position
     let ofString = (|Offset|_|) >> Option.get
 
     module Codec =
+
+        let OffsetToInt64 partition : Codec<Offset,int64> = toInt64, ofInt64 partition
+        let Int64ToOffset partition : Codec<int64,Offset> = ofInt64 partition, toInt64
         
         let OffsetToString : Codec<Offset,string> = toString, ofString
         let StringToOffset : Codec<string,Offset> = ofString, toString
@@ -119,14 +125,9 @@ module Offsets =
     let after (range:OffsetRanges) (offsets:Offsets) =
         raise (new NotImplementedException())
 
-    let rewind (perPartition:int64) (Offsets offsets) =
-        offsets
-        |> List.map(fun x -> { x with Position=x.Position-perPartition })
-        |> Offsets
-
     let filter (partition:int) (Offsets offsets) =
         offsets
-        |> List.filter(Offset.partitionId >> (=) partition)
+        |> List.filter (Offset.partitionId >> (=) partition)
         |> Offsets
 
     let partitions (Offsets offsets) =
@@ -135,13 +136,13 @@ module Offsets =
 
     let position (partition:int) (Offsets offsets) =
         offsets
-        |> Seq.filter(Offset.partitionId >> (=) partition)
+        |> Seq.filter (Offset.partitionId >> (=) partition)
         |> Seq.map Offset.position
         |> Seq.head
 
     let updateWith (message:Message) (Offsets offsets) =
         offsets
-        |> List.map(Offset.updateWith message)
+        |> List.map (Offset.updateWith message)
         |> Offsets
 
     let toKafka (Offsets offsets) : KafkaNet.Protocol.OffsetPosition[] =
@@ -152,14 +153,12 @@ module Offsets =
 
     let toInt64 (partition) (Offsets offsets) : int64 =
         offsets
-        |> List.filter (fun x -> x.PartitionId = 0)
-        |> List.map (fun x -> x.Position)
+        |> List.filter (Offset.partitionId >> (=) partition)
+        |> List.map Offset.position
         |> List.head
 
     let ofInt64 (partition) (position:int64) : Offsets =
-        { Offset.PartitionId=partition; Offset.Position=position }
-        |> Seq.singleton
-        |> Seq.toList
+        [ Offset.ofInt64 partition position ]
         |> Offsets
 
     let toString (Offsets offsets) : string =
