@@ -20,6 +20,8 @@ module Core =
 
     module Seq =
 
+        let tryHead xs = Seq.tryPick Some xs
+
         let mapFst fn = Seq.map <| mapFst fn
         let mapSnd fn = Seq.map <| mapSnd fn
 
