@@ -12,7 +12,7 @@ open Nata.Core
 open Nata.IO
 
 type Topic =
-    { Consumer : unit -> Consumer
+    { Consumer : int list -> Consumer
       Producer : unit -> Producer
       Name : TopicName }
 
@@ -21,12 +21,16 @@ module Topic =
 
     let internal create (cluster:Cluster) (name:TopicName) =
         { Topic.Consumer =
-            fun () ->
-                new Consumer(
+            fun partitions ->
+                let options =
                     new ConsumerOptions(
                         name,
                         Cluster.connect cluster,
-                        MaxWaitTimeForMinimumBytes=Cluster.delay))
+                        MaxWaitTimeForMinimumBytes=Cluster.delay)
+                if (partitions.Length > 0) then
+                    options.PartitionWhitelist.Clear()
+                    options.PartitionWhitelist.AddRange(partitions)
+                new Consumer(options)
           Topic.Producer =
             fun () ->
                 new Producer(
@@ -62,7 +66,7 @@ module Topic =
 
     let private consume (topic:Topic) hasCompleted (position:Position<Offsets>) =
         seq {   
-            use consumer = topic.Consumer()
+            use consumer = topic.Consumer []
             let ranges = offsetRangesFor(consumer, topic.Name)
             let offsets = indexOf ranges position
 
@@ -88,7 +92,7 @@ module Topic =
         }
 
     let index topic position =
-        use consumer = topic.Consumer()
+        use consumer = topic.Consumer []
         indexOf (offsetRangesFor(consumer, topic.Name)) position
 
     let readFrom topic position =

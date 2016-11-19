@@ -53,7 +53,7 @@ module TopicPartition =
                         (hasCompleted:(OffsetRange*Offset)->bool)
                         (position:Position<Offset>) =
         seq {
-            use consumer = consumer()
+            use consumer = consumer [partition]
             let range = offsetRangeFor(consumer, name, partition)
             let offset = indexOf range position
 
@@ -79,7 +79,7 @@ module TopicPartition =
         }
 
     let index {Topic={Consumer=consumer;Name=name};Partition=partition}  position =
-        use consumer = consumer()
+        use consumer = consumer [partition]
         indexOf (offsetRangeFor(consumer, name, partition)) position
 
     let readFrom topicPartition position =
