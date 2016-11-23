@@ -7,11 +7,7 @@ open Nata.IO.EventStore
 
 module Configuration =
 
-    let settings : Settings =
-        { Server = { Host = "localhost"
-                     Port = 1113 }
-          User = { Name = "admin"
-                   Password = "changeit" } }
+    let settings : Settings = Settings.defaultSettings
                    
     let channel() = guid()
     let connect() = 

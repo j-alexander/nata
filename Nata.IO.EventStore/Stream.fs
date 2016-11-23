@@ -43,14 +43,15 @@ module Stream =
 
     let rec private read (connection : IEventStoreConnection)
                          (stream : string)
+                         (size : int)
                          (direction : Direction)
                          (position : Position<Index>) : seq<Event*Index> =
         seq {
             let from = indexOf position
             let sliceTask = 
                 match direction with
-                | Direction.Forward -> connection.ReadStreamEventsForwardAsync(stream, from, 1000, true)
-                | Direction.Reverse -> connection.ReadStreamEventsBackwardAsync(stream, from, 1000, true)
+                | Direction.Forward -> connection.ReadStreamEventsForwardAsync(stream, from, size, true)
+                | Direction.Reverse -> connection.ReadStreamEventsBackwardAsync(stream, from, size, true)
             let slice = sliceTask |> Async.AwaitTask |> Async.RunSynchronously
             match slice.Status with
             | SliceReadStatus.StreamDeleted -> 
@@ -61,7 +62,7 @@ module Stream =
                 if slice.Events.Length > 0 then
                     for resolvedEvent in slice.Events ->
                         decode resolvedEvent
-                    yield! read connection stream direction (Position.At slice.NextEventNumber)
+                    yield! read connection stream size direction (Position.At slice.NextEventNumber)
             | x -> failwith (sprintf "Stream %s at (%d) produced undocumented response: %A" stream from x)
         }
 
@@ -140,34 +141,38 @@ module Stream =
 
     let rec index (connection : IEventStoreConnection)
                   (stream : string)
+                  (size : int)
                   (position : Position<Index>) : Index =
         match position with
         | Position.At x -> x
-        | Position.Before x -> (index connection stream x) - 1
-        | Position.After x -> (index connection stream x) + 1
+        | Position.Before x -> (index connection stream size x) - 1
+        | Position.After x -> (index connection stream size x) + 1
         | Position.Start ->
-            read connection stream Direction.Forward position
+            read connection stream size Direction.Forward position
             |> Seq.tryPick Some
             |> Option.map snd
             |> Option.getValueOr StreamPosition.Start
         | Position.End ->
-            read connection stream Direction.Reverse position
+            read connection stream size Direction.Reverse position
             |> Seq.tryPick Some
             |> Option.map (snd >> (+) 1)
             |> Option.getValueOr StreamPosition.Start
 
 
     let connect : Connector<Settings,Name,Data,Index> =
-        Client.connect >> (fun connection stream ->
+        fun settings ->
+            let connection = Client.connect settings
+            let size = settings.Options.BatchSize
+            fun stream ->
             [   
                 Capability.Indexer <|
-                    index connection stream
+                    index connection stream size
 
                 Capability.Reader <| fun () ->
-                    read connection stream Direction.Forward Position.Start |> Seq.map fst
+                    read connection stream size Direction.Forward Position.Start |> Seq.map fst
 
                 Capability.ReaderFrom <|
-                    read connection stream Direction.Forward
+                    read connection stream size Direction.Forward
 
                 Capability.Writer <| fun event ->
                     write connection stream Position.End event |> ignore
@@ -180,4 +185,4 @@ module Stream =
 
                 Capability.SubscriberFrom <|
                     listen connection stream
-            ])
+            ]

@@ -60,6 +60,7 @@
     <Compile Include="Logging.fs" />
     <Compile Include="User.fs" />
     <Compile Include="Server.fs" />
+    <Compile Include="Options.fs" />
     <Compile Include="Settings.fs" />
     <Compile Include="Client.fs" />
     <Compile Include="Stream.fs" />
