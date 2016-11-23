@@ -4,6 +4,7 @@ open System
 open System.Diagnostics
 open System.Net
 open System.Net.Sockets
+open System.Threading.Tasks
 open NLog.FSharp
 open EventStore.ClientAPI
 open EventStore.ClientAPI.SystemData
@@ -30,5 +31,10 @@ module Client =
                 |> Seq.find(fun x -> x.AddressFamily = AddressFamily.InterNetwork)
             new IPEndPoint(address, settings.Server.Port)
         let connection = EventStoreConnection.Create(connectionSettings, endpoint)
+        let connected = new TaskCompletionSource<ClientConnectionEventArgs>()
+        connection.Connected.Add(connected.SetResult)
+        log.Info "%s:%d Connecting" settings.Server.Host settings.Server.Port
         connection.ConnectAsync().Wait()
+        connected.Task.Wait()
+        log.Info "%s:%d Connected" settings.Server.Host settings.Server.Port
         connection
