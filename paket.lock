@@ -11,7 +11,7 @@ NUGET
       System.Text.RegularExpressions (>= 4.1) - framework: >= netstandard13
       System.Threading (>= 4.0.11) - framework: >= netstandard13
       System.Threading.Thread (>= 4.0) - framework: >= netstandard13
-    EventStore.Client (3.9)
+    EventStore.Client (3.9.2)
     FSharp.Compiler.Service (2.0.0.6)
     FSharp.Data (2.3.2)
       Zlib.Portable (>= 1.11) - framework: portable-net45+sl5+win8, portable-net45+win8, portable-net45+win8+wp8+wpa81
