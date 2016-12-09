@@ -154,7 +154,7 @@ module JsonValue =
                             | [] -> [ Match ]
                             | xs -> [ Automaton (transition xs) ]
                         else []
-                    | _ -> []
+                    | Query.Index.Expression _ -> []
                     @
                     match q with
                     | Query.Any -> [ Automaton (transition levels) ]
