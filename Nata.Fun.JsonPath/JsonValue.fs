@@ -22,27 +22,27 @@ module JsonValue =
     module Query =
     
         type Levels = Level list
-        and Level = Quantifier * Type
-        and Type = Property of Name | Array of Predicate
-        and Quantifier = All | Exists
+        and Level = Scope * Type
+        and Type = Property of Name | Array of Index
+        and Scope = Any | Exact
         and Name = string
-        and Predicate =
+        and Index =
             | Expression of string
             | Wildcard
             | Slice of start:int option * finish:int option * step:int
-            | Index of int list
+            | Literal of int list
 
         let levelsFor : Query -> Levels =
 
-            let predicateFor : string -> Predicate =
+            let predicateFor : string -> Index =
 
-                let (|Wildcard|_|) = function "*" -> Some Predicate.Wildcard | _ -> None
-                let (|Index|_|) =
+                let (|Wildcard|_|) = function "*" -> Some Index.Wildcard | _ -> None
+                let (|Literal|_|) =
                     let pattern = "^(?<i>-?\d+)(,(?<i>-?\d+))*$"
                     let regex = new Regex(pattern, RegexOptions.Compiled)
                     fun input ->
                         let index = regex.Match(input)
-                        if index.Success then Some(Predicate.Index(values index "i"))
+                        if index.Success then Some(Index.Literal(values index "i"))
                         else None
                 let (|Slice|_|) =
                     let pattern = "^(?<start>-?\d+)?:(?<finish>-?\d+)?(:(?<step>-?\d+))?$"
@@ -56,14 +56,14 @@ module JsonValue =
                                 Seq.tryPick Some (values slice "start"),
                                 Seq.tryPick Some (values slice "finish")
                             match step with
-                            | 0 -> Some(Predicate.Index[])
-                            | i -> Some(Predicate.Slice(start,finish,step))
+                            | 0 -> Some(Index.Literal[])
+                            | i -> Some(Index.Slice(start,finish,step))
                         else None
-                let (|Expression|) input = Predicate.Expression input
+                let (|Expression|) input = Index.Expression input
 
                 function
                 | Wildcard x -> x
-                | Index x -> x
+                | Literal x -> x
                 | Slice x -> x
                 | Expression x -> x
 
@@ -82,13 +82,13 @@ module JsonValue =
                         let name, quantifier =
                             x.Groups.["name"].Value,
                             x.Groups.["quantifier"].Value
-                            |> function "." -> Exists | _ -> All
+                            |> function "." -> Exact | _ -> Any
                     
                         if (x.Groups.["predicate"].Success) then
                             let predicates = x.Groups.["predicate"].Captures
                             yield quantifier, Type.Property(name)
                             for x in predicates do
-                                yield Exists, Type.Array (predicateFor x.Value)
+                                yield Exact, Type.Array (predicateFor x.Value)
                         else
                             yield quantifier, Type.Property(name)
                 ]
@@ -120,26 +120,26 @@ module JsonValue =
                     | _ -> []
                     @
                     match q with
-                    | Query.All -> [ Automaton (transition levels) ]
-                    | Query.Exists -> []
+                    | Query.Any -> [ Automaton (transition levels) ]
+                    | Query.Exact -> []
                 
             | (q,Query.Array(p)) :: tail ->
                 function
                 | Input.Property _ -> []
                 | Input.Array (index,length) ->
                     match p with
-                    | Query.Predicate.Wildcard ->
+                    | Query.Index.Wildcard ->
                         match tail with
                         | [] -> [ Match ]
                         | xs -> [ Automaton (transition xs) ]
-                    | Query.Predicate.Index xs when
+                    | Query.Index.Literal xs when
                         (xs
                          |> List.map (function x when x < 0 -> length+x | x -> x)
                          |> List.exists ((=) index)) ->
                         match tail with
                         | [] -> [ Match ]
                         | xs -> [ Automaton (transition xs) ]
-                    | Query.Predicate.Slice(start,finish,step) when (step > 0) ->
+                    | Query.Index.Slice(start,finish,step) when (step > 0) ->
                         let start =
                             match start |> valueOr 0 with
                             | x when x < 0 -> length+x
@@ -157,8 +157,8 @@ module JsonValue =
                     | _ -> []
                     @
                     match q with
-                    | Query.All -> [ Automaton (transition levels) ]
-                    | Query.Exists -> []
+                    | Query.Any -> [ Automaton (transition levels) ]
+                    | Query.Exact -> []
                     
         let create (levels:Query.Levels) : State =
             Automaton (transition levels)
@@ -201,8 +201,8 @@ module JsonValue =
             }
                 
         Query.levelsFor >> function
-        | [Query.Exists,Query.Property ""] -> Seq.singleton
-        | (Query.Exists,Query.Property "")::levels
+        | [Query.Exact,Query.Property ""] -> Seq.singleton
+        | (Query.Exact,Query.Property "")::levels
         | levels ->
             let start = Pattern.create levels
             fun json -> recurse([start],json)

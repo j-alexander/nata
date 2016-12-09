@@ -22,55 +22,55 @@ type JsonValueTests() =
         // https://jsonpath.curiousconcept.com/
         let examples =
             [ "$.store.book[*].author",
-              [Exists,Property("store");Exists,Property("book");Exists,Array(Predicate.Wildcard);Exists,Property("author")]
+              [Exact,Property("store");Exact,Property("book");Exact,Array(Index.Wildcard);Exact,Property("author")]
 
               "$..author",
-              [All,Property("author")]
+              [Any,Property("author")]
 
               "$.store.*",
-              [Exists,Property("store");Exists,Property("*")]
+              [Exact,Property("store");Exact,Property("*")]
 
               "$.store..price",
-              [Exists,Property("store");All,Property("price")]
+              [Exact,Property("store");Any,Property("price")]
 
               "$..book[2]",
-              [All,Property("book");Exists,Array(Predicate.Index[2])]
+              [Any,Property("book");Exact,Array(Index.Literal[2])]
 
               "$..book[(@.length-1)]",
-              [All,Property("book");Exists,Array(Predicate.Expression "(@.length-1)")]
+              [Any,Property("book");Exact,Array(Index.Expression "(@.length-1)")]
 
               "$..book[-1:]",
-              [All,Property("book");Exists,Array(Predicate.Slice(Some -1,None,1))]
+              [Any,Property("book");Exact,Array(Index.Slice(Some -1,None,1))]
 
               "$..book[:2]",
-              [All,Property("book");Exists,Array(Predicate.Slice(None,Some 2,1))]
+              [Any,Property("book");Exact,Array(Index.Slice(None,Some 2,1))]
 
               "$..book[1:2]",
-              [All,Property("book");Exists,Array(Predicate.Slice(Some 1,Some 2,1))]
+              [Any,Property("book");Exact,Array(Index.Slice(Some 1,Some 2,1))]
 
               "$..book[::1]",
-              [All,Property("book");Exists,Array(Predicate.Slice(None,None,1))]
+              [Any,Property("book");Exact,Array(Index.Slice(None,None,1))]
 
               "$..book[1:2:3]",
-              [All,Property("book");Exists,Array(Predicate.Slice(Some 1,Some 2,3))]
+              [Any,Property("book");Exact,Array(Index.Slice(Some 1,Some 2,3))]
 
               "$..book[0,1]",
-              [All,Property("book");Exists,Array(Predicate.Index [0;1])]
+              [Any,Property("book");Exact,Array(Index.Literal [0;1])]
 
               "$..book[?(@.isbn)]",
-              [All,Property("book");Exists,Array(Predicate.Expression "?(@.isbn)")]
+              [Any,Property("book");Exact,Array(Index.Expression "?(@.isbn)")]
 
               "$..book[?(@.price<10)]",
-              [All,Property("book");Exists,Array(Predicate.Expression "?(@.price<10)")]
+              [Any,Property("book");Exact,Array(Index.Expression "?(@.price<10)")]
 
               "$..*",
-              [All,Property("*")]
+              [Any,Property("*")]
 
               "$.store.book[*]",
-              [Exists,Property("store");Exists,Property("book");Exists,Array(Predicate.Wildcard)]
+              [Exact,Property("store");Exact,Property("book");Exact,Array(Index.Wildcard)]
 
               "$.store.book[*][*]",
-              [Exists,Property("store");Exists,Property("book");Exists,Array(Predicate.Wildcard);Exists,Array(Predicate.Wildcard)]
+              [Exact,Property("store");Exact,Property("book");Exact,Array(Index.Wildcard);Exact,Array(Index.Wildcard)]
             ]
 
         for i, example, expected in examples |> Seq.mapi (fun i (e,x) -> i,e,x) do
@@ -98,7 +98,7 @@ type JsonValueTests() =
             |> JsonValue.findList "$.a.c.e")
 
     [<Test>]
-    member x.FindAll1Level() =
+    member x.FindAny1Level() =
         Assert.AreEqual(
             [ JsonValue.Number 1m
               JsonValue.Number 4m ],
@@ -120,7 +120,7 @@ type JsonValueTests() =
             |> JsonValue.findList "$..b")
             
     [<Test>]
-    member x.FindAll2Level() =
+    member x.FindAny2Level() =
         Assert.AreEqual(
             [ JsonValue.Number 5m
               JsonValue.Number 4m ],
@@ -226,7 +226,7 @@ type JsonValueTests() =
             |> JsonValue.findList "$.c.a.*")
 
     [<Test>]
-    member x.FindAllWildcard() =
+    member x.FindAnyWildcard() =
         Assert.AreEqual(
             [ JsonValue.Number 1m
               JsonValue.Number 2m 
@@ -251,7 +251,7 @@ type JsonValueTests() =
             |> JsonValue.findList "$..*")
 
     [<Test>]
-    member x.FindAllWildcard2Level() =
+    member x.FindAnyWildcard2Level() =
         Assert.AreEqual(
             [ JsonValue.Number 6m 
               JsonValue.Parse """{"d":3,"b":5}"""
@@ -268,7 +268,7 @@ type JsonValueTests() =
             |> JsonValue.findList "$..c.*")
 
     [<Test>]
-    member x.FindAllWildcard3Level() =
+    member x.FindAnyWildcard3Level() =
         Assert.AreEqual(
             [ JsonValue.Number 3m
               JsonValue.Number 5m
@@ -285,7 +285,7 @@ type JsonValueTests() =
             |> JsonValue.findList "$..c.a.*")
 
     [<Test>]
-    member x.FindAllWildcardWithChild() =
+    member x.FindAnyWildcardWithChild() =
         Assert.AreEqual(
             [ JsonValue.Number 5m
               JsonValue.Number 4m ],
@@ -378,7 +378,7 @@ type JsonValueTests() =
             |> JsonValue.findList "$..b[*][*]")
             
     [<Test>]
-    member x.FindIndexAtRoot() =
+    member x.FindLiteralAtRoot() =
         Assert.AreEqual(
             [ JsonValue.Number 1m
               JsonValue.Number 3m ],
@@ -386,7 +386,7 @@ type JsonValueTests() =
             |> JsonValue.findList "$.[0,2]")
 
     [<Test>]
-    member x.FindNegativeIndexAtRoot() =
+    member x.FindNegativeLiteralAtRoot() =
         Assert.AreEqual(
             [ JsonValue.Number 1m
               JsonValue.Number 3m
@@ -395,7 +395,7 @@ type JsonValueTests() =
             |> JsonValue.findList "$.[0,2,-1]")
 
     [<Test>]
-    member x.FindIndex1stGeneration() =
+    member x.FindLiteral1stGeneration() =
         Assert.AreEqual(
             [ JsonValue.Number 1m
               JsonValue.Number 3m ],
@@ -403,7 +403,7 @@ type JsonValueTests() =
             |> JsonValue.findList "$.a[0,2]")
 
     [<Test>]
-    member x.FindNegativeIndex1stGeneration() =
+    member x.FindNegativeLiteral1stGeneration() =
         Assert.AreEqual(
             [ JsonValue.Number 1m
               JsonValue.Number 3m
@@ -412,7 +412,7 @@ type JsonValueTests() =
             |> JsonValue.findList "$.a[0,2,-1]")
 
     [<Test>]
-    member x.FindIndex2ndGeneration() =
+    member x.FindLiteral2ndGeneration() =
         Assert.AreEqual(
             [ JsonValue.Number 1m
               JsonValue.Number 3m ],
@@ -420,7 +420,7 @@ type JsonValueTests() =
             |> JsonValue.findList "$.a.b[0,2]")
 
     [<Test>]
-    member x.FindNegativeIndex2ndGeneration() =
+    member x.FindNegativeLiteral2ndGeneration() =
         Assert.AreEqual(
             [ JsonValue.Number 1m
               JsonValue.Number 3m
@@ -429,20 +429,21 @@ type JsonValueTests() =
             |> JsonValue.findList "$.a.b[0,2,-1]")
 
     [<Test>]
-    member x.FindInvalidIndex() =
+    member x.FindInvalidLiteral() =
         Assert.AreEqual(
             [ JsonValue.Number 5m ],
             JsonValue.Parse """{"a":{"b":[1,2,3,4,5]}}"""
             |> JsonValue.findList "$.a.b[4,8,9]")
 
     [<Test>]
-    member x.FindNegativeIndex() =
+    member x.FindNegativeLiteral() =
         Assert.AreEqual(
             [ JsonValue.Number 4m ],
             JsonValue.Parse """{"a":{"b":[1,2,3,4,5]}}"""
             |> JsonValue.findList "$.a.b[-2]")
+
     [<Test>]
-    member x.FindInvalidNegativeIndex() =
+    member x.FindInvalidNegativeLiteral() =
         Assert.AreEqual(
             [ JsonValue.Number 1m
               JsonValue.Number 2m ],
