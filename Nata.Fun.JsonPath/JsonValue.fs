@@ -94,7 +94,6 @@ module JsonValue =
                 ]
 
 
-    [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
     module Pattern  =
 
         type Automata = Automaton list
