@@ -187,7 +187,6 @@ module JsonValue =
                                 |> List.collect(fun a -> 
                                     a (Pattern.Input.Property name)),
                                 json)
-                            |> Array.rev
                         | JsonValue.Array xs ->
                             xs
                             |> Array.mapi(fun i json ->
@@ -195,9 +194,8 @@ module JsonValue =
                                 |> List.collect(fun a ->
                                     a (Pattern.Input.Array(i,xs.Length))),
                                 json)
-                            |> Array.rev
                         | _ -> Array.empty
-                        |> Array.fold (fun xs x -> x :: xs) positions
+                        |> Array.foldBack (fun x xs -> x :: xs) <| positions
                         |> recurse
                 }
                 
