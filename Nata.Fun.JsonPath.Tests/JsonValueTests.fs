@@ -531,12 +531,26 @@ type JsonValueTests() =
         check "$.[2:-2:1]" []
         
     [<Test>]
-    member x.TestForTailRecursion() =
+    member x.TestForDepth() =
         let document =
-            [1..128000]
+            [1..1000000]
             |> List.fold (fun doc i ->
                 [| sprintf "%d" i, doc |]
                 |> JsonValue.Record) JsonValue.Null
         Assert.AreEqual(
             JsonValue.Parse """{"1":null}""",
             JsonValue.find "$..2" document)
+
+    [<Test>]
+    member x.TestForBreadth() =
+        let rec document p w = function
+            | 0 -> JsonValue.Number(decimal p)
+            | h ->
+                [| for i in 1..w -> sprintf "%d" i, (document (p*i) w (h-1)) |]
+                |> JsonValue.Record
+        Assert.AreEqual(
+            JsonValue.Number(decimal (99*94)),
+            JsonValue.find "$.99.94" (document 1 1000 2))
+        Assert.AreEqual(
+            JsonValue.Number(decimal (949872)),
+            JsonValue.find "$.949872" (document 1 1000000 1))
