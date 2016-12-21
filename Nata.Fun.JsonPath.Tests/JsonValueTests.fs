@@ -530,3 +530,13 @@ type JsonValueTests() =
         check "$.[1:-2:1]" [1]
         check "$.[2:-2:1]" []
         
+    [<Test>]
+    member x.TestForTailRecursion() =
+        let document =
+            [1..128000]
+            |> List.fold (fun doc i ->
+                [| sprintf "%d" i, doc |]
+                |> JsonValue.Record) JsonValue.Null
+        Assert.AreEqual(
+            JsonValue.Parse """{"1":null}""",
+            JsonValue.find "$..2" document)

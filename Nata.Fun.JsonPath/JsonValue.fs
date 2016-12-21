@@ -165,46 +165,48 @@ module JsonValue =
 
     let findSeq = 
 
-        let rec recurse (states:Pattern.State list,value:JsonValue) =
-            let isMatch, automata =
-                states
-                |> List.exists (function
-                    | Pattern.State.Match -> true
-                    | _ -> false),
-                states
-                |> List.choose (function
-                    | Pattern.State.Automaton x -> Some(x)
-                    | _ -> None)
-            seq {
-                if isMatch then
-                    yield value
-                yield!
-                    match value with
-                    | JsonValue.Record xs ->
-                        xs
-                        |> Seq.map(fun (name,json) ->
-                            automata
-                            |> List.collect(fun a -> 
-                                a (Pattern.Input.Property name)),
-                            json)
-                        |> Seq.collect recurse
-                    | JsonValue.Array xs ->
-                        xs
-                        |> Seq.mapi(fun i json ->
-                            automata
-                            |> List.collect(fun a ->
-                                a (Pattern.Input.Array(i,xs.Length))),
-                            json)
-                        |> Seq.collect recurse
-                    | _ -> Seq.empty         
-            }
+        let partition =
+            List.fold (fun (matches, automata) -> function
+                | Pattern.State.Match -> true, automata
+                | Pattern.State.Automaton x -> matches, x :: automata) (false, [])
+
+        let rec recurse = function
+            | [] -> Seq.empty
+            | (states:Pattern.State list, value:JsonValue) :: positions ->
+                seq {
+                    let hasMatch, automata = partition states
+                    if hasMatch then
+                        yield value
+
+                    yield!
+                        match value with
+                        | JsonValue.Record xs ->
+                            xs
+                            |> Array.map(fun (name,json) ->
+                                automata
+                                |> List.collect(fun a -> 
+                                    a (Pattern.Input.Property name)),
+                                json)
+                            |> Array.rev
+                        | JsonValue.Array xs ->
+                            xs
+                            |> Array.mapi(fun i json ->
+                                automata
+                                |> List.collect(fun a ->
+                                    a (Pattern.Input.Array(i,xs.Length))),
+                                json)
+                            |> Array.rev
+                        | _ -> Array.empty
+                        |> Array.fold (fun xs x -> x :: xs) positions
+                        |> recurse
+                }
                 
         Query.levelsFor >> function
         | [Query.Exact,Query.Property ""] -> Seq.singleton
         | (Query.Exact,Query.Property "")::levels
         | levels ->
             let start = Pattern.create levels
-            fun json -> recurse([start],json)
+            fun json -> recurse[[start],json]
             
     let findList query =
         findSeq query >> Seq.toList
