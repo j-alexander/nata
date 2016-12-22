@@ -3,12 +3,14 @@
 open System
 open System.IO
 open System.Collections.Concurrent
+open System.Diagnostics
 open System.Reflection
 open System.Threading
 open System.Threading.Tasks
 
 open FSharp.Data
 open NUnit.Framework
+open Nata.Core
 open Nata.Fun.JsonPath
 open Nata.Fun.JsonPath.JsonValue
 open Nata.Fun.JsonPath.JsonValue.Query

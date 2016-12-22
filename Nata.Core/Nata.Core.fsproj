@@ -69,6 +69,7 @@
     <Compile Include="JsonValue.fs" />
     <Compile Include="DateTime.fs" />
     <Compile Include="Patterns.fs" />
+    <Compile Include="GZip.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
