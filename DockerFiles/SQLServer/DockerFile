@@ -1,16 +1,16 @@
 FROM microsoft/windowsservercore
 
-#SQL Server Express 2016 (64 bit) 13.0.1601.5
-ENV SETUP    https://download.microsoft.com/download/E/1/2/E12B3655-D817-49BA-B934-CEB9DAC0BAF3/SQLEXPR_x64_ENU.exe
+# Microsoft SQL Server 2016 (SP1) (KB3182545) - 13.0.4001.0 (X64)
+ENV SETUP    https://download.microsoft.com/download/9/0/7/907AD35F-9F9C-43A5-9789-52470555DB90/ENU/SQLEXPR_x64_ENU.exe
 
 RUN powershell -NoProfile -Command \
         Write-Host "Downloading may take some time..."             ; \
         wget -uri "%SETUP%" -usebasicparsing -outfile \Setup.exe   ; \
         $file = Get-Item \Setup.exe                                ; \
-        Write-Host "bytes expect : 315579864"                      ; \
+        Write-Host "bytes expect : 431397432"                      ; \
         Write-Host "bytes actual :" $file.Length                   ; \
         $md5 = Get-FileHash -Algorithm MD5 -Path \Setup.exe        ; \
-        Write-Host "md5 expect : 902347C4F97B2CB00007C74AE1A6912E" ; \
+        Write-Host "md5 expect : 345EA5D3C5FB2B1885E31786BF443171" ; \
         Write-Host "md5 actual :" $md5.Hash
 		
 RUN powershell -NoProfile -Command \
@@ -22,7 +22,7 @@ RUN powershell -NoProfile -Command \
                       '/INSTANCENAME=MSSQLServer',                \
                       '/TCPENABLED=1',                            \
                       '/SECURITYMODE=SQL',                        \
-                      '/SAPWD=docker_13.0.1601.5',                \
+                      '/SAPWD=docker_13.0.4001.0',                \
                       '/IAcceptSQLServerLicenseTerms'             \
         -Wait                                                   ; \
         net stop mssqlserver                                    ; \
@@ -32,4 +32,4 @@ RUN setx /M PATH "%PATH%;%ProgramFiles%\Microsoft SQL Server\130\Tools\Binn"
 
 # verify logins:
 RUN osql -t 120 -Q "SELECT @@VERSION" -E
-RUN osql -t 120 -Q "SELECT @@VERSION" -U sa -P docker_13.0.1601.5
+RUN osql -t 120 -Q "SELECT @@VERSION" -U sa -P docker_13.0.4001.0
