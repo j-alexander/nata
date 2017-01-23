@@ -97,6 +97,8 @@ module Core =
         let getValueOr x = function None -> x | Some x -> x
         let getValueOrYield fn = function None -> fn() | Some x -> x
 
+        let tryFunction fn x = try Some <| fn x with _ -> None
+
     module Null =
         
         let toOption = function null -> None | x -> Some x

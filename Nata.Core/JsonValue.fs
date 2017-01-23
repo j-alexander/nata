@@ -7,9 +7,9 @@ open Newtonsoft.Json
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module JsonValue =
 
-    let tryParse x = try Some <| JsonValue.Parse x with _ -> None
-    let tryGet (json:JsonValue) (property:string) = json.TryGetProperty(property)
-    let get (json:JsonValue) (property:string) = Option.get <| json.TryGetProperty(property)
+    let tryParse = Option.tryFunction JsonValue.Parse
+    let tryGet (property:string) (json:JsonValue) = json.TryGetProperty(property)
+    let get (property:string) (json:JsonValue) = Option.get <| json.TryGetProperty(property)
 
     let properties (json:JsonValue) = json.Properties()
     let keys (json:JsonValue) = json.Properties() |> Array.map fst
