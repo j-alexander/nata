@@ -13,6 +13,7 @@ NUGET
       System.Threading.Thread (>= 4.0) - framework: >= netstandard13
     EventStore.Client (3.9.2)
     FSharp.Compiler.Service (2.0.0.6)
+    FSharp.Control.AsyncSeq (2.0.10)
     FSharp.Data (2.3.2)
       Zlib.Portable (>= 1.11) - framework: portable-net45+sl5+win8, portable-net45+win8, portable-net45+win8+wp8+wpa81
     FSharp.Formatting (2.14.4)
@@ -22,6 +23,8 @@ NUGET
     FSharpVSPowerTools.Core (2.3)
       FSharp.Compiler.Service (>= 2.0.0.3)
     kafka-net (0.9.0.65)
+    Kafunk (0.0.25-alpha001)
+      FSharp.Control.AsyncSeq
     Microsoft.AspNet.WebApi.Client (5.2.3)
       Microsoft.Net.Http (>= 2.2.22) - framework: portable-wp80+win+wp81+wpa81
       Newtonsoft.Json (>= 6.0.4) - framework: >= net45, portable-wp80+win+wp81+wpa81
@@ -144,7 +147,7 @@ NUGET
       System.Threading.Tasks (>= 4.0.11) - framework: >= netstandard10
       System.Xml.ReaderWriter (>= 4.0.11) - framework: >= netstandard10
       System.Xml.XDocument (>= 4.0.11) - framework: >= netstandard10
-    NLog (4.3.11)
+    NLog (4.4.2)
     NLog.FSharp (4.2.3)
       NLog (>= 4.2.3)
     NUnitTestAdapter.WithFramework (2.0)

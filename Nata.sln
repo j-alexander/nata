@@ -64,6 +64,10 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Core", "Nata.Core\Nata
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Core.Tests", "Nata.Core.Tests\Nata.Core.Tests.fsproj", "{0A6F3787-611D-43E9-B033-90B906F29AA0}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Kafunk", "Nata.IO.Kafunk\Nata.IO.Kafunk.fsproj", "{D179D85E-10FC-416F-BCE5-1F8EDF51BD0E}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Kafunk.Tests", "Nata.IO.Kafunk.Tests\Nata.IO.Kafunk.Tests.fsproj", "{EE771041-5CD0-4185-B1E6-5AF358C44A14}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -182,6 +186,14 @@ Global
 		{0A6F3787-611D-43E9-B033-90B906F29AA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A6F3787-611D-43E9-B033-90B906F29AA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A6F3787-611D-43E9-B033-90B906F29AA0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D179D85E-10FC-416F-BCE5-1F8EDF51BD0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D179D85E-10FC-416F-BCE5-1F8EDF51BD0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D179D85E-10FC-416F-BCE5-1F8EDF51BD0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D179D85E-10FC-416F-BCE5-1F8EDF51BD0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE771041-5CD0-4185-B1E6-5AF358C44A14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE771041-5CD0-4185-B1E6-5AF358C44A14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE771041-5CD0-4185-B1E6-5AF358C44A14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE771041-5CD0-4185-B1E6-5AF358C44A14}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
