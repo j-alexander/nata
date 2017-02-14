@@ -47,7 +47,7 @@ module Queue =
             let message = consumer.Queue.Dequeue()
             let timestamp =
                 message.BasicProperties.Timestamp.UnixTime
-                |> DateTime.ofUnix
+                |> DateTime.ofUnixSeconds
             message.Body
             |> Event.create
             |> Event.withStream queue
