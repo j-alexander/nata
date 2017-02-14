@@ -531,8 +531,8 @@
     <None Include="paket.references" />
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="TopicTests.fs" />
     <Compile Include="TopicPartitionTests.fs" />
+    <Compile Include="TopicTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

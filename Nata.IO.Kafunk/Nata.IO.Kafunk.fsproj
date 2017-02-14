@@ -54,8 +54,6 @@
     <Compile Include="Offset.fs" />
     <Compile Include="TopicPartition.fs" />
     <Compile Include="Topic.fs" />
-    <None Include="Script.fsx" />
-    <None Include="OffsetScript.fsx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
