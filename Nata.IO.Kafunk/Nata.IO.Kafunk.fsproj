@@ -46,6 +46,13 @@
   <ItemGroup>
     <None Include="paket.references" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Types.fs" />
+    <Compile Include="Error.fs" />
+    <Compile Include="Received.fs" />
+    <Compile Include="Settings.fs" />
+    <Compile Include="OffsetRange.fs" />
+    <Compile Include="Offset.fs" />
+    <Compile Include="TopicPartition.fs" />
     <Compile Include="Topic.fs" />
     <None Include="Script.fsx" />
     <None Include="OffsetScript.fsx" />
