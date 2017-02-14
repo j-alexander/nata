@@ -532,6 +532,7 @@
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TopicTests.fs" />
+    <Compile Include="TopicPartitionTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -571,6 +572,11 @@
     <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
       <Name>Nata.Core</Name>
       <Project>{48b92604-e152-4ec9-8c25-fef849785944}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Nata.IO.Kafunk\Nata.IO.Kafunk.fsproj">
+      <Name>Nata.IO.Kafunk</Name>
+      <Project>{d179d85e-10fc-416f-bce5-1f8edf51bd0e}</Project>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Nata.IO.Tests\Nata.IO.Tests.fsproj">

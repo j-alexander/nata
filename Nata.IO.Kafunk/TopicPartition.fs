@@ -107,6 +107,29 @@ module TopicPartition =
             sprintf "Topic '%s' w/ Partition %d Not Found" topic partition
             |> failwith
 
+    let write (connection,settings) topic partition =
+        let configuration =
+            let partitioner = Partitioner.konst partition
+            ProducerConfig.create(topic, partitioner)
+        let producer =
+            Producer.create connection configuration
+        fun (event:Event<Data>) ->
+            let bytes =
+                event
+                |> Event.data,
+                event
+                |> Event.key
+                |> Option.map Encoding.UTF8.GetBytes
+                |> Option.getValueOrYield guidBytes
+            bytes
+            |> ProducerMessage.ofBytes
+            |> Producer.produce producer
+            |> Async.RunSynchronously
+            |> fun (result:ProducerResult) ->
+                if partition <> result.partition then
+                    sprintf "Commit partition mismatch %d != %d" partition result.partition
+                    |> failwith
+
     let connect : Connector<_,_,_,_> =
         Settings.connect >> fun (connection,settings) (topic,partition) ->
             [
@@ -120,13 +143,15 @@ module TopicPartition =
                 Capability.ReaderFrom <|
                     consumeFrom false (connection,settings) topic partition
 
+                Capability.Writer <|
+                    write (connection,settings) topic partition
+
                 Capability.Subscriber <| fun () ->
                     consumeFrom true (connection,settings) topic partition Position.Start
                     |> Seq.map fst
 
                 Capability.SubscriberFrom <|
                     consumeFrom true (connection,settings) topic partition
-
             ]
             
 
