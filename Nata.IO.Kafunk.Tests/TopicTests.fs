@@ -27,3 +27,28 @@ type TopicTests() =
     override x.Connect() =
         Topic.connect cluster
         |> Source.mapIndex (Offsets.Codec.OffsetsToInt64 0)
+
+    [<Test; Timeout(360000)>]
+    member x.TestReadWriteIntegers() =
+        let expected = [ 1..100 ]
+        let topic =
+            Topic.connect cluster
+            |> Source.mapIndex (Offsets.Codec.OffsetsToInt64 0)
+            |> Source.mapData (Codec.BytesToString)
+            |> Source.mapData (Codec.StringToInt32)
+            <| guid()
+        let read, write =
+            reader topic,
+            writer topic
+
+        expected 
+        |> Seq.iter (Event.create >> write)
+
+        let actual =
+            read()
+            |> Seq.take (List.length expected)
+            |> Seq.map (Event.data)
+            |> Seq.sort
+            |> Seq.toList
+
+        Assert.AreEqual(expected, actual)
