@@ -1,7 +1,11 @@
 ﻿namespace Nata.IO.Kafka
 
+open System
+open System.Text
+
 open Nata.Core
 open Nata.IO
+open Kafunk
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Topic =
@@ -30,17 +34,16 @@ module Topic =
                 use enumerator = events.GetEnumerator()
                 let rec loop (offsets) =
                     seq {
-                        let result, (event, offset) = 
-                            enumerator.MoveNext(),
-                            enumerator.Current
-                        let offsets =
-                            [
-                                for { Offset.PartitionId=p } as o in offsets ->
-                                    if offset.PartitionId = p then offset
-                                    else o
-                            ]
-                        yield event, Offsets offsets
-                        yield! loop offsets
+                        if enumerator.MoveNext() then
+                            let event, offset = enumerator.Current
+                            let offsets =
+                                [
+                                    for { Offset.PartitionId=p } as o in offsets ->
+                                        if offset.PartitionId = p then offset
+                                        else o
+                                ]
+                            yield event, Offsets offsets
+                            yield! loop offsets
                     }
                 yield! loop offsets
             }
@@ -51,6 +54,29 @@ module Topic =
             sprintf "Topic '%s' Not Found" topic
             |> failwith
         | offsets -> indexOf offsets position
+
+    let write (connection,settings) topic (event:Event<Data>) =
+        let partitioner =
+            event
+            |> Event.partition
+            |> Option.map Partitioner.konst
+            |> Option.getValueOr Partitioner.crc32Key
+        let producer =
+            ProducerConfig.create(topic, partitioner)
+            |> Producer.create connection
+        let bytes =
+            event
+            |> Event.data,
+            event
+            |> Event.key
+            |> Option.map Encoding.UTF8.GetBytes
+            |> Option.getValueOrYield guidBytes
+        bytes
+        |> ProducerMessage.ofBytes
+        |> Producer.produce producer
+        |> Async.RunSynchronously
+        |> fun (result:ProducerResult) -> ()
+                
 
     let connect : Connector<_,_,_,_> =
         Settings.connect >> fun (connection,settings) (topic) ->
@@ -65,8 +91,8 @@ module Topic =
                 Capability.ReaderFrom <|
                     consumeFrom false (connection,settings) topic
 
-//                Capability.Writer <|
-//                    write (connection,settings) topic partition
+                Capability.Writer <|
+                    write (connection,settings) topic
 
                 Capability.Subscriber <| fun () ->
                     consumeFrom true (connection,settings) topic Position.Start
