@@ -4,28 +4,20 @@
 open System
 open Kafunk
 
+let host = "tcp://localhost"
+let topic = "topic"
+let group = "group"
 
-let watermarksFor (connection:KafkaConn) (topic:string) =
-    async {
-        let! metadata = Kafka.metadata connection (Metadata.Request [| topic |])
-        let topicMetadata = 
-            metadata.topicMetadata
-            |> Array.tryFind (fun tm -> tm.topicName = topic)
-        match topicMetadata with
-        | None ->
-            return []
-        | Some tm ->
-            return!
-                tm.partitionMetadata
-                |> Seq.map (fun pm -> pm.partitionId)
-                |> Offsets.offsetRange connection topic
-                |> Async.map (Map.toList)
-    }
-
-let host = "tcp://guardians-kafka-cluster.qa.jet.com:9092"
-let topic = "nova-retailskus-profx2"
+let connection = Kafka.connHost host
 
 let watermarks =
-    Kafka.connHostAsync host
-    |> Async.bind(fun connection -> watermarksFor connection topic)
+    Offsets.offsetRange connection topic Array.empty
+    |> Async.map Map.toList
     |> Async.RunSynchronously
+
+let progress =
+    ConsumerInfo.progress connection group topic Array.empty
+    |> Async.RunSynchronously
+
+
+
