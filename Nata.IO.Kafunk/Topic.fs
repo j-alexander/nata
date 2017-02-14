@@ -1,3 +1,3 @@
-﻿namespace Nata.IO.Kafunk
+﻿namespace Nata.IO.Kafka
 
 module Topic = ()
