@@ -61,6 +61,44 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <None Include="paket.references" />
+    <Content Include="App.config" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="TopicPartitionTests.fs" />
+    <Compile Include="TopicTests.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
+      <Name>Nata.Core</Name>
+      <Project>{48b92604-e152-4ec9-8c25-fef849785944}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Nata.IO.Kafunk\Nata.IO.Kafunk.fsproj">
+      <Name>Nata.IO.Kafunk</Name>
+      <Project>{d179d85e-10fc-416f-bce5-1f8edf51bd0e}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Nata.IO.Tests\Nata.IO.Tests.fsproj">
+      <Name>Nata.IO.Tests</Name>
+      <Project>{b58419f9-0387-4780-99d7-70ca2938da00}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Nata.IO\Nata.IO.fsproj">
+      <Name>Nata.IO</Name>
+      <Project>{05933d30-393b-4a8e-8418-b6a141d70040}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
   <Choose>
     <When Condition="($(TargetFrameworkIdentifier) == '.NETCore') Or ($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'MonoTouch') Or ($(TargetFrameworkIdentifier) == 'Xamarin.iOS') Or ($(TargetFrameworkIdentifier) == 'Xamarin.Mac') Or ($(TargetFrameworkProfile) == 'Profile7') Or ($(TargetFrameworkProfile) == 'Profile44')">
       <ItemGroup>
@@ -301,6 +339,33 @@
       </ItemGroup>
     </When>
   </Choose>
+  <ItemGroup>
+    <Reference Include="NUnit.VisualStudio.TestAdapter">
+      <HintPath>..\packages\NUnitTestAdapter.WithFramework\lib\NUnit.VisualStudio.TestAdapter.dll</HintPath>
+      <Private>True</Private>
+      <Paket>True</Paket>
+    </Reference>
+    <Reference Include="nunit.core">
+      <HintPath>..\packages\NUnitTestAdapter.WithFramework\lib\nunit.core.dll</HintPath>
+      <Private>True</Private>
+      <Paket>True</Paket>
+    </Reference>
+    <Reference Include="nunit.core.interfaces">
+      <HintPath>..\packages\NUnitTestAdapter.WithFramework\lib\nunit.core.interfaces.dll</HintPath>
+      <Private>True</Private>
+      <Paket>True</Paket>
+    </Reference>
+    <Reference Include="nunit.framework">
+      <HintPath>..\packages\NUnitTestAdapter.WithFramework\lib\nunit.framework.dll</HintPath>
+      <Private>True</Private>
+      <Paket>True</Paket>
+    </Reference>
+    <Reference Include="nunit.util">
+      <HintPath>..\packages\NUnitTestAdapter.WithFramework\lib\nunit.util.dll</HintPath>
+      <Private>True</Private>
+      <Paket>True</Paket>
+    </Reference>
+  </ItemGroup>
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETStandard' And ($(TargetFrameworkVersion) == 'v1.3' Or $(TargetFrameworkVersion) == 'v1.4' Or $(TargetFrameworkVersion) == 'v1.5')">
       <ItemGroup>
@@ -527,67 +592,4 @@
       </ItemGroup>
     </When>
   </Choose>
-  <ItemGroup>
-    <None Include="paket.references" />
-    <Content Include="App.config" />
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="TopicPartitionTests.fs" />
-    <Compile Include="TopicTests.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="mscorlib" />
-    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="NUnit.VisualStudio.TestAdapter">
-      <HintPath>..\packages\NUnitTestAdapter.WithFramework\lib\NUnit.VisualStudio.TestAdapter.dll</HintPath>
-      <Private>True</Private>
-      <Paket>True</Paket>
-    </Reference>
-    <Reference Include="nunit.core">
-      <HintPath>..\packages\NUnitTestAdapter.WithFramework\lib\nunit.core.dll</HintPath>
-      <Private>True</Private>
-      <Paket>True</Paket>
-    </Reference>
-    <Reference Include="nunit.core.interfaces">
-      <HintPath>..\packages\NUnitTestAdapter.WithFramework\lib\nunit.core.interfaces.dll</HintPath>
-      <Private>True</Private>
-      <Paket>True</Paket>
-    </Reference>
-    <Reference Include="nunit.framework">
-      <HintPath>..\packages\NUnitTestAdapter.WithFramework\lib\nunit.framework.dll</HintPath>
-      <Private>True</Private>
-      <Paket>True</Paket>
-    </Reference>
-    <Reference Include="nunit.util">
-      <HintPath>..\packages\NUnitTestAdapter.WithFramework\lib\nunit.util.dll</HintPath>
-      <Private>True</Private>
-      <Paket>True</Paket>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
-      <Name>Nata.Core</Name>
-      <Project>{48b92604-e152-4ec9-8c25-fef849785944}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Nata.IO.Kafunk\Nata.IO.Kafunk.fsproj">
-      <Name>Nata.IO.Kafunk</Name>
-      <Project>{d179d85e-10fc-416f-bce5-1f8edf51bd0e}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Nata.IO.Tests\Nata.IO.Tests.fsproj">
-      <Name>Nata.IO.Tests</Name>
-      <Project>{b58419f9-0387-4780-99d7-70ca2938da00}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Nata.IO\Nata.IO.fsproj">
-      <Name>Nata.IO</Name>
-      <Project>{05933d30-393b-4a8e-8418-b6a141d70040}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-  </ItemGroup>
 </Project>
