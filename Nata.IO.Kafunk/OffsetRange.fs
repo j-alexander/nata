@@ -20,9 +20,9 @@ module OffsetRange =
     let min (x:OffsetRange) = x.Min
     let max (x:OffsetRange) = x.Max
 
-    let queryAllAsync connection topic =
+    let queryAllAsync { Cluster=cluster } topic =
         async {
-            let! offsets = Offsets.offsetRange connection topic Array.empty
+            let! offsets = Offsets.offsetRange cluster topic Array.empty
             return
                 [
                     for partition, (min, max) in Map.toSeq offsets ->
@@ -34,9 +34,9 @@ module OffsetRange =
         queryAllAsync connection topic
         |> Async.RunSynchronously
 
-    let queryAsync connection topic partition =
+    let queryAsync { Cluster=cluster } topic partition =
         async {
-            let! offsets = Offsets.offsetRange connection topic [| partition |]
+            let! offsets = Offsets.offsetRange cluster topic [| partition |]
             return
                 match Map.toList offsets with
                 | [ partition, (min, max) ] ->

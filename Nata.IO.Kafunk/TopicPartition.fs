@@ -14,7 +14,7 @@ type TopicPartition =
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module TopicPartition =
 
-    let fetch (connection,settings:Settings) topic partition offset =
+    let fetch {Cluster=cluster;Settings=settings} topic partition offset =
 
         let request =
             let replicaId : ReplicaId = -1
@@ -32,7 +32,7 @@ module TopicPartition =
                 |])
 
         let response =
-            Kafka.fetch connection request
+            Kafka.fetch cluster request
             |> Async.RunSynchronously
 
         match response.topics with
@@ -92,13 +92,13 @@ module TopicPartition =
         | Position.Before x -> (indexOf range x) - 1L
         | Position.After x -> (indexOf range x) + 1L
 
-    let consumeFrom live (connection,settings) topic partition position =
+    let consumeFrom live connection topic partition position =
         match OffsetRange.query connection topic partition with
         | None -> Seq.empty
         | Some range ->
             indexOf range position
             |> Offset.position
-            |> consume live (connection,settings) topic partition
+            |> consume live connection topic partition
 
     let index connection topic partition position =
         match OffsetRange.query connection topic partition with
@@ -107,12 +107,12 @@ module TopicPartition =
             sprintf "Topic '%s' w/ Partition %d Not Found" topic partition
             |> failwith
 
-    let write (connection,settings) topic partition =
+    let write { Cluster=cluster; Settings=settings } topic partition =
         let configuration =
             let partitioner = Partitioner.konst partition
             ProducerConfig.create(topic, partitioner)
         let producer =
-            Producer.create connection configuration
+            Producer.create cluster configuration
         fun (event:Event<Data>) ->
             let bytes =
                 event
@@ -131,27 +131,27 @@ module TopicPartition =
                     |> failwith
 
     let connect : Connector<_,_,_,_> =
-        Settings.connect >> fun (connection,settings) (topic,partition) ->
+        fun (connection) (topic,partition) ->
             [
                 Capability.Indexer <|
                     index connection topic partition
 
                 Capability.Reader <| fun () ->
-                    consumeFrom false (connection,settings) topic partition Position.Start
+                    consumeFrom false connection topic partition Position.Start
                     |> Seq.map fst
 
                 Capability.ReaderFrom <|
-                    consumeFrom false (connection,settings) topic partition
+                    consumeFrom false connection topic partition
 
                 Capability.Writer <|
-                    write (connection,settings) topic partition
+                    write connection topic partition
 
                 Capability.Subscriber <| fun () ->
-                    consumeFrom true (connection,settings) topic partition Position.Start
+                    consumeFrom true connection topic partition Position.Start
                     |> Seq.map fst
 
                 Capability.SubscriberFrom <|
-                    consumeFrom true (connection,settings) topic partition
+                    consumeFrom true connection topic partition
             ]
             
 

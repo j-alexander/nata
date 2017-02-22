@@ -18,7 +18,7 @@ module Topic =
         | Position.Before x -> Offsets.before ranges (indexOf ranges x)
         | Position.After x -> Offsets.after ranges (indexOf ranges x)
 
-    let consumeFrom live (connection,settings) topic position =
+    let consumeFrom live connection topic position =
         match OffsetRange.queryAll connection topic with
         | [] -> Seq.empty
         | ranges ->
@@ -29,7 +29,7 @@ module Topic =
                         for { Offset.PartitionId=partition
                               Offset.Position=position } as offset in offsets ->
                               Position.At offset
-                              |> TopicPartition.consumeFrom live (connection,settings) topic partition
+                              |> TopicPartition.consumeFrom live connection topic partition
                     ]
                 use enumerator = events.GetEnumerator()
                 let rec loop (offsets) =
@@ -55,7 +55,7 @@ module Topic =
             |> failwith
         | offsets -> indexOf offsets position
 
-    let write (connection,settings) topic (event:Event<Data>) =
+    let write { Cluster=cluster; Settings=settings } topic (event:Event<Data>) =
         let partitioner =
             event
             |> Event.partition
@@ -63,7 +63,7 @@ module Topic =
             |> Option.getValueOr Partitioner.crc32Key
         let producer =
             ProducerConfig.create(topic, partitioner)
-            |> Producer.create connection
+            |> Producer.create cluster
         let bytes =
             event
             |> Event.data,
@@ -79,25 +79,25 @@ module Topic =
                 
 
     let connect : Connector<_,_,_,_> =
-        Settings.connect >> fun (connection,settings) (topic) ->
+        fun connection topic ->
             [
                 Capability.Indexer <|
                     index connection topic
 
                 Capability.Reader <| fun () ->
-                    consumeFrom false (connection,settings) topic Position.Start
+                    consumeFrom false connection topic Position.Start
                     |> Seq.map fst
 
                 Capability.ReaderFrom <|
-                    consumeFrom false (connection,settings) topic
+                    consumeFrom false connection topic
 
                 Capability.Writer <|
-                    write (connection,settings) topic
+                    write connection topic
 
                 Capability.Subscriber <| fun () ->
-                    consumeFrom true (connection,settings) topic Position.Start
+                    consumeFrom true connection topic Position.Start
                     |> Seq.map fst
 
                 Capability.SubscriberFrom <|
-                    consumeFrom true (connection,settings) topic
+                    consumeFrom true connection topic
             ]

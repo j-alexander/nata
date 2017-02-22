@@ -50,6 +50,7 @@
     <Compile Include="Error.fs" />
     <Compile Include="Received.fs" />
     <Compile Include="Settings.fs" />
+    <Compile Include="Connection.fs" />
     <Compile Include="OffsetRange.fs" />
     <Compile Include="Offset.fs" />
     <Compile Include="TopicPartition.fs" />

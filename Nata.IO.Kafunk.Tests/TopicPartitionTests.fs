@@ -15,7 +15,7 @@ open Nata.IO.Kafka
 type TopicPartitionTests() =
     inherit Nata.IO.Tests.LogStoreTests()
 
-    let cluster = { Settings.defaultSettings with Hosts=["tcp://127.0.0.1:9092"] }
+    let cluster = Connection.create { Settings.defaultSettings with Hosts=["tcp://127.0.0.1:9092"] }
 
     // to unit test on a local kafka instance, the following broker
     // settings are required (in ./config/server.properties):
