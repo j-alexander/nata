@@ -8,6 +8,7 @@ type Settings = {
     FetchMaxWaitTime : TimeSpan
     FetchMinBytes : MinBytes
     FetchMaxBytes : MaxBytes
+    PreallocateProducer : bool
 }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
@@ -17,12 +18,14 @@ module Settings =
     let fetchMaxWaitTime { FetchMaxWaitTime=x } = x
     let fetchMinBytes { FetchMinBytes=x } = x
     let fetchMaxBytes { FetchMaxBytes=x } = x
+    let preallocateProducer { PreallocateProducer=x } = x
 
     let defaultSettings =
         { Hosts = [ "localhost" ]
           FetchMaxWaitTime = TimeSpan.FromMilliseconds 500.
           FetchMinBytes = 65536
-          FetchMaxBytes = 4194304 }
+          FetchMaxBytes = 4194304 
+          PreallocateProducer = false }
 
     let connect (settings:Settings) =
         settings.Hosts

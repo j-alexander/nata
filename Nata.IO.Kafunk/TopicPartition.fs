@@ -108,11 +108,13 @@ module TopicPartition =
             |> failwith
 
     let write { Cluster=cluster; Settings=settings } topic partition =
-        let configuration =
-            let partitioner = Partitioner.konst partition
-            ProducerConfig.create(topic, partitioner)
         let producer =
-            Producer.create cluster configuration
+            lazy (
+                ProducerConfig.create(topic, Partitioner.konst partition)
+                |> Producer.create cluster)
+
+        if settings.PreallocateProducer then ignore <| producer.Force()
+
         fun (event:Event<Data>) ->
             let bytes =
                 event
@@ -123,7 +125,7 @@ module TopicPartition =
                 |> Option.getValueOrYield guidBytes
             bytes
             |> ProducerMessage.ofBytes
-            |> Producer.produce producer
+            |> Producer.produce (producer.Force())
             |> Async.RunSynchronously
             |> fun (result:ProducerResult) ->
                 if partition <> result.partition then
