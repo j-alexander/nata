@@ -1,21 +1,16 @@
 FROM microsoft/windowsservercore
 
-RUN powershell -NoProfile -Command \
-        Install-WindowsFeature NET-Framework-45-Core
+# Configure Powershell as the Default Shell
+SHELL ["powershell", "-NoProfile", "-Command", "$ErrorActionPreference = 'Stop';"]
 
-ADD http://download.geteventstore.com/binaries/EventStore-OSS-Win-v3.8.1.zip \EventStore-OSS-Win-v3.8.1.zip
+# EventStore 3.9.3
+ADD http://download.geteventstore.com/binaries/EventStore-OSS-Win-v3.9.3.zip /EventStore.zip
+RUN Expand-Archive -Path /EventStore.zip -DestinationPath /EventStore ; \
+    Remove-Item -Force /EventStore.zip
 
-RUN powershell -NoProfile -Command \
-		Expand-Archive -Path \EventStore-OSS-Win-v3.8.1.zip -DestinationPath $env:ProgramFiles\EventStore
+# Data & Logs
+RUN New-Item -Path /Data -ItemType Directory
+RUN New-Item -Path /Logs -ItemType Directory
 
-ADD https://nssm.cc/release/nssm-2.24.zip \nssm-2.24.zip
-
-RUN powershell -NoProfile -Command \
-		Expand-Archive -Path \nssm-2.24.zip -DestinationPath $env:ProgramFiles
-	
-RUN ["C:\\Program Files\\nssm-2.24\\win64\\nssm.exe", \
-     "install", "EventStore", "\"C:\\Program Files\\EventStore\\EventStore.ClusterNode.exe\"", \
-         "--db", "\"C:\\ProgramData\\EventStore\\data\"", \
-         "--log", "\"C:\\ProgramData\\EventStore\\logs\"", \
-         "--ext-http-prefixes", "\"http://+:2113/\"", \
-         "--run-projections", "All" ]
+# Run Service
+CMD /EventStore/EventStore.ClusterNode.exe --db /Data --log /Logs --ext-ip 0.0.0.0 --ext-http-prefixes 'http://+:2113/' --run-projections=all
