@@ -1,23 +1,15 @@
 FROM microsoft/windowsservercore
 
-ADD https://nssm.cc/release/nssm-2.24.zip \nssm-2.24.zip
+# Configure Powershell as the Default Shell
+SHELL ["powershell", "-NoProfile", "-Command", "$ErrorActionPreference = 'Stop';"]
 
-RUN powershell -NoProfile -Command \
-        Expand-Archive -Path \nssm-2.24.zip -DestinationPath \    ; \
-        mv \nssm-2.24\win64 \"%ProgramFiles%\nssm\"               ; \
-        rmdir -r \nssm-2.24                                       ; \
-        rm \nssm-2.24.zip
-        
-RUN setx /M PATH "%PATH%;%ProgramFiles%\nssm"
+# Consul 0.7.5
+ADD https://releases.hashicorp.com/consul/0.7.5/consul_0.7.5_windows_amd64.zip /Consul.zip
+RUN Expand-Archive -Path /Consul.zip -DestinationPath /Consul ; \
+    Remove-Item -Force /Consul.zip
 
-ADD https://releases.hashicorp.com/consul/0.6.4/consul_0.6.4_windows_amd64.zip \consul_0.6.4_windows_amd64.zip
+# Data Directory
+RUN New-Item -Path Data -ItemType Directory
 
-RUN powershell -Command \
-	Expand-Archive -Path \consul_0.6.4_windows_amd64.zip -DestinationPath \Consul ; \
-	rm -Force \consul_0.6.4_windows_amd64.zip
-
-RUN [ "nssm.exe",                                                     \
-      "install", "Consul",                                            \
-      "\"C:\\Consul\\consul.exe\"",                                   \
-      "agent", "-bootstrap", "-server", "-ui",                        \
-      "-data-dir", "/ProgramData/consul" ]
+# Run Service
+CMD /Consul/Consul.exe agent -bootstrap -server -ui -client 0.0.0.0 -data-dir /Data
