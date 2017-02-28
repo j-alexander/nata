@@ -1,0 +1,10 @@
+FROM eventstore
+
+#
+# FIX: DNS Resolution Issue
+# SEE: https://git.io/vXzU4 and https://twitter.com/eldaaran/status/796097943472373761
+#
+RUN Set-ItemProperty -Path 'HKLM:\SYSTEM\CurrentControlSet\Services\Dnscache\Parameters' -Name ServerPriorityTimeLimit -Value 0 -Type DWord
+
+# Add Cluster Launcher
+ADD EventStore.DockerCluster.exe /EventStore/EventStore.DockerCluster.exe
