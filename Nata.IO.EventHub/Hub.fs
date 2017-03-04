@@ -88,7 +88,7 @@ module Hub =
         hub.GetRuntimeInformation().PartitionIds
         |> Seq.map (Receiver.toSeq None group None)
         |> Seq.toList
-        |> Seq.merge
+        |> Seq.consume
 
     let subscribeFrom (hub:Hub) (offsets:Offsets) =
         let group = hub.GetDefaultConsumerGroup()
@@ -100,7 +100,7 @@ module Hub =
                 |> Option.map (Offset.index)
             Receiver.toSeqWithOffset None group start partition)
         |> Seq.toList
-        |> Seq.merge
+        |> Seq.consume
         |> Offsets.merge offsets
 
     let read (wait:TimeSpan) (hub:Hub) =
@@ -108,7 +108,7 @@ module Hub =
         hub.GetRuntimeInformation().PartitionIds
         |> Seq.map (Receiver.toSeq (Some wait) group None)
         |> Seq.toList
-        |> Seq.merge
+        |> Seq.consume
 
     let readFrom (wait:TimeSpan) (hub:Hub) (offsets:Offsets) =
         let group = hub.GetDefaultConsumerGroup()
@@ -120,7 +120,7 @@ module Hub =
                 |> Option.map (Offset.index)
             Receiver.toSeqWithOffset (Some wait) group start partition)
         |> Seq.toList
-        |> Seq.merge
+        |> Seq.consume
         |> Offsets.merge offsets
         
     let subscribeFromPosition (hub:Hub) =
