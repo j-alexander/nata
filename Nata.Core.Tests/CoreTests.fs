@@ -11,29 +11,29 @@ type ExpectedEnumerationException() = inherit Exception()
 type CoreTests() =
     
     [<Test>]
-    member x.TestEmptySeqMerge() =
-        Assert.AreEqual([], Seq.merge [])
-        Assert.AreEqual([], Seq.merge [ Seq.empty ])
-        Assert.AreEqual([], Seq.merge [ Seq.empty; Seq.empty; Seq.empty ])
+    member x.TestEmptySeqConsume() =
+        Assert.AreEqual([], Seq.consume [])
+        Assert.AreEqual([], Seq.consume [ Seq.empty ])
+        Assert.AreEqual([], Seq.consume [ Seq.empty; Seq.empty; Seq.empty ])
 
     [<Test>]
-    member x.TestSeqMerge() =
+    member x.TestSeqConsume() =
         let inputs = [ [1..10]; [11..20]; [21..30]; [31..40]; [41..50] ]
-        let merged =
+        let consumed =
             inputs
             |> List.map List.toSeq
-            |> Seq.merge
+            |> Seq.consume
             |> Seq.toList
         for input in inputs do
             let output =
-                merged
+                consumed
                 |> List.filter (fun x -> input |> List.exists ((=) x))
             Assert.AreEqual(input, output)
-        Assert.AreEqual([1..50], List.sort merged)
+        Assert.AreEqual([1..50], List.sort consumed)
 
     [<Test; ExpectedException(typeof<ExpectedDisposalException>)>]
-    member x.TestSeqMergeDisposeExceptions() =
-        let merged =
+    member x.TestSeqConsumeDisposeExceptions() =
+        let consumed =
             let sequence =
                 seq {
                     use willFail =
@@ -42,24 +42,65 @@ type CoreTests() =
                                     raise (new ExpectedDisposalException()) }
                     yield! [1..3]
                 }
-            Seq.merge [ sequence ]
+            Seq.consume [ sequence ]
 
-        let enumerator = merged.GetEnumerator()
+        let enumerator = consumed.GetEnumerator()
         Assert.True(enumerator.MoveNext())
         enumerator.Dispose()
 
     [<Test; ExpectedException(typeof<ExpectedEnumerationException>)>]
-    member x.TestSeqMergeExceptions() =
-        let merged =
+    member x.TestSeqConsumeExceptions() =
+        let consumed =
             let sequence =
                 seq {
                     raise (new ExpectedEnumerationException())
                     yield! [1..3]
                 }
-            Seq.merge [ sequence ]
+            Seq.consume [ sequence ]
             
-        let enumerator = merged.GetEnumerator()
+        let enumerator = consumed.GetEnumerator()
         Assert.True(enumerator.MoveNext())
+
+    [<Test>]
+    member x.TestIntSeqMerge() =
+        let odd, even =
+            [ for i in 1..100 do if i % 2 = 1 then yield i ],
+            [ for i in 1..100 do if i % 2 = 0 then yield i ]
+        Assert.AreEqual([1..100], Seq.merge odd even)
+        Assert.AreEqual([1..100], Seq.merge even odd)
+
+    [<Test>]
+    member x.TestTupleSeqMergeBySnd() =
+        let random = new Random()
+        let values =
+            [ for i in 1..100 -> (random.Next(1,100), i) ]
+        let odd, even =
+            values |> List.filter (snd >> fun i -> i % 2 = 1),
+            values |> List.filter (snd >> fun i -> i % 2 = 0)
+        
+        Assert.AreNotEqual(values, Seq.merge odd even)
+        Assert.AreEqual(values, Seq.mergeBy snd odd even)
+        Assert.AreEqual(values, Seq.mergeBy snd even odd)
+
+    [<Test>]
+    member x.TestIntSeqChanges() =
+        let input = [ 1; 1; 2; 2; 1; 3; 4; 5; 6; 7; 7; 1; 2; 2; 2; 3 ]
+        let changes =
+            input
+            |> Seq.changes
+            |> Seq.toList
+        let expect = [ 1; 2; 1; 3; 4; 5; 6; 7; 1; 2; 3 ]
+        Assert.AreEqual(expect, changes)
+
+    [<Test>]
+    member x.TestTupleSeqChangesBySnd() =
+        let input = [ 1,1; 2,1; 1,2; 2,2; 1,1; 1,3; 1,4; 1,5; 1,6; 1,7; 2,7; 1,1; 1,2; 2,2; 3,2; 1,3 ]
+        let changes =
+            input
+            |> Seq.changesBy snd
+            |> Seq.toList
+        let expect = [ 1,1; 1,2; 1,1; 1,3; 1,4; 1,5; 1,6; 1,7; 1,1; 1,2; 1,3 ]
+        Assert.AreEqual(expect, changes)
 
     [<Test>]
     member x.TestBetween() =
