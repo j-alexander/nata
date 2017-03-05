@@ -69,7 +69,9 @@ module Capability =
         capabilities |> List.tryPick (function SubscriberFrom x -> Some x | _ -> None)
 
     let tryCompetitor (capabilities:Capability<'Data,'Index> list) : Competitor<'Data> option =
-        capabilities |> List.tryPick (function Competitor x -> Some x | _ -> None)
+        capabilities
+        |> List.tryPick (function Competitor x -> Some x | _ -> None)
+        |> function None -> Competitor.tryFallback(tryWriterTo capabilities, tryReaderFrom capabilities) | x -> x
         
     let indexer (capabilities:Capability<'Data,'Index> list) =
         capabilities |> tryIndexer |> Option.get
