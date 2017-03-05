@@ -4,6 +4,7 @@ open System
 open System.Collections.Concurrent
 open System.Reflection
 open System.Text
+open System.Threading
 open FSharp.Data
 open NUnit.Framework
 
@@ -320,6 +321,62 @@ type LogStoreTests() as x =
                 readFrom Position.Start
                 |> Seq.skip 1
                 |> Seq.take 10
+                |> Seq.map (fst >> Event.data)
+                |> Seq.toList
+            Assert.AreEqual(expectation, verification)
+        | _ ->
+            Assert.Ignore("Competitor, ReaderFrom or Writer is reported to be unsupported by this source.")
+
+    [<Test>]
+    member x.TestTwoCompetitors() =
+        let tryCompetitor, tryReaderFrom, tryWriter =
+            let stream =
+                let source =
+                    let codec =
+                        Codec.BytesToString
+                        |> Codec.concatenate Codec.StringToInt32
+                    x.Connect()
+                    |> Source.mapData codec
+                x.Channel()
+                |> source
+            tryCompetitor stream,
+            tryReaderFrom stream,
+            tryWriter stream
+        match tryCompetitor, tryReaderFrom, tryWriter with
+        | Some compete, Some readFrom, Some write ->
+            write (Event.create 2)
+
+            let generation (delay:int->int) : int seq =
+                compete (fun e ->
+                    let input = Event.data e
+                    let output = input * 2
+                    Thread.Sleep(delay input)
+                    Event.create output)
+                |> Seq.take 11
+                |> Seq.map Event.data
+
+            let results =
+                let getsSlower, getsFaster =
+                    (fun i -> 2 * i),
+                    (fun i -> Math.Max(1, 2048/i))
+                Seq.consume
+                    [ 
+                      generation getsSlower
+                      //|> Seq.log (printfn "The early bird gets the worm:%d")
+                      generation getsFaster
+                      //|> Seq.log (printfn "The second mouse gets the cheese:%d")
+                    ]
+                |> Seq.take 11
+                |> Seq.toList
+
+            let expectation : int list =
+                [ 4; 8; 16; 32; 64; 128; 256; 512; 1024; 2048; 4096 ]
+            Assert.AreEqual(expectation, results)
+
+            let verification =
+                readFrom Position.Start
+                |> Seq.skip 1
+                |> Seq.take 11
                 |> Seq.map (fst >> Event.data)
                 |> Seq.toList
             Assert.AreEqual(expectation, verification)
