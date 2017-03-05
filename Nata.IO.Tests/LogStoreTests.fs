@@ -289,3 +289,39 @@ type LogStoreTests() as x =
             Assert.AreEqual(3, index Position.End)
         | _ ->
             Assert.Ignore("Indexer or Writer is reported to be unsupported by this source.")
+
+    [<Test>]
+    member x.TestLoneCompetitor() =
+        let tryCompetitor, tryReaderFrom, tryWriter =
+            let stream =
+                let source =
+                    let codec =
+                        Codec.BytesToString
+                        |> Codec.concatenate Codec.StringToInt32
+                    x.Connect()
+                    |> Source.mapData codec
+                x.Channel()
+                |> source
+            tryCompetitor stream,
+            tryReaderFrom stream,
+            tryWriter stream
+        match tryCompetitor, tryReaderFrom, tryWriter with
+        | Some compete, Some readFrom, Some write ->
+            write (Event.create 2)
+            let generation : int list =
+                compete (Event.map ((*) 2))
+                |> Seq.take 10
+                |> Seq.map Event.data
+                |> Seq.toList
+            let expectation : int list =
+                [ 4; 8; 16; 32; 64; 128; 256; 512; 1024; 2048 ]
+            Assert.AreEqual(expectation, generation)
+            let verification =
+                readFrom Position.Start
+                |> Seq.skip 1
+                |> Seq.take 10
+                |> Seq.map (fst >> Event.data)
+                |> Seq.toList
+            Assert.AreEqual(expectation, verification)
+        | _ ->
+            Assert.Ignore("Competitor, ReaderFrom or Writer is reported to be unsupported by this source.")

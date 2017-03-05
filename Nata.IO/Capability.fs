@@ -10,6 +10,7 @@ type Capability<'Data,'Index> =
     | ReaderFrom        of ReaderFrom<'Data,'Index>
     | Subscriber        of Subscriber<'Data>
     | SubscriberFrom    of SubscriberFrom<'Data,'Index>
+    | Competitor        of Competitor<'Data>
     
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
@@ -25,6 +26,7 @@ module Capability =
         | ReaderFrom x ->     x |> ReaderFrom.mapData encode |> ReaderFrom
         | Subscriber x ->     x |> Subscriber.mapData encode |> Subscriber
         | SubscriberFrom x -> x |> SubscriberFrom.mapData encode |> SubscriberFrom
+        | Competitor x ->     x |> Competitor.mapData (encode,decode) |> Competitor
 
     let mapIndex (codec:Codec<'IndexIn, 'IndexOut>)
                  (capability:Capability<'Data,'IndexIn>) : Capability<'Data,'IndexOut> =
@@ -36,6 +38,7 @@ module Capability =
         | ReaderFrom x ->     x |> ReaderFrom.mapIndex codec |> ReaderFrom
         | Subscriber x ->     x |> Subscriber
         | SubscriberFrom x -> x |> SubscriberFrom.mapIndex codec |> SubscriberFrom
+        | Competitor x ->     x |> Competitor
 
     let map (dataCodec:Codec<'DataIn,'DataOut>)
             (indexCodec:Codec<'IndexIn,'IndexOut>)
@@ -64,6 +67,9 @@ module Capability =
 
     let trySubscriberFrom (capabilities:Capability<'Data,'Index> list) : SubscriberFrom<'Data,'Index> option =
         capabilities |> List.tryPick (function SubscriberFrom x -> Some x | _ -> None)
+
+    let tryCompetitor (capabilities:Capability<'Data,'Index> list) : Competitor<'Data> option =
+        capabilities |> List.tryPick (function Competitor x -> Some x | _ -> None)
         
     let indexer (capabilities:Capability<'Data,'Index> list) =
         capabilities |> tryIndexer |> Option.get
@@ -85,6 +91,9 @@ module Capability =
 
     let subscriberFrom (capabilities:Capability<'Data,'Index> list) =
         capabilities |> trySubscriberFrom |> Option.get
+
+    let competitor (capabilities:Capability<'Data,'Index> list) =
+        capabilities |> tryCompetitor |> Option.get
 
     let read (capabilities:Capability<'Data,'Index> list) =
         reader capabilities ()
