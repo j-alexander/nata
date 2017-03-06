@@ -1,8 +1,10 @@
 ﻿namespace Nata.IO.RabbitMQ
 
 open System
+open System.Collections.Concurrent
 open System.Text
 open RabbitMQ.Client
+open RabbitMQ.Client.Events
 
 open Nata.Core
 open Nata.IO
@@ -41,17 +43,26 @@ module Queue =
 
 
     let subscribe (channel:IModel) (queue:Name) =
-        let consumer = new QueueingBasicConsumer(channel)
-        channel.BasicConsume(queue, false, consumer) |> ignore
-        Seq.initInfinite <| fun i ->
-            let message = consumer.Queue.Dequeue()
-            let timestamp =
-                message.BasicProperties.Timestamp.UnixTime
-                |> DateTime.ofUnix
-            message.Body
-            |> Event.create
-            |> Event.withStream queue
-            |> Event.withCreatedAt timestamp
+        seq {
+            let buffer = new Collections.Concurrent.BlockingCollection<_>()
+            let consumer = new EventingBasicConsumer(channel)
+            consumer.Received.Add(buffer.Add)
+            let consumerTag = channel.BasicConsume(queue, false, consumer)
+            use dispose =
+                { new IDisposable with
+                    member x.Dispose()=
+                        channel.BasicCancel(consumerTag) }
+            yield!
+                Seq.initInfinite <| fun i ->
+                    let message = buffer.Take()
+                    let timestamp =
+                        message.BasicProperties.Timestamp.UnixTime
+                        |> DateTime.ofUnix
+                    message.Body
+                    |> Event.create
+                    |> Event.withStream queue
+                    |> Event.withCreatedAt timestamp
+        }
 
 
 
