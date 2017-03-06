@@ -42,3 +42,4 @@ module MaskEnvelope =
         | ReaderFrom x ->     x |> ReaderFrom.chooseData decode     |> ReaderFrom
         | Subscriber x ->     x |> Subscriber.chooseData decode     |> Subscriber
         | SubscriberFrom x -> x |> SubscriberFrom.chooseData decode |> SubscriberFrom
+        | Competitor x ->     x |> Competitor
