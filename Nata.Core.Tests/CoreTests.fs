@@ -31,7 +31,7 @@ type CoreTests() =
             Assert.AreEqual(input, output)
         Assert.AreEqual([1..50], List.sort consumed)
 
-    [<Test; ExpectedException(typeof<ExpectedDisposalException>)>]
+    [<Test>]
     member x.TestSeqConsumeDisposeExceptions() =
         let consumed =
             let sequence =
@@ -46,9 +46,11 @@ type CoreTests() =
 
         let enumerator = consumed.GetEnumerator()
         Assert.True(enumerator.MoveNext())
-        enumerator.Dispose()
+        Assert.Throws<ExpectedDisposalException>(fun _ ->
+            enumerator.Dispose()
+        ) |> ignore
 
-    [<Test; ExpectedException(typeof<ExpectedEnumerationException>)>]
+    [<Test>]
     member x.TestSeqConsumeExceptions() =
         let consumed =
             let sequence =
@@ -59,7 +61,9 @@ type CoreTests() =
             Seq.consume [ sequence ]
             
         let enumerator = consumed.GetEnumerator()
-        Assert.True(enumerator.MoveNext())
+        Assert.Throws<ExpectedEnumerationException>(fun _ ->
+            enumerator.MoveNext() |> ignore
+        ) |> ignore
 
     [<Test>]
     member x.TestIntSeqMerge() =

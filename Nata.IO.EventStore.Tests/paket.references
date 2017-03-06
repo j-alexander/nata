@@ -3,4 +3,5 @@ FSharp.Data
 Newtonsoft.Json
 NLog
 NLog.FSharp
-NUnitTestAdapter.WithFramework
+NUnit
+NUnit.Runners

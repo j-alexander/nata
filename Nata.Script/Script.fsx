@@ -50,3 +50,38 @@ open Nata.IO.AzureStorage
 #r @"bin/Debug/WebSocket4Net.dll"
 #r @"bin/Debug/Nata.IO.WebSocket.dll"
 open Nata.IO.WebSocket
+
+let settings =
+    { Settings.defaultSettings with
+        Server=
+            { Server.localhost with
+                Host="10.107.0.69" } }
+
+let source =
+    Stream.connect Settings.defaultSettings //settings
+    |> Source.mapData JsonValue.Codec.BytesToJsonValue
+
+let target =
+    Stream.connect Settings.defaultSettings
+    |> Source.mapData JsonValue.Codec.BytesToJsonValue
+
+let indexOf, readerFrom =
+    let stream =
+        source "skus"
+    stream
+    |> Capability.indexer,
+    stream
+    |> Capability.readerFrom
+
+let writer =
+    let stream =
+        target "skus"
+    stream
+    |> Capability.writer
+    
+let endIndex = indexOf Position.End
+let startIndex = indexOf Position.Start
+
+let fromStartIndex =
+    readerFrom (Position.Before (Position.At endIndex))
+    |> Seq.toList
