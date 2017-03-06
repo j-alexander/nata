@@ -25,7 +25,7 @@ module Topic =
             seq {
                 let (Offsets offsets) = indexOf ranges position
                 let events =
-                    Seq.merge [
+                    Seq.consume [
                         for { Offset.PartitionId=partition
                               Offset.Position=position } as offset in offsets ->
                               Position.At offset

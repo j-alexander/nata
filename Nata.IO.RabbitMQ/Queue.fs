@@ -57,7 +57,7 @@ module Queue =
                     let message = buffer.Take()
                     let timestamp =
                         message.BasicProperties.Timestamp.UnixTime
-                        |> DateTime.ofUnix
+                        |> DateTime.ofUnixSeconds
                     message.Body
                     |> Event.create
                     |> Event.withStream queue
