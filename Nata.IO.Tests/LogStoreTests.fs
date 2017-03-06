@@ -123,25 +123,33 @@ type LogStoreTests() as x =
         | _ ->
             Assert.Ignore("ReaderFrom and WriterTo are reported to be unsupported by this source.")
 
-    [<Test; ExpectedException(typeof<Position.Invalid<int64>>)>]
+    [<Test>]
     member x.TestWriteToShouldFailWithIndexTooLow() =
         let connection = x.Capabilities()
         match tryWriterTo connection with
         | Some writeTo ->
             event "TestWriteToShouldFailWithIndexTooLow-0" |> writeTo (Position.At -1L) |> ignore
-            event "TestWriteToShouldFailWithIndexTooLow-1" |> writeTo (Position.At 0L) |> ignore
-            event "TestWriteToShouldFailWithIndexTooLow-2" |> writeTo (Position.At 0L) |> ignore
+            Assert.Throws<Position.Invalid<int64>>(fun _ ->
+                event "TestWriteToShouldFailWithIndexTooLow-1" |> writeTo (Position.At 0L) |> ignore
+            ) |> ignore
+            Assert.Throws<Position.Invalid<int64>>(fun _ ->
+                event "TestWriteToShouldFailWithIndexTooLow-2" |> writeTo (Position.At 0L) |> ignore
+            ) |> ignore
         | _ ->
             Assert.Ignore("WriterTo is reported to be unsupported by this source.")
 
-    [<Test; ExpectedException(typeof<Position.Invalid<int64>>)>]
+    [<Test>]
     member x.TestWriteToShouldFailWithIndexTooHigh() =
         let connection = x.Capabilities()
         match tryWriterTo connection with
         | Some writeTo ->
             event "TestWriteToShouldFailWithIndexTooHigh-0" |> writeTo (Position.At -1L) |> ignore
-            event "TestWriteToShouldFailWithIndexTooHigh-1" |> writeTo (Position.At 0L) |> ignore
-            event "TestWriteToShouldFailWithIndexTooHigh-2" |> writeTo (Position.At 2L) |> ignore
+            Assert.Throws<Position.Invalid<int64>>(fun _ ->
+                event "TestWriteToShouldFailWithIndexTooHigh-1" |> writeTo (Position.At 0L) |> ignore
+            ) |> ignore
+            Assert.Throws<Position.Invalid<int64>>(fun _ ->
+                event "TestWriteToShouldFailWithIndexTooHigh-2" |> writeTo (Position.At 2L) |> ignore
+            ) |> ignore
         | _ ->
             Assert.Ignore("WriterTo is reported to be unsupported by this source.")
         
