@@ -1,0 +1,10 @@
+FROM erlang
+
+# RabbitMQ
+ADD https://www.rabbitmq.com/releases/rabbitmq-server/v3.6.6/rabbitmq-server-windows-3.6.6.zip /rabbitmq-server-3.6.6.zip
+RUN Expand-Archive -Path /rabbitmq-server-3.6.6.zip -DestinationPath / ; \
+    Move-Item /rabbitmq_server-3.6.6 /RabbitMQ                         ; \
+    Remove-Item -Force /rabbitmq-server-3.6.6.zip
+
+# RabbitMQ 3.6.6
+CMD C:\RabbitMQ\sbin\rabbitmq-server.bat
