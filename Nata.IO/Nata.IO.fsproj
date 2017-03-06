@@ -66,6 +66,7 @@
     <Compile Include="ReaderFrom.fs" />
     <Compile Include="Subscriber.fs" />
     <Compile Include="SubscriberFrom.fs" />
+    <Compile Include="Competitor.fs" />
     <Compile Include="Capability.fs" />
     <Compile Include="Source.fs" />
     <Compile Include="Connector.fs" />

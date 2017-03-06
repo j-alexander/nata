@@ -1,0 +1,56 @@
+version: '3'
+services:
+  red: 
+    image: eventstorecluster
+    command: /EventStore/EventStore.DockerCluster.exe orange yellow green blue indigo violet
+    stdin_open: true
+    ports:
+#      - "2114:2114"
+     - "10001:1112"
+     - "20001:2114"
+  orange: 
+    image: eventstorecluster
+    command: /EventStore/EventStore.DockerCluster.exe red yellow green blue indigo violet
+    stdin_open: true
+    ports:
+     - "10002:1112"
+     - "20002:2114"
+  yellow: 
+    image: eventstorecluster
+    command: /EventStore/EventStore.DockerCluster.exe red orange green blue indigo violet
+    stdin_open: true
+    ports:
+     - "10003:1112"
+     - "20003:2114"
+  green: 
+    image: eventstorecluster
+    command: /EventStore/EventStore.DockerCluster.exe red orange yellow blue indigo violet
+    stdin_open: true
+    ports:
+     - "10004:1112"
+     - "20004:2114"
+  blue: 
+    image: eventstorecluster
+    command: /EventStore/EventStore.DockerCluster.exe red orange yellow green indigo violet
+    stdin_open: true
+    ports:
+     - "10005:1112"
+     - "20005:2114"
+  indigo: 
+    image: eventstorecluster
+    command: /EventStore/EventStore.DockerCluster.exe red orange yellow green blue violet
+    stdin_open: true
+    ports:
+     - "10006:1112"
+     - "20006:2114"
+  violet: 
+    image: eventstorecluster
+    command: /EventStore/EventStore.DockerCluster.exe red orange yellow green blue indigo
+    stdin_open: true
+    ports:
+     - "10007:1112"
+     - "20007:2114"
+networks:
+  default:
+    external:
+      name: nat

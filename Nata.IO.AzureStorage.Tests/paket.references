@@ -6,6 +6,7 @@ Microsoft.Data.Services.Client
 Newtonsoft.Json
 NLog
 NLog.FSharp
-NUnitTestAdapter.WithFramework
 System.Spatial
 WindowsAzure.Storage
+NUnit
+NUnit.Runners

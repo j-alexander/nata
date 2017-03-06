@@ -70,7 +70,8 @@ module Blob =
                     Some ((event, etag), position)
                 with
                 | :? StorageException as e when
-                    [ 404   // 404 - blob does not yet exist
+                    [ 400   // 400 - bad request (also, blob does not yet exist)
+                      404   // 404 - blob does not yet exist
                       412 ] // 412 - etag for blob has expired or is invalid
                     |> List.exists ((=) e.RequestInformation.HttpStatusCode) -> None
 

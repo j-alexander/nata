@@ -26,7 +26,8 @@ nuget Microsoft.Owin.Hosting
 nuget Newtonsoft.Json
 nuget NLog
 nuget NLog.FSharp
-nuget NUnitTestAdapter.WithFramework
+nuget NUnit
+nuget NUnit.Runners
 nuget Owin
 nuget RabbitMQ.Client
 nuget System.Spatial

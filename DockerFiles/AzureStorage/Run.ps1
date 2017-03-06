@@ -1,3 +1,3 @@
 Write-Host "Use a connection string as follows, after setting {ip}:"
 Write-Host "DefaultEndpointsProtocol=http;BlobEndpoint=http://{ip}:10000/dockerstorage;QueueEndpoint=http://{ip}:10001/dockerstorage;TableEndpoint=http://{ip}:10002/dockerstorage;AccountName=dockerstorage;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
-docker run -it -p 10000:10000 -p 10001:10001 -p 10002:10002 azurestorage
+docker run --rm -it -p 10000:10000 -p 10001:10001 -p 10002:10002 azurestorage

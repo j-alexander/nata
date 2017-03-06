@@ -2,41 +2,49 @@ FROM java
 
 ADD https://nssm.cc/release/nssm-2.24.zip \nssm-2.24.zip
 
-RUN powershell -NoProfile -Command \
-        Expand-Archive -Path \nssm-2.24.zip -DestinationPath \    ; \
-        mv \nssm-2.24\win64 \"%ProgramFiles%\nssm\"               ; \
-        rmdir -r \nssm-2.24                                       ; \
-        rm \nssm-2.24.zip
-        
-RUN setx /M PATH "%PATH%;%ProgramFiles%\nssm"
+# Install NSSM
+ADD https://nssm.cc/release/nssm-2.24.zip /nssm-2.24.zip
+RUN Expand-Archive -Path /nssm-2.24.zip -DestinationPath /  ; \
+    Move-Item /nssm-2.24/win64 "\"C:\Program Files\nssm"\"  ; \
+    Remove-Item -Recurse -Force /nssm-2.24                  ; \
+    SetX /M PATH "\"C:\Program Files\nssm;$env:PATH\""      ; \
+    Remove-Item -Force /nssm-2.24.zip
 
-
-ADD http://www-us.apache.org/dist/kafka/0.10.1.0/kafka_2.11-0.10.1.0.tgz \kafka_2.11-0.10.1.0.tgz
-
-RUN powershell -NoProfile -Command \
-        7z.exe e \kafka_2.11-0.10.1.0.tgz -o\            ; \
-        7z.exe x \kafka_2.11-0.10.1.0.tar -o\            ; \
-        mv \kafka_2.11-0.10.1.0 \"\Kafka\"               ; \
-        rm \kafka_2.11-0.10.1.0.tar                      ; \
-        rm \kafka_2.11-0.10.1.0.tgz
+# Extract Kafka 10.2 to /Kafka
+ADD http://www-us.apache.org/dist/kafka/0.10.2.0/kafka_2.12-0.10.2.0.tgz \kafka_2.12-0.10.2.0.tgz
+RUN 7z.exe e \kafka_2.12-0.10.2.0.tgz -o\            ; \
+    7z.exe x \kafka_2.12-0.10.2.0.tar -o\            ; \
+    Move-Item /kafka_2.12-0.10.2.0 /Kafka            ; \
+    Remove-Item -Force /kafka_2.12-0.10.2.0.tar      ; \
+    Remove-Item -Force /kafka_2.12-0.10.2.0.tgz
             
-RUN powershell -NoProfile -Command \
-        $ZKProps = '/kafka/config/zookeeper.properties'                   ; \
-        $ZP = Get-Content $ZKProps                                        ; \
-        $ZP = $ZP.Replace('/tmp/zookeeper','/ProgramData/Zookeeper/Data') ; \
-        Set-Content $ZKProps $ZP
+# Zookeeper Data in /Data/Zookeeper
+RUN $ZKProps = '/kafka/config/zookeeper.properties'                ; \
+    $ZP = Get-Content $ZKProps                                     ; \
+    $ZP = $ZP.Replace('/tmp/zookeeper','/Data/Zookeeper')          ; \
+    Set-Content $ZKProps $ZP
         
+# Install Zookeeper Service
 RUN [ "nssm.exe",                                                    \
       "install", "Zookeeper",                                        \
       "\"C:\\Kafka\\bin\\windows\\zookeeper-server-start.bat\"",     \
       "\"C:\\Kafka\\config\\zookeeper.properties\""     ]
      
+# Kafka Settings, Data in /Data/Kafka
 ADD server.properties "C:\Kafka\config\server.properties"
 
+# Install Kafka Service
 RUN [ "nssm.exe",                                                    \
       "install", "Kafka",                                            \
       "\"C:\\Kafka\\bin\\windows\\kafka-server-start.bat\"",         \
       "\"C:\\Kafka\\config\\server.properties\""     ]
      
+# Kafka->Zookeeper Service Dependency
 RUN [ "nssm.exe",                                                    \
       "set", "Kafka", "DependOnService", "Zookeeper"     ]
+
+# Create Initial Log
+RUN Set-Content '/Kafka/logs/server.log' ''
+
+# Monitor the Kafka Server Log
+CMD cat -Wait '/Kafka/logs/server.log'

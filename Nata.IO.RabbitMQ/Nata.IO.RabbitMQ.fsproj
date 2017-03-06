@@ -52,7 +52,7 @@
   <Import Project="$(FSharpTargetsPath)" />
   <UsingTask TaskName="CopyRuntimeDependencies" AssemblyFile="..\.paket\paket.exe" />
   <Target Name="AfterBuild" Condition="Exists('..\.paket\paket.exe')">
-    <CopyRuntimeDependencies OutputPath="$(OutDir)" TargetFramework="$(TargetFrameworkIdentifier) - $(TargetFrameworkVersion)" ProjectsWithRuntimeLibs="System.Dynamic.Runtime;System.Globalization.Extensions;System.Linq.Expressions;System.Net.NameResolution;System.Net.Security;System.Reflection.TypeExtensions;System.Runtime.Serialization.Primitives;System.Security.Cryptography.Algorithms;System.Security.Cryptography.Cng;System.Security.Cryptography.Csp;System.Security.Cryptography.Encoding;System.Security.Cryptography.OpenSsl;System.Security.Cryptography.X509Certificates;System.Security.Principal.Windows;System.Threading" />
+    <CopyRuntimeDependencies OutputPath="$(OutDir)" TargetFramework="$(TargetFrameworkIdentifier) - $(TargetFrameworkVersion)" ProjectsWithRuntimeLibs="System.Dynamic.Runtime;System.Globalization.Extensions;System.Linq.Expressions;System.Net.NameResolution;System.Net.Security;System.Reflection.TypeExtensions;System.Runtime.Serialization.Primitives;System.Security.Cryptography.Algorithms;System.Security.Cryptography.Cng;System.Security.Cryptography.Csp;System.Security.Cryptography.Encoding;System.Security.Cryptography.OpenSsl;System.Security.Cryptography.X509Certificates;System.Security.Principal.Windows;System.Threading;runtime.osx.10.10-x64.runtime.native.System.Security.Cryptography.Apple;runtime.osx.10.10-x64.runtime.native.System.Security.Cryptography.OpenSsl" />
   </Target>
   <ItemGroup>
     <Content Include="paket.references" />

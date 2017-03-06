@@ -16,9 +16,9 @@ RUN Write-Host "Installing may take some time..."               ; \
                       '/SAPWD=docker_13.0.4001.0',                \
                       '/IAcceptSQLServerLicenseTerms'             \
         -Wait                                                   ; \
-        net stop mssqlserver                                    ; \
-        sc.exe config mssqlserver obj=LocalSystem               ; \
-        Remove-Item -Force /Setup.exe
+    Net Stop MsSqlServer                                        ; \
+    Sc.exe config mssqlserver obj=LocalSystem                   ; \
+    Remove-Item -Force /Setup.exe
 
 # SqlPackage.exe
 ADD https://download.microsoft.com/download/3/9/1/39135819-06B1-4A07-B9B0-02397E2F5D0F/EN/x64/DacFramework.msi /DacFramework.msi
@@ -30,12 +30,12 @@ RUN Start-Process -FilePath 'msiexec.exe'                         \
     Remove-Item -Force /DacFramework.msi
 
 # SQL Tools
-RUN SetX /M PATH "\"C:\Program Files\Microsoft SQL Server\130\Tools\Binn;$env:PATH\""
-RUN SetX /M PATH "\"C:\Program Files\Microsoft SQL Server\130\DAC\bin;$env:PATH\""
+RUN SetX /M PATH "\"C:\Program Files\Microsoft SQL Server\130\Tools\Binn;$env:PATH\"" ; \
+    SetX /M PATH "\"C:\Program Files\Microsoft SQL Server\130\DAC\bin;$env:PATH\""
 
 # Verify Logins:
-RUN osql -t 120 -Q \"SELECT @@VERSION\" -E
-RUN osql -t 120 -Q \"SELECT @@VERSION\" -U sa -P docker_13.0.4001.0
+RUN osql -t 120 -Q \"SELECT @@VERSION\" -E ; \
+    osql -t 120 -Q \"SELECT @@VERSION\" -U sa -P docker_13.0.4001.0
 
 # Connect
 CMD Write-Host \"Starting SQL Server Service:\"                 ; \

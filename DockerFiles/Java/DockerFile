@@ -1,30 +1,29 @@
 FROM microsoft/windowsservercore
 
-ADD https://live.sysinternals.com/pslist.exe "c:\windows\system32\pslist.exe"
-ADD https://live.sysinternals.com/psinfo.exe "c:\windows\system32\psinfo.exe"
-ADD https://live.sysinternals.com/pskill.exe "c:\windows\system32\pskill.exe"
+# Configure Powershell as the Default Shell
+SHELL ["powershell", "-NoProfile", "-Command", "$ErrorActionPreference = 'Stop';"]
 
-ADD http://www.7-zip.org/a/7z1602-x64.exe \7z1602-x64.exe
-
-RUN powershell -NoProfile -Command \
-		start-process -filepath 'c:\7z1602-x64.exe' -argumentlist '/S' -wait ; \
-		rm \7z1602-x64.exe
+# Install 7-Zip
+ADD http://www.7-zip.org/a/7z1604-x64.exe /7-Zip.exe
+RUN Start-Process '\7-Zip.exe' -ArgumentList '/S' -Wait           ; \
+    SetX /M PATH "\"C:\Program Files\7-Zip;$env:PATH\""           ; \
+    Remove-Item -Force 7-Zip.exe
 		
-RUN setx /M PATH "%PATH%;%ProgramFiles%\7-zip"
+# Download Java 8 from Oracle
+ENV JAVA8_URL http://download.oracle.com/otn-pub/java/jdk/8u121-b13/e9e7ea248e2c4826b92b3f075a80e441/jre-8u121-windows-x64.tar.gz
+RUN $client = New-Object System.Net.WebClient                                                                 ; \
+    $client.Headers.Add([System.Net.HttpRequestHeader]::Cookie, \"oraclelicense=accept-securebackup-cookie\") ; \
+    $client.DownloadFile("$env:JAVA8_URL", \"\jre-8u121-windows-x64.tar.gz\")
 
-ENV JAVA8_URL http://download.oracle.com/otn-pub/java/jdk/8u112-b15/jre-8u112-windows-x64.tar.gz
+# Install Java
+RUN 7z.exe e /jre-8u121-windows-x64.tar.gz -o/                    ; \
+    7z.exe x /jre-8u121-windows-x64.tar -o/                       ; \
+    Move-Item /jre1.8.0_121 /Java                                 ; \
+    SetX /M PATH      "\"\Java\bin;$env:PATH\""                   ; \
+    SetX /M JAVA_HOME "\"\Java\""                                 ; \
+    Remove-Item -Force /jre-8u121-windows-x64.tar                 ; \
+    Remove-Item -Force /jre-8u121-windows-x64.tar.gz
 		
-RUN powershell -NoProfile -Command \
-		$client = New-Object System.Net.WebClient                                                                 ; \
-		$client.Headers.Add([System.Net.HttpRequestHeader]::Cookie, \"oraclelicense=accept-securebackup-cookie\") ; \
-		$client.DownloadFile("$env:JAVA8_URL", \"\jre-8u112-windows-x64.tar.gz\")
-
-RUN powershell -NoProfile -Command \
-		7z.exe e \jre-8u112-windows-x64.tar.gz -o\    ; \
-		7z.exe x \jre-8u112-windows-x64.tar -o\       ; \
-		mv \jre1.8.0_112 \"%ProgramFiles%\Java\"      ; \
-		rm \jre-8u112-windows-x64.tar                 ; \
-		rm \jre-8u112-windows-x64.tar.gz
-		
-RUN setx /M PATH "%PATH%;%ProgramFiles%\Java\bin"
-RUN setx /M JAVA_HOME "%ProgramFiles%\Java"
+# Java(TM) SE Runtime Environment (build 1.8.0_121-b13)
+# Java HotSpot(TM) 64-Bit Server VM (build 25.121-b13, mixed mode)
+CMD java -version

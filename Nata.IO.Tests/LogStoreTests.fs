@@ -4,6 +4,7 @@ open System
 open System.Collections.Concurrent
 open System.Reflection
 open System.Text
+open System.Threading
 open FSharp.Data
 open NUnit.Framework
 
@@ -123,25 +124,33 @@ type LogStoreTests() as x =
         | _ ->
             Assert.Ignore("ReaderFrom and WriterTo are reported to be unsupported by this source.")
 
-    [<Test; ExpectedException(typeof<Position.Invalid<int64>>)>]
+    [<Test>]
     member x.TestWriteToShouldFailWithIndexTooLow() =
         let connection = x.Capabilities()
         match tryWriterTo connection with
         | Some writeTo ->
             event "TestWriteToShouldFailWithIndexTooLow-0" |> writeTo (Position.At -1L) |> ignore
-            event "TestWriteToShouldFailWithIndexTooLow-1" |> writeTo (Position.At 0L) |> ignore
-            event "TestWriteToShouldFailWithIndexTooLow-2" |> writeTo (Position.At 0L) |> ignore
+            Assert.Throws<Position.Invalid<int64>>(fun _ ->
+                event "TestWriteToShouldFailWithIndexTooLow-1" |> writeTo (Position.At 0L) |> ignore
+            ) |> ignore
+            Assert.Throws<Position.Invalid<int64>>(fun _ ->
+                event "TestWriteToShouldFailWithIndexTooLow-2" |> writeTo (Position.At 0L) |> ignore
+            ) |> ignore
         | _ ->
             Assert.Ignore("WriterTo is reported to be unsupported by this source.")
 
-    [<Test; ExpectedException(typeof<Position.Invalid<int64>>)>]
+    [<Test>]
     member x.TestWriteToShouldFailWithIndexTooHigh() =
         let connection = x.Capabilities()
         match tryWriterTo connection with
         | Some writeTo ->
             event "TestWriteToShouldFailWithIndexTooHigh-0" |> writeTo (Position.At -1L) |> ignore
-            event "TestWriteToShouldFailWithIndexTooHigh-1" |> writeTo (Position.At 0L) |> ignore
-            event "TestWriteToShouldFailWithIndexTooHigh-2" |> writeTo (Position.At 2L) |> ignore
+            Assert.Throws<Position.Invalid<int64>>(fun _ ->
+                event "TestWriteToShouldFailWithIndexTooHigh-1" |> writeTo (Position.At 0L) |> ignore
+            ) |> ignore
+            Assert.Throws<Position.Invalid<int64>>(fun _ ->
+                event "TestWriteToShouldFailWithIndexTooHigh-2" |> writeTo (Position.At 2L) |> ignore
+            ) |> ignore
         | _ ->
             Assert.Ignore("WriterTo is reported to be unsupported by this source.")
         
@@ -289,3 +298,95 @@ type LogStoreTests() as x =
             Assert.AreEqual(3, index Position.End)
         | _ ->
             Assert.Ignore("Indexer or Writer is reported to be unsupported by this source.")
+
+    [<Test>]
+    member x.TestLoneCompetitor() =
+        let tryCompetitor, tryReaderFrom, tryWriter =
+            let stream =
+                let source =
+                    let codec =
+                        Codec.BytesToString
+                        |> Codec.concatenate Codec.StringToInt32
+                    x.Connect()
+                    |> Source.mapData codec
+                x.Channel()
+                |> source
+            tryCompetitor stream,
+            tryReaderFrom stream,
+            tryWriter stream
+        match tryCompetitor, tryReaderFrom, tryWriter with
+        | Some compete, Some readFrom, Some write ->
+            write (Event.create 2)
+            let generation : int list =
+                compete (Event.map ((*) 2))
+                |> Seq.take 10
+                |> Seq.map Event.data
+                |> Seq.toList
+            let expectation : int list =
+                [ 4; 8; 16; 32; 64; 128; 256; 512; 1024; 2048 ]
+            Assert.AreEqual(expectation, generation)
+            let verification =
+                readFrom Position.Start
+                |> Seq.skip 1
+                |> Seq.take 10
+                |> Seq.map (fst >> Event.data)
+                |> Seq.toList
+            Assert.AreEqual(expectation, verification)
+        | _ ->
+            Assert.Ignore("Competitor, ReaderFrom or Writer is reported to be unsupported by this source.")
+
+    [<Test>]
+    member x.TestTwoCompetitors() =
+        let tryCompetitor, tryReaderFrom, tryWriter =
+            let stream =
+                let source =
+                    let codec =
+                        Codec.BytesToString
+                        |> Codec.concatenate Codec.StringToInt32
+                    x.Connect()
+                    |> Source.mapData codec
+                x.Channel()
+                |> source
+            tryCompetitor stream,
+            tryReaderFrom stream,
+            tryWriter stream
+        match tryCompetitor, tryReaderFrom, tryWriter with
+        | Some compete, Some readFrom, Some write ->
+            write (Event.create 2)
+
+            let generation (delay:int->int) : int seq =
+                compete (fun e ->
+                    let input = Event.data e
+                    let output = input * 2
+                    Thread.Sleep(delay input)
+                    Event.create output)
+                |> Seq.take 11
+                |> Seq.map Event.data
+
+            let results =
+                let getsSlower, getsFaster =
+                    (fun i -> 2 * i),
+                    (fun i -> Math.Max(1, 2048/i))
+                Seq.consume
+                    [ 
+                      generation getsSlower
+                      //|> Seq.log (printfn "The early bird gets the worm:%d")
+                      generation getsFaster
+                      //|> Seq.log (printfn "The second mouse gets the cheese:%d")
+                    ]
+                |> Seq.take 11
+                |> Seq.toList
+
+            let expectation : int list =
+                [ 4; 8; 16; 32; 64; 128; 256; 512; 1024; 2048; 4096 ]
+            Assert.AreEqual(expectation, results)
+
+            let verification =
+                readFrom Position.Start
+                |> Seq.skip 1
+                |> Seq.take 11
+                |> Seq.map (fst >> Event.data)
+                |> Seq.toList
+            Assert.AreEqual(expectation, verification)
+        | _ ->
+            Assert.Ignore("Competitor, ReaderFrom or Writer is reported to be unsupported by this source.")

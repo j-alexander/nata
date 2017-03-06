@@ -1,6 +1,7 @@
 ﻿namespace Nata.Core
 
 open System
+open System.Collections.Generic
 open System.Threading.Tasks
 
 [<AutoOpen>]
@@ -35,7 +36,7 @@ module Core =
         let log fn = Seq.map (fun x -> fn x; x)
         let logi fn = Seq.mapi (fun i x -> fn i x; x)
 
-        let merge (sequences:seq<'T> list) : seq<'T> =
+        let consume (sequences:#seq<'T> list) : seq<'T> =
             seq { 
                 let n = sequences.Length
                 if n > 0 then 
@@ -88,6 +89,57 @@ module Core =
                         | Choice2Of2 (exn) ->
                             raise exn
               }
+
+        let mergeBy (fn:'a->'b) (l : #seq<'a>) (r : #seq<'a>) =
+            seq {
+                use l = l.GetEnumerator()
+                use r = r.GetEnumerator()
+
+                let lNext = ref <| l.MoveNext()
+                let rNext = ref <| r.MoveNext()
+
+                let next (enumerator : IEnumerator<'a>) flag =
+                    let value = enumerator.Current
+                    flag := enumerator.MoveNext()
+                    value
+                let nextL() = next l lNext
+                let nextR() = next r rNext
+
+                while !lNext || !rNext do
+                    match !lNext, !rNext with
+                    | true, true ->
+                        if fn(l.Current) > fn(r.Current) then yield nextR()
+                        elif fn(l.Current) < fn(r.Current) then yield nextL()
+                        else yield nextL(); yield nextR()
+                    | true, false -> yield nextL()
+                    | false, true -> yield nextR()
+                    | false, false -> ()
+            }
+
+        let merge l r = mergeBy id l r
+
+        let changesBy (fn:'a->'b) (xs:#seq<'a>) =
+            seq {
+                use enumerator = xs.GetEnumerator()
+                let rec loop last =
+                    seq {
+                        match enumerator.MoveNext() with
+                        | false -> ()
+                        | true ->
+                            let next = fn enumerator.Current
+                            match last with
+                            | Some last when last <> next ->
+                                yield enumerator.Current
+                            | None -> 
+                                yield enumerator.Current
+                            | _ -> ()
+                            yield! loop (Some next)
+                    }
+                yield! loop None
+            }
+
+        let changes xs = changesBy id xs
+            
 
     module Option =
         
