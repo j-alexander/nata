@@ -158,6 +158,38 @@ module Stream =
             |> Option.map (snd >> (+) 1)
             |> Option.getValueOr StreamPosition.Start
 
+    let compete (connection : IEventStoreConnection)
+                (stream : string)
+                (fn : Event<Data>->Event<Data>) =
+        let state() =
+            let last =
+                read connection stream 1 Direction.Reverse Position.End 
+                |> Seq.tryPick Some
+            match last with
+            | Some (e,i) -> (e,i)
+            | None ->
+                listen connection stream Position.Start
+                |> Seq.head
+        let update(e,i) =
+            try write connection stream (Position.At (1+i)) e |> Some
+            with :? Position.Invalid<Index> -> None
+        let rec apply(last) =
+            seq {
+                let eventIn, indexIn =
+                    match last with
+                    | Some (e,i) -> (e,i)
+                    | None -> state()
+                let eventOut = fn eventIn
+                let result = 
+                    update(eventOut, indexIn)
+                    |> Option.map (fun indexOut -> eventOut, indexOut)
+                match result with
+                | None -> ()
+                | Some _ ->
+                    yield eventOut
+                yield! apply result
+            }
+        apply(None)
 
     let connect : Connector<Settings,Name,Data,Index> =
         fun settings ->
@@ -185,4 +217,7 @@ module Stream =
 
                 Capability.SubscriberFrom <|
                     listen connection stream
+
+                Capability.Competitor <| fun fn ->
+                    compete connection stream fn
             ]
