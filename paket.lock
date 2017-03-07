@@ -23,7 +23,7 @@ NUGET
     FSharpVSPowerTools.Core (2.3)
       FSharp.Compiler.Service (>= 2.0.0.3)
     kafka-net (0.9.0.65)
-    Kafunk (0.0.28-alpha001)
+    Kafunk (0.0.32-alpha001)
       FSharp.Control.AsyncSeq
     Microsoft.AspNet.WebApi.Client (5.2.3)
       Microsoft.Net.Http (>= 2.2.22) - framework: portable-wp80+win+wp81+wpa81
