@@ -9,8 +9,8 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Nata.IO.AzureStorage.Tests</RootNamespace>
     <AssemblyName>Nata.IO.AzureStorage.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-    <TargetFSharpCoreVersion>4.3.1.0</TargetFSharpCoreVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>Nata.IO.AzureStorage.Tests</Name>
     <TargetFrameworkProfile />

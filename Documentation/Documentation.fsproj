@@ -9,9 +9,9 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Document</RootNamespace>
     <AssemblyName>Documentation</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <TargetFSharpCoreVersion>4.3.1.0</TargetFSharpCoreVersion>
+    <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
     <Name>Documentation</Name>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -56,8 +56,8 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <None Include="App.config" />
     <Content Include="paket.references" />
+    <None Include="App.config" />
     <Compile Include="Generate.fsx" />
     <None Include="Template.html" />
     <None Include="InstallEventStore.md" />

@@ -9,10 +9,11 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Nata.CEP</RootNamespace>
     <AssemblyName>Nata.CEP</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Name>Nata.IO</Name>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -53,41 +54,6 @@
   <Target Name="AfterBuild" Condition="Exists('..\.paket\paket.exe')">
     <CopyRuntimeDependencies OutputPath="$(OutDir)" TargetFramework="$(TargetFrameworkIdentifier) - $(TargetFrameworkVersion)" ProjectsWithRuntimeLibs="System.Dynamic.Runtime;System.Linq.Expressions;System.Reflection.TypeExtensions;System.Runtime.Serialization.Primitives;System.Threading" />
   </Target>
-  <ItemGroup>
-    <None Include="paket.references" />
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="TimeController.fs" />
-    <Compile Include="List.fs" />
-    <Compile Include="Path.fs" />
-    <Compile Include="Value.fs" />
-    <Compile Include="Write.fs" />
-    <Compile Include="Listen.fs" />
-    <Compile Include="Listeners.fs" />
-    <Compile Include="Node.fs" />
-    <Compile Include="Model.fs" />
-    <Compile Include="ModelController.fs" />
-    <Compile Include="Format.fs" />
-    <Compile Include="Log.fs" />
-    <Compile Include="Service.fs" />
-    <Compile Include="Program.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="mscorlib" />
-    <Reference Include="FSharp.Core">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Core">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Net.Http.WebRequest" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Xml.Linq" />
-  </ItemGroup>
   <Import Project="..\.paket\paket.targets" />
   <Choose>
     <When Condition="($(TargetFrameworkIdentifier) == '.NETCore') Or ($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'MonoTouch') Or ($(TargetFrameworkIdentifier) == 'Xamarin.iOS') Or ($(TargetFrameworkIdentifier) == 'Xamarin.Mac') Or ($(TargetFrameworkProfile) == 'Profile7') Or ($(TargetFrameworkProfile) == 'Profile44')">
@@ -959,4 +925,42 @@
       </ItemGroup>
     </When>
   </Choose>
+  <ItemGroup>
+    <None Include="paket.references" />
+    <Content Include="App.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="TimeController.fs" />
+    <Compile Include="List.fs" />
+    <Compile Include="Path.fs" />
+    <Compile Include="Value.fs" />
+    <Compile Include="Write.fs" />
+    <Compile Include="Listen.fs" />
+    <Compile Include="Listeners.fs" />
+    <Compile Include="Node.fs" />
+    <Compile Include="Model.fs" />
+    <Compile Include="ModelController.fs" />
+    <Compile Include="Format.fs" />
+    <Compile Include="Log.fs" />
+    <Compile Include="Service.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Core">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.WebRequest" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
 </Project>
