@@ -1,11 +1,11 @@
-﻿namespace Nata.IO.File.AssemblyInfo
+﻿namespace Nata.Fun.JsonPath.AssemblyInfo
 
 open System.Reflection
 open System.Runtime.CompilerServices
 open System.Runtime.InteropServices
 
-[<assembly: AssemblyTitle("Nata.IO.File")>]
-[<assembly: AssemblyDescription("File IO Library for the Nata Project")>]
+[<assembly: AssemblyTitle("Nata.Fun.JsonPath")>]
+[<assembly: AssemblyDescription("JsonPath Function Library for the Nata Project")>]
 [<assembly: AssemblyCompany("LambdaFun.com")>]
 [<assembly: AssemblyProduct("Nata")>]
 [<assembly: AssemblyCopyright("Copyright © 2016 Jonathan Leaver")>]

@@ -63,6 +63,7 @@
   -->
   <ItemGroup>
     <None Include="paket.references" />
+    <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Query.fs" />
     <Compile Include="JsonValue.fs" />
   </ItemGroup>
