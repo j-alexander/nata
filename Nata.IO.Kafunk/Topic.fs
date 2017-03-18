@@ -1,11 +1,11 @@
-﻿namespace Nata.IO.Kafka
+﻿namespace Nata.IO.Kafunk
 
 open System
 open System.Text
 
+open Kafunk
 open Nata.Core
 open Nata.IO
-open Kafunk
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Topic =

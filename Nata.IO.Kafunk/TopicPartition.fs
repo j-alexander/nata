@@ -1,11 +1,11 @@
-﻿namespace Nata.IO.Kafka
+﻿namespace Nata.IO.Kafunk
 
 open System
 open System.Text
 
+open Kafunk
 open Nata.Core
 open Nata.IO
-open Kafunk
 
 type TopicPartition =
     { Topic : Topic

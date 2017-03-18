@@ -1,4 +1,4 @@
-﻿namespace Nata.IO.Kafka
+﻿namespace Nata.IO.Kafunk
 
 open System
 open Kafunk

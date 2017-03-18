@@ -1,4 +1,4 @@
-﻿namespace Nata.IO.Kafka.Tests
+﻿namespace Nata.IO.Kafunk.Tests
 
 open System
 open System.Reflection
@@ -9,7 +9,7 @@ open NUnit.Framework
 open Nata.Core
 open Nata.IO
 open Nata.IO.Capability
-open Nata.IO.Kafka
+open Nata.IO.Kafunk
 
 [<TestFixture>]
 type TopicPartitionTests() =
