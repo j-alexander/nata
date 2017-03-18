@@ -9,16 +9,12 @@ nuget FSharp.Formatting.CommandTool
 nuget FSharpVSPowerTools.Core
 nuget kafka-net
 nuget Kafunk
-nuget Microsoft.AspNet.WebApi.Client
 nuget Microsoft.AspNet.WebApi.Core
 nuget Microsoft.AspNet.WebApi.Owin
 nuget Microsoft.Azure.KeyVault.Core
-nuget Microsoft.Bcl
-nuget Microsoft.Bcl.Build
 nuget Microsoft.Data.Edm
 nuget Microsoft.Data.OData
 nuget Microsoft.Data.Services.Client
-nuget Microsoft.Net.Http
 nuget Microsoft.Owin
 nuget Microsoft.Owin.Diagnostics
 nuget Microsoft.Owin.Host.HttpListener

@@ -13,7 +13,7 @@ NUGET
       System.Threading.Thread (>= 4.0) - framework: >= netstandard13
     EventStore.Client (3.9.4)
     FSharp.Compiler.Service (2.0.0.6)
-    FSharp.Control.AsyncSeq (2.0.10)
+    FSharp.Control.AsyncSeq (2.0.11)
     FSharp.Data (2.3.2)
       Zlib.Portable (>= 1.11) - framework: portable-net45+sl5+win8, portable-net45+win8, portable-net45+win8+wp8+wpa81
     FSharp.Formatting (2.14.4)
@@ -37,9 +37,9 @@ NUGET
     Microsoft.Azure.KeyVault.Core (2.0.4)
       System.Runtime (>= 4.1) - framework: >= netstandard15
       System.Threading.Tasks (>= 4.0.11) - framework: >= netstandard15
-    Microsoft.Bcl (1.1.10)
+    Microsoft.Bcl (1.1.10) - framework: portable-wp80+win+wp81+wpa81
       Microsoft.Bcl.Build (>= 1.0.14)
-    Microsoft.Bcl.Build (1.0.21) - import_targets: false
+    Microsoft.Bcl.Build (1.0.21) - import_targets: false, framework: portable-wp80+win+wp81+wpa81
     Microsoft.CSharp (4.3) - framework: >= netstandard10
       System.Collections (>= 4.3) - framework: dnxcore50, >= netstandard13
       System.Diagnostics.Debug (>= 4.3) - framework: dnxcore50, >= netstandard13
@@ -67,7 +67,7 @@ NUGET
       System.Dynamic.Runtime (>= 4.0) - framework: >= netstandard11
       System.Linq.Queryable (>= 4.0) - framework: >= netstandard11
       System.Net.Requests (>= 4.0.11) - framework: >= netstandard11
-    Microsoft.Net.Http (2.2.29)
+    Microsoft.Net.Http (2.2.29) - framework: portable-wp80+win+wp81+wpa81
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
     Microsoft.NETCore.Platforms (1.1) - framework: >= netstandard10
@@ -153,20 +153,20 @@ NUGET
       System.Threading.Tasks (>= 4.0.11) - framework: >= netstandard10
       System.Xml.ReaderWriter (>= 4.0.11) - framework: >= netstandard10
       System.Xml.XDocument (>= 4.0.11) - framework: >= netstandard10
-    NLog (4.4.3)
+    NLog (4.4.4)
     NLog.FSharp (4.2.3)
       NLog (>= 4.2.3)
     NUnit (3.6.1)
       NETStandard.Library (>= 1.6) - framework: >= netstandard15
       System.Runtime.Loader (>= 4.0) - framework: >= netstandard15
-    NUnit.ConsoleRunner (3.6)
+    NUnit.ConsoleRunner (3.6.1)
     NUnit.Extension.NUnitProjectLoader (3.5)
     NUnit.Extension.NUnitV2Driver (3.6)
     NUnit.Extension.NUnitV2ResultWriter (3.5)
     NUnit.Extension.TeamCityEventListener (1.0.2)
     NUnit.Extension.VSProjectLoader (3.5)
-    NUnit.Runners (3.6)
-      NUnit.ConsoleRunner (>= 3.6)
+    NUnit.Runners (3.6.1)
+      NUnit.ConsoleRunner (>= 3.6.1)
       NUnit.Extension.NUnitProjectLoader (>= 3.5)
       NUnit.Extension.NUnitV2Driver (>= 3.6)
       NUnit.Extension.NUnitV2ResultWriter (>= 3.5)
@@ -784,7 +784,7 @@ NUGET
       System.Threading (>= 4.3) - framework: dnxcore50, >= netstandard13
       System.Xml.ReaderWriter (>= 4.3) - framework: dnxcore50, netstandard10, >= netstandard13
     WebSocket4Net (0.14.1)
-    WindowsAzure.ServiceBus (3.4.6)
+    WindowsAzure.ServiceBus (4.0)
     WindowsAzure.Storage (8.1.1)
       Microsoft.Azure.KeyVault.Core (>= 1.0) - framework: >= net45, wpv8.0
       Microsoft.Data.OData (>= 5.8.2) - framework: >= net45, netstandard10, >= netstandard13, winv4.5, wpv8.0, wpav8.1
