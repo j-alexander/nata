@@ -4,6 +4,7 @@ id Nata.IO.KafkaNet
 title Nata.IO.KafkaNet
 authors Jonathan Leaver
 owners Jonathan-Alex
+copyright © 2016 Jonathan Leaver
 iconUrl https://avatars3.githubusercontent.com/u/4975537
 licenseUrl http://www.apache.org/licenses/LICENSE-2.0
 projectUrl https://github.com/j-alexander/nata
