@@ -8,6 +8,7 @@ open System.Threading.Tasks
 module Core =
 
     let guid _ = Guid.NewGuid().ToString("n")
+    let guidBytes _ = Guid.NewGuid().ToByteArray()
 
     let swap fn i j = fn j i
     let mapFst fn (i,j) = fn i, j

@@ -9,11 +9,17 @@ module DateTime =
 
     let epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc)
 
-    let toUnix (date:DateTime) : Unix =
+    let toUnixSeconds (date:DateTime) : Unix =
         int64 (date.ToUniversalTime() - epoch).TotalSeconds
 
-    let ofUnix (unix:Unix) : DateTime =
+    let ofUnixSeconds (unix:Unix) : DateTime =
         epoch.Add(TimeSpan.FromSeconds (float unix))
+
+    let toUnixMilliseconds (date:DateTime) : Unix =
+        int64 (date.ToUniversalTime() - epoch).TotalMilliseconds
+
+    let ofUnixMilliseconds (unix:Unix) : DateTime =
+        epoch.Add(TimeSpan.FromMilliseconds (float unix))
 
     let ofOffset (offset:DateTimeOffset) =
         offset.UtcDateTime
@@ -60,8 +66,11 @@ module DateTime =
 
         open JsonValue.Codec
 
-        let DateTimeToUnix : Codec<DateTime,Unix> = toUnix, ofUnix
-        let UnixToDateTime : Codec<Unix,DateTime> = ofUnix, toUnix
+        let DateTimeToUnixSeconds : Codec<DateTime,Unix> = toUnixSeconds, ofUnixSeconds
+        let UnixSecondsToDateTime : Codec<Unix,DateTime> = ofUnixSeconds, toUnixSeconds
+
+        let DateTimeToUnixMilliseconds : Codec<DateTime,Unix> = toUnixMilliseconds, ofUnixMilliseconds
+        let UnixMillisecondsToDateTime : Codec<Unix,DateTime> = ofUnixMilliseconds, toUnixMilliseconds
 
         let DateTimeToJson : Codec<DateTime,JsonValue> = toJsonValue, ofJsonValue
         let JsonToDateTime : Codec<JsonValue,DateTime> = ofJsonValue, toJsonValue
