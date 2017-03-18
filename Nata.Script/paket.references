@@ -7,3 +7,4 @@ kafka-net
 EventStore.Client
 WindowsAzure.ServiceBus
 WindowsAzure.Storage
+kafunk

@@ -31,9 +31,15 @@ open Nata.IO.File
 #r @"bin/Debug/Nata.IO.EventStore.dll"
 open Nata.IO.EventStore
 
-// Kafka:
+// KafkaNet:
 #r @"bin/Debug/kafka-net.dll"
 #r @"bin/Debug/Nata.IO.KafkaNet.dll"
+open Nata.IO.KafkaNet
+
+// Kafunk:
+#r @"bin/Debug/FSharp.Control.AsyncSeq.dll"
+#r @"bin/Debug/kafunk.dll"
+#r @"bin/Debug/Nata.IO.Kafunk.dll"
 open Nata.IO.KafkaNet
 
 // RabbitMQ:
