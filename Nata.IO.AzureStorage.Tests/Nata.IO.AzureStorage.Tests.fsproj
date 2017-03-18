@@ -55,7 +55,7 @@
     <CopyRuntimeDependencies OutputPath="$(OutDir)" TargetFramework="$(TargetFrameworkIdentifier) - $(TargetFrameworkVersion)" ProjectsWithRuntimeLibs="System.AppContext;System.Dynamic.Runtime;System.Globalization.Extensions;System.IO.Compression;System.Linq.Expressions;System.Net.Http;System.Net.Requests;System.Reflection.TypeExtensions;System.Runtime.InteropServices.RuntimeInformation;System.Runtime.Serialization.Primitives;System.Security.Cryptography.Algorithms;System.Security.Cryptography.Cng;System.Security.Cryptography.Csp;System.Security.Cryptography.Encoding;System.Security.Cryptography.OpenSsl;System.Security.Cryptography.X509Certificates;System.Threading;runtime.osx.10.10-x64.runtime.native.System.Security.Cryptography.Apple;runtime.osx.10.10-x64.runtime.native.System.Security.Cryptography.OpenSsl" />
   </Target>
   <ItemGroup>
-    <Content Include="paket.references" />
+    <None Include="paket.references" />
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Emulator.fs" />

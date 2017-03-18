@@ -1,0 +1,10 @@
+﻿type project
+
+id Nata.IO.Memory
+title Nata.IO.Memory
+authors Jonathan Leaver
+owners Jonathan-Alex
+iconUrl https://avatars3.githubusercontent.com/u/4975537
+licenseUrl http://www.apache.org/licenses/LICENSE-2.0
+projectUrl https://github.com/j-alexander/nata
+description Nata.IO.Memory

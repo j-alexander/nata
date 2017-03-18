@@ -1,0 +1,1 @@
+.\.paket\paket.exe pack output nuget buildplatform AnyCPU

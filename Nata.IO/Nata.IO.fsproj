@@ -54,40 +54,6 @@
   <Target Name="AfterBuild" Condition="Exists('..\.paket\paket.exe')">
     <CopyRuntimeDependencies OutputPath="$(OutDir)" TargetFramework="$(TargetFrameworkIdentifier) - $(TargetFrameworkVersion)" ProjectsWithRuntimeLibs="System.Dynamic.Runtime;System.Linq.Expressions;System.Reflection.TypeExtensions;System.Runtime.Serialization.Primitives;System.Threading" />
   </Target>
-  <ItemGroup>
-    <Content Include="paket.references" />
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Event.fs" />
-    <Compile Include="Position.fs" />
-    <Compile Include="Indexer.fs" />
-    <Compile Include="Writer.fs" />
-    <Compile Include="WriterTo.fs" />
-    <Compile Include="Reader.fs" />
-    <Compile Include="ReaderFrom.fs" />
-    <Compile Include="Subscriber.fs" />
-    <Compile Include="SubscriberFrom.fs" />
-    <Compile Include="Competitor.fs" />
-    <Compile Include="Capability.fs" />
-    <Compile Include="Source.fs" />
-    <Compile Include="Connector.fs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="mscorlib" />
-    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Xml.Linq" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
-      <Name>Nata.Core</Name>
-      <Project>{48b92604-e152-4ec9-8c25-fef849785944}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-  </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
@@ -521,4 +487,37 @@
       </ItemGroup>
     </When>
   </Choose>
+  <ItemGroup>
+    <None Include="paket.references" />
+    <None Include="paket.template" />
+    <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Event.fs" />
+    <Compile Include="Position.fs" />
+    <Compile Include="Indexer.fs" />
+    <Compile Include="Writer.fs" />
+    <Compile Include="WriterTo.fs" />
+    <Compile Include="Reader.fs" />
+    <Compile Include="ReaderFrom.fs" />
+    <Compile Include="Subscriber.fs" />
+    <Compile Include="SubscriberFrom.fs" />
+    <Compile Include="Competitor.fs" />
+    <Compile Include="Capability.fs" />
+    <Compile Include="Source.fs" />
+    <Compile Include="Connector.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Xml.Linq" />
+    <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
+      <Name>Nata.Core</Name>
+      <Project>{48b92604-e152-4ec9-8c25-fef849785944}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

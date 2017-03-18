@@ -63,7 +63,7 @@
   -->
   <Import Project="..\.paket\paket.targets" />
   <ItemGroup>
-    <Content Include="paket.references" />
+    <None Include="paket.references" />
     <Content Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="MaskEnvelope.fs" />

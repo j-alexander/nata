@@ -63,6 +63,7 @@
   -->
   <ItemGroup>
     <None Include="paket.references" />
+    <None Include="paket.template" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Core.fs" />
     <Compile Include="Codec.fs" />

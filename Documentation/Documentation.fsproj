@@ -56,7 +56,7 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
-    <Content Include="paket.references" />
+    <None Include="paket.references" />
     <None Include="App.config" />
     <Compile Include="Generate.fsx" />
     <None Include="Template.html" />
