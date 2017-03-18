@@ -78,8 +78,8 @@
       <Project>{093513eb-1c6c-40c6-a0af-f71baa6a827e}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\Nata.IO.Kafka\Nata.IO.Kafka.fsproj">
-      <Name>Nata.IO.Kafka</Name>
+    <ProjectReference Include="..\Nata.IO.KafkaNet\Nata.IO.KafkaNet.fsproj">
+      <Name>Nata.IO.KafkaNet</Name>
       <Project>{b771e50d-567e-44a7-a8a2-8f6fe159abf6}</Project>
       <Private>True</Private>
     </ProjectReference>

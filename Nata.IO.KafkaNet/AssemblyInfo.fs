@@ -1,4 +1,4 @@
-﻿namespace Nata.IO.Kafka.AssemblyInfo
+﻿namespace Nata.IO.KafkaNet.AssemblyInfo
 
 open System.Reflection
 open System.Runtime.CompilerServices
@@ -7,11 +7,11 @@ open System.Runtime.InteropServices
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[<assembly: AssemblyTitle("Nata.IO.Kafka")>]
+[<assembly: AssemblyTitle("Nata.IO.KafkaNet")>]
 [<assembly: AssemblyDescription("")>]
 [<assembly: AssemblyConfiguration("")>]
 [<assembly: AssemblyCompany("")>]
-[<assembly: AssemblyProduct("Nata.IO.Kafka")>]
+[<assembly: AssemblyProduct("Nata.IO.KafkaNet")>]
 [<assembly: AssemblyCopyright("Copyright ©  2016")>]
 [<assembly: AssemblyTrademark("")>]
 [<assembly: AssemblyCulture("")>]

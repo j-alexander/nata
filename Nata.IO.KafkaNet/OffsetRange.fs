@@ -1,4 +1,4 @@
-﻿namespace Nata.IO.Kafka
+﻿namespace Nata.IO.KafkaNet
 
 open System
 open System.Net

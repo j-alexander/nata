@@ -24,9 +24,9 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.File", "Nata.IO.Fil
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.File.Tests", "Nata.IO.File.Tests\Nata.IO.File.Tests.fsproj", "{A94B60A5-2F0F-4460-8F3B-49889CEBB001}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Kafka", "Nata.IO.Kafka\Nata.IO.Kafka.fsproj", "{B771E50D-567E-44A7-A8A2-8F6FE159ABF6}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.KafkaNet", "Nata.IO.KafkaNet\Nata.IO.KafkaNet.fsproj", "{B771E50D-567E-44A7-A8A2-8F6FE159ABF6}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Kafka.Tests", "Nata.IO.Kafka.Tests\Nata.IO.Kafka.Tests.fsproj", "{A48C2A25-F168-4DA7-BAC2-73A9BE02F027}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.KafkaNet.Tests", "Nata.IO.KafkaNet.Tests\Nata.IO.KafkaNet.Tests.fsproj", "{A48C2A25-F168-4DA7-BAC2-73A9BE02F027}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.AzureStorage", "Nata.IO.AzureStorage\Nata.IO.AzureStorage.fsproj", "{B193DB82-958B-403A-B4D4-6369ADB1E6EF}"
 EndProject
