@@ -61,16 +61,20 @@ module TopicPartition =
                 | messages ->
                     let offset =
                         messages
-                        |> Seq.map (fun (o,s,m) -> o)
+                        |> Seq.map (fun item -> item.offset)
                         |> Seq.max
                         |> (+) 1L
                     Some(Some cms,offset))
         >> Seq.choose id
         >> Seq.collect (fun cms ->
             cms.messageSet.messages
-            |> Seq.map (fun (offset,size,message) ->
-                let key = Binary.toArray message.key
-                let value = Binary.toArray message.value
+            |> Seq.map (fun item ->
+                let message,offset =
+                    item.message,
+                    item.offset
+                let key,value =
+                    Binary.toArray message.key,
+                    Binary.toArray message.value
                 let timestamp = 
                     match message.timestamp with
                     | 0L -> None
