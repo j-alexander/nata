@@ -12,4 +12,3 @@ module Configuration =
     let channel() = guid()
     let connect() = 
         Stream.connect settings
-        |> Source.mapIndex (int64, int)
