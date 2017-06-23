@@ -1,6 +1,7 @@
 ﻿namespace Nata.IO.WebSocket.Tests
 
 open System
+open Nata.Core
 open Nata.IO
 open Nata.IO.Capability
 open Nata.IO.WebSocket
@@ -18,9 +19,9 @@ type SocketTests() =
             let socket = Socket.connect settings
             writer socket,
             subscriber socket
-        write (Event.create "timer,")
         let time =
             subscribe()
+            |> Seq.logi (fun i x -> if i = 0 then write (Event.create "timer,"))
             |> Seq.take 3
             |> Seq.last
             |> Event.data
