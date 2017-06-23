@@ -19,7 +19,7 @@ module Stream =
     type Data = byte[]
     type Event = Event<Data>
     type Name = string
-    type Index = int
+    type Index = int64
     type Position = Position<Index>
     type Direction = Forward | Reverse
 
@@ -35,11 +35,11 @@ module Stream =
         resolvedEvent.Event.EventNumber
 
     let rec private indexOf = function
-        | Position.Start -> StreamPosition.Start
-        | Position.Before x -> -1 + indexOf x
+        | Position.Start -> int64 StreamPosition.Start
+        | Position.Before x -> -1L + indexOf x
         | Position.At x -> x
-        | Position.After x -> 1 + indexOf x
-        | Position.End -> StreamPosition.End
+        | Position.After x -> 1L + indexOf x
+        | Position.End -> int64 StreamPosition.End
 
     let rec private read (connection : IEventStoreConnection)
                          (stream : string)
@@ -79,13 +79,13 @@ module Stream =
                 Action<_,_>(fun _ -> decode >> Some >> queue.Add),
                 Action<_>(ignore)
             match from with
-            | -1 -> connection.SubscribeToStreamAsync(stream, true, onEvent, onDropped)
-                    |> Async.AwaitTask
-                    |> Async.RunSynchronously
-                    |> Client.Live
-            |  0 -> connection.SubscribeToStreamFrom(stream, Nullable(), settings, onEvent, onLive, onDropped)
-                    |> Client.Catchup
-            |  x -> connection.SubscribeToStreamFrom(stream, Nullable(x-1), settings, onEvent, onLive, onDropped)
+            | -1L -> connection.SubscribeToStreamAsync(stream, true, onEvent, onDropped)
+                     |> Async.AwaitTask
+                     |> Async.RunSynchronously
+                     |> Client.Live
+            |  0L -> connection.SubscribeToStreamFrom(stream, Nullable(), settings, onEvent, onLive, onDropped)
+                     |> Client.Catchup
+            |  x -> connection.SubscribeToStreamFrom(stream, Nullable(x-1L), settings, onEvent, onLive, onDropped)
                     |> Client.Catchup
 
         let rec traverse last =
@@ -93,7 +93,7 @@ module Stream =
                 match queue.Take() with
                 | Some (event, index) ->
                     yield event, index
-                    yield! traverse (index+1)
+                    yield! traverse (index+1L)
                 | None ->
                     Thread.Sleep(10000)
                     yield! listen connection stream (Position.At last)
@@ -103,20 +103,20 @@ module Stream =
 
     let private write (connection : IEventStoreConnection)
                       (targetStream : string)
-                      (position : Position<int>)
+                      (position : Position<Index>)
                       (event : Event) : Index =
         let rec targetVersionOf = function
-            | Position.Start -> ExpectedVersion.EmptyStream
-            | Position.At x -> x-1
-            | Position.End -> ExpectedVersion.Any  
+            | Position.Start -> int64 ExpectedVersion.EmptyStream
+            | Position.At x -> x-1L
+            | Position.End -> int64 ExpectedVersion.Any  
             | Position.Before x ->
                 match targetVersionOf x with
-                | index when index < 0 -> raise (Position.Invalid(position))
-                | index -> index - 1
+                | index when index < 0L -> raise (Position.Invalid(position))
+                | index -> index - 1L
             | Position.After x ->
                 match targetVersionOf x with
-                | index when index < -1 -> raise (Position.Invalid(position))
-                | index -> index + 1
+                | index when index < -1L -> raise (Position.Invalid(position))
+                | index -> index + 1L
         let eventId = Guid.NewGuid()
         let eventPosition = targetVersionOf position
         let eventMetadata = Event.bytes event |> Option.getValueOr [||]
@@ -145,18 +145,18 @@ module Stream =
                   (position : Position<Index>) : Index =
         match position with
         | Position.At x -> x
-        | Position.Before x -> (index connection stream size x) - 1
-        | Position.After x -> (index connection stream size x) + 1
+        | Position.Before x -> (index connection stream size x) - 1L
+        | Position.After x -> (index connection stream size x) + 1L
         | Position.Start ->
             read connection stream size Direction.Forward position
             |> Seq.tryPick Some
             |> Option.map snd
-            |> Option.getValueOr StreamPosition.Start
+            |> Option.getValueOr (int64 StreamPosition.Start)
         | Position.End ->
             read connection stream size Direction.Reverse position
             |> Seq.tryPick Some
-            |> Option.map (snd >> (+) 1)
-            |> Option.getValueOr StreamPosition.Start
+            |> Option.map (snd >> (+) 1L)
+            |> Option.getValueOr (int64 StreamPosition.Start)
 
     let compete (connection : IEventStoreConnection)
                 (stream : string)
@@ -171,7 +171,7 @@ module Stream =
                 listen connection stream Position.Start
                 |> Seq.head
         let update(e,i) =
-            try write connection stream (Position.At (1+i)) e |> Some
+            try write connection stream (Position.At (1L+i)) e |> Some
             with :? Position.Invalid<Index> -> None
         let rec apply(last) =
             seq {
