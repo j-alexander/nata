@@ -1,1 +1,1 @@
-docker build --tag erlang .\
+docker build --tag nata/erlang .\

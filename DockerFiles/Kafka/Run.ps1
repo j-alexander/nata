@@ -1,1 +1,1 @@
-docker run --rm -it -p 9092:9092 -p 2181:2181 kafka
+docker run --rm -it -p 9092:9092 -p 2181:2181 nata/kafka

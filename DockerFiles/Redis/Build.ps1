@@ -1,1 +1,1 @@
-docker build --tag redis .\
+docker build --tag nata/redis .\

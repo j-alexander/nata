@@ -1,1 +1,1 @@
-docker build --tag java .\
+docker build --tag nata/java .\

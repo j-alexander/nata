@@ -1,1 +1,1 @@
-docker build --tag eventstorecluster .\
+docker build --tag nata/eventstorecluster .\

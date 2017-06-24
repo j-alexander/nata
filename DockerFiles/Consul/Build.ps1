@@ -1,1 +1,1 @@
-docker build --tag consul .\
+docker build --tag nata/consul .\

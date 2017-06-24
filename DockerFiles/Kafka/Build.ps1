@@ -1,1 +1,1 @@
-docker build --tag kafka .\
+docker build --tag nata/kafka .\

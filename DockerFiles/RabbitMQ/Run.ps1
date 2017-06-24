@@ -1,1 +1,1 @@
-docker run --rm -p 5672:5672 -it rabbitmq
+docker run --rm -p 5672:5672 -it nata/rabbitmq

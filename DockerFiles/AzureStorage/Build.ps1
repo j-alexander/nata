@@ -1,1 +1,1 @@
-docker build --tag azurestorage .\
+docker build --tag nata/azurestorage .\

@@ -1,4 +1,4 @@
-FROM eventstore
+FROM nata/eventstore
 
 #
 # FIX: DNS Resolution Issue

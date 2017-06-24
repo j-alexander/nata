@@ -3,8 +3,8 @@ FROM microsoft/windowsservercore
 # Configure Powershell as the Default Shell
 SHELL ["powershell", "-NoProfile", "-Command", "$ErrorActionPreference = 'Stop';"]
 
-# EventStore 3.9.3
-ADD http://download.geteventstore.com/binaries/EventStore-OSS-Win-v3.9.3.zip /EventStore.zip
+# EventStore 3.9.4
+ADD http://download.geteventstore.com/binaries/EventStore-OSS-Win-v3.9.4.zip /EventStore.zip
 RUN Expand-Archive -Path /EventStore.zip -DestinationPath /EventStore ; \
     Remove-Item -Force /EventStore.zip
 

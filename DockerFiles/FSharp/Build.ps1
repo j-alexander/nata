@@ -1,1 +1,1 @@
-docker build --tag fsharp .\
+docker build --tag nata/fsharp .\

@@ -1,1 +1,1 @@
-docker run --rm -it erlang
+docker run --rm -it nata/erlang

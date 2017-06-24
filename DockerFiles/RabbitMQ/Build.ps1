@@ -1,1 +1,1 @@
-docker build --tag rabbitmq .\
+docker build --tag nata/rabbitmq .\

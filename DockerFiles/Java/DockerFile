@@ -10,20 +10,20 @@ RUN Start-Process '\7-Zip.exe' -ArgumentList '/S' -Wait           ; \
     Remove-Item -Force 7-Zip.exe
 		
 # Download Java 8 from Oracle
-ENV JAVA8_URL http://download.oracle.com/otn-pub/java/jdk/8u121-b13/e9e7ea248e2c4826b92b3f075a80e441/jre-8u121-windows-x64.tar.gz
+ENV JAVA8_URL http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jre-8u131-windows-x64.tar.gz
 RUN $client = New-Object System.Net.WebClient                                                                 ; \
     $client.Headers.Add([System.Net.HttpRequestHeader]::Cookie, \"oraclelicense=accept-securebackup-cookie\") ; \
-    $client.DownloadFile("$env:JAVA8_URL", \"\jre-8u121-windows-x64.tar.gz\")
+    $client.DownloadFile("$env:JAVA8_URL", \"\jre-8u131-windows-x64.tar.gz\")
 
 # Install Java
-RUN 7z.exe e /jre-8u121-windows-x64.tar.gz -o/                    ; \
-    7z.exe x /jre-8u121-windows-x64.tar -o/                       ; \
-    Move-Item /jre1.8.0_121 /Java                                 ; \
+RUN 7z.exe e /jre-8u131-windows-x64.tar.gz -o/                    ; \
+    7z.exe x /jre-8u131-windows-x64.tar -o/                       ; \
+    Move-Item /jre1.8.0_131 /Java                                 ; \
     SetX /M PATH      "\"\Java\bin;$env:PATH\""                   ; \
     SetX /M JAVA_HOME "\"\Java\""                                 ; \
-    Remove-Item -Force /jre-8u121-windows-x64.tar                 ; \
-    Remove-Item -Force /jre-8u121-windows-x64.tar.gz
+    Remove-Item -Force /jre-8u131-windows-x64.tar                 ; \
+    Remove-Item -Force /jre-8u131-windows-x64.tar.gz
 		
-# Java(TM) SE Runtime Environment (build 1.8.0_121-b13)
-# Java HotSpot(TM) 64-Bit Server VM (build 25.121-b13, mixed mode)
+# Java(TM) SE Runtime Environment (build 1.8.0_131-b11)
+# Java HotSpot(TM) 64-Bit Server VM (build 25.131-b11, mixed mode)
 CMD java -version

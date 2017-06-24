@@ -1,1 +1,1 @@
-docker build --tag sqlserver .\
+docker build --tag nata/sqlserver .\

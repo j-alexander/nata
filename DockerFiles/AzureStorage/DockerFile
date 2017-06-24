@@ -1,4 +1,4 @@
-FROM sqlserver
+FROM nata/sqlserver
 
 # Configure Powershell as the Default Shell
 SHELL ["powershell", "-NoProfile", "-Command", "$ErrorActionPreference = 'Stop';"]
