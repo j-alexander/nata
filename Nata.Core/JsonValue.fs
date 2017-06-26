@@ -21,7 +21,7 @@ module JsonValue =
 
             override x.WriteJson(writer, value, serializer) =
                 let value = 
-                    if value = null then null
+                    if isNull value then null
                     else 
                         let _,fields = FSharpValue.GetUnionFields(value, value.GetType())
                         fields.[0]  
@@ -35,12 +35,12 @@ module JsonValue =
                 | _ -> 
                     try let value = serializer.Deserialize(reader, innerType)
                         let cases = FSharpType.GetUnionCases(t)
-                        if value = null then FSharpValue.MakeUnion(cases.[0], [||])
+                        if isNull value then FSharpValue.MakeUnion(cases.[0], [||])
                         else FSharpValue.MakeUnion(cases.[1], [|value|])
                     with _ -> None :> obj
 
 
-        type TupleConverter() =
+        type public TupleConverter() =
             inherit JsonConverter()
     
             override x.CanConvert(t:Type) = 
@@ -61,7 +61,7 @@ module JsonValue =
                 FSharpValue.MakeTuple(elements, t)
         
 
-        type ValueAttribute(value : obj, [<ParamArray>]additional : obj array) =
+        type public ValueAttribute(value : obj, [<ParamArray>]additional : obj array) =
             inherit Attribute()
 
             new(value : obj) = ValueAttribute(value, [||])
