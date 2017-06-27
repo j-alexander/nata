@@ -1,1 +1,1 @@
-.\.paket\paket.exe pack output nuget buildplatform AnyCPU
+.\.paket\paket.exe pack output nuget buildplatform AnyCPU minimum-from-lock-file
