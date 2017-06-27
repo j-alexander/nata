@@ -10,7 +10,7 @@ open System.Threading.Tasks
 open FSharp.Data
 open NUnit.Framework
 open Nata.IO
-open Nata.IO.Capability
+open Nata.IO.Channel
 open Nata.IO.File
 open Nata.IO.File.Stream
 
@@ -31,9 +31,9 @@ type FileTests() =
     member x.TestConcurrency() =
         let stream = connect()
         let read,write,listen =
-            Nata.IO.Capability.reader stream,
-            Nata.IO.Capability.writer stream,
-            Nata.IO.Capability.subscriber stream
+            reader stream,
+            writer stream,
+            subscriber stream
              
         let format = event "StreamTests.TestConcurrency"
            

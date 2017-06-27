@@ -10,7 +10,7 @@ open NUnit.Framework
 
 open Nata.Core
 open Nata.IO
-open Nata.IO.Capability
+open Nata.IO.Channel
 
 [<AbstractClass>]
 type LogStoreTests() as x =
@@ -26,30 +26,27 @@ type LogStoreTests() as x =
         |> Event.create
         |> Event.withEventType fn
 
-    abstract member Connect : unit -> Source<string,byte[],int64>
-    abstract member Channel : unit -> string
-
-    member private x.Capabilities() = x.Channel() |> x.Connect()
+    abstract member Connect : unit -> Channel<byte[],int64>
 
     [<Test>]
     member x.TestConnect() =
-        let stream = x.Capabilities()
-        Assert.Greater(stream.Length, 0)
+        let capabilities = x.Connect()
+        Assert.Greater(capabilities.Length, 0)
 
     [<Test>]
     member x.TestWrite() =
-        let write = x.Capabilities() |> writer
+        let write = x.Connect() |> writer
         let event = event("TestWrite")
         write event
 
     [<Test; Timeout(45000)>]
     member x.TestEmptyRead() =
-        let read = x.Capabilities() |> reader
+        let read = x.Connect() |> reader
         Assert.AreEqual([], read() |> Seq.toList)
 
     [<Test>]
     member x.TestRead() =
-        let connection = x.Capabilities()
+        let connection = x.Connect()
         let write = writer connection
         let read = reader connection
         let event = event("TestRead")
@@ -60,12 +57,12 @@ type LogStoreTests() as x =
 
     [<Test; Timeout(45000)>]
     member x.TestEmptyReadFrom() =
-        let readFrom = x.Capabilities() |> readerFrom
+        let readFrom = x.Connect() |> readerFrom
         Assert.AreEqual([], readFrom Position.Start |> Seq.toList)
 
     [<Test>]
     member x.TestReadFrom() =
-        let connection = x.Capabilities()
+        let connection = x.Connect()
         let write = writer connection
         let readFrom = readerFrom connection
         let event_0 = event("TestReadFrom-0")
@@ -92,7 +89,7 @@ type LogStoreTests() as x =
 
     [<Test>]
     member x.TestWriteTo() =
-        let connection = x.Capabilities()
+        let connection = x.Connect()
         match tryWriterTo connection with
         | Some writeTo ->
             [ 0L, event "TestWriteTo-0" |> writeTo (Position.At 0L)
@@ -104,7 +101,7 @@ type LogStoreTests() as x =
 
     [<Test>]
     member x.TestWriteToPosition() =
-        let connection = x.Capabilities()
+        let connection = x.Connect()
         match tryWriterTo connection, tryReaderFrom connection with
         | Some writeTo, Some readFrom ->
             let event_0, event_1, event_2 =
@@ -126,7 +123,7 @@ type LogStoreTests() as x =
 
     [<Test>]
     member x.TestWriteToShouldFailWithIndexTooLow() =
-        let connection = x.Capabilities()
+        let connection = x.Connect()
         match tryWriterTo connection with
         | Some writeTo ->
             event "TestWriteToShouldFailWithIndexTooLow-0" |> writeTo (Position.At -1L) |> ignore
@@ -141,7 +138,7 @@ type LogStoreTests() as x =
 
     [<Test>]
     member x.TestWriteToShouldFailWithIndexTooHigh() =
-        let connection = x.Capabilities()
+        let connection = x.Connect()
         match tryWriterTo connection with
         | Some writeTo ->
             event "TestWriteToShouldFailWithIndexTooHigh-0" |> writeTo (Position.At -1L) |> ignore
@@ -157,7 +154,7 @@ type LogStoreTests() as x =
     [<Test; Timeout(120000)>]
     member x.TestLiveSubscription() =
         let write, subscribe =
-            let connection = x.Capabilities()
+            let connection = x.Connect()
             writer connection, subscriber connection
         let results = subscribe()
         let expected =
@@ -176,7 +173,7 @@ type LogStoreTests() as x =
     [<Test; Timeout(120000)>]
     member x.TestLateSubscription() =
         let write, subscribe =
-            let connection= x.Capabilities()
+            let connection = x.Connect()
             writer connection, subscriber connection
         let expected =
             [ event "TestLateSubscription-0"
@@ -194,7 +191,7 @@ type LogStoreTests() as x =
     [<Test; Timeout(120000)>]
     member x.TestSubscriptionFromIndex() =
         let write, subscribeFrom =
-            let connection = x.Capabilities()
+            let connection = x.Connect()
             writer connection, subscriberFrom connection
         let expected =
             [| event "TestSubscriptionFromIndex-0"
@@ -235,7 +232,7 @@ type LogStoreTests() as x =
     [<Test; Timeout(120000)>]
     member x.TestSubscriptionContinuation() =
         let write, subscribeFrom =
-            let connection = x.Capabilities()
+            let connection = x.Connect()
             writer connection,
             subscriberFrom connection
 
@@ -270,7 +267,7 @@ type LogStoreTests() as x =
 
     [<Test>]
     member x.TestIndexEmpty() =
-        match x.Capabilities() |> tryIndexer with
+        match x.Connect() |> tryIndexer with
         | None ->
             Assert.Ignore("Indexer is reported to be unsupported by this source.")
         | Some index ->
@@ -280,9 +277,9 @@ type LogStoreTests() as x =
     [<Test>]
     member x.TestIndexWithWrites() =
         let tryIndex, tryWrite =
-            let stream = x.Capabilities()
-            tryIndexer stream,
-            tryWriter stream
+            let connection = x.Connect()
+            tryIndexer connection,
+            tryWriter connection
         match tryIndex, tryWrite with
         | Some index, Some write ->
             Assert.AreEqual(0, index Position.Start)
@@ -302,18 +299,15 @@ type LogStoreTests() as x =
     [<Test>]
     member x.TestLoneCompetitor() =
         let tryCompetitor, tryReaderFrom, tryWriter =
-            let stream =
-                let source =
-                    let codec =
-                        Codec.BytesToString
-                        |> Codec.concatenate Codec.StringToInt32
-                    x.Connect()
-                    |> Source.mapData codec
-                x.Channel()
-                |> source
-            tryCompetitor stream,
-            tryReaderFrom stream,
-            tryWriter stream
+            let connection =
+                let codec =
+                    Codec.BytesToString
+                    |> Codec.concatenate Codec.StringToInt32
+                x.Connect()
+                |> Channel.mapData codec
+            tryCompetitor connection,
+            tryReaderFrom connection,
+            tryWriter connection
         match tryCompetitor, tryReaderFrom, tryWriter with
         | Some compete, Some readFrom, Some write ->
             write (Event.create 2)
@@ -338,18 +332,15 @@ type LogStoreTests() as x =
     [<Test>]
     member x.TestTwoCompetitors() =
         let tryCompetitor, tryReaderFrom, tryWriter =
-            let stream =
-                let source =
-                    let codec =
-                        Codec.BytesToString
-                        |> Codec.concatenate Codec.StringToInt32
-                    x.Connect()
-                    |> Source.mapData codec
-                x.Channel()
-                |> source
-            tryCompetitor stream,
-            tryReaderFrom stream,
-            tryWriter stream
+            let connection =
+                let codec =
+                    Codec.BytesToString
+                    |> Codec.concatenate Codec.StringToInt32
+                x.Connect()
+                |> Channel.mapData codec
+            tryCompetitor connection,
+            tryReaderFrom connection,
+            tryWriter connection
         match tryCompetitor, tryReaderFrom, tryWriter with
         | Some compete, Some readFrom, Some write ->
             write (Event.create 2)

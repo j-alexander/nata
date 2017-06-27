@@ -73,6 +73,7 @@
     <Compile Include="SubscriberFrom.fs" />
     <Compile Include="Competitor.fs" />
     <Compile Include="Capability.fs" />
+    <Compile Include="Channel.fs" />
     <Compile Include="Source.fs" />
     <Compile Include="Connector.fs" />
   </ItemGroup>

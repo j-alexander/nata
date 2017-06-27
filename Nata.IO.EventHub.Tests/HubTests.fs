@@ -4,19 +4,19 @@ open System
 open NUnit.Framework
 open Nata.Core
 open Nata.IO
-open Nata.IO.Capability
+open Nata.IO.Channel
 open Nata.IO.EventHub
 
 [<TestFixture(Description="EventHub-Hub"); Ignore("No emulator exists for EventHub")>]
 type HubTests() = 
     inherit Nata.IO.Tests.LogStoreTests()
 
+    let channel = ""
     let settings = {
         Connection = @"Endpoint=sb://;SharedAccessKeyName=;SharedAccessKey=;EntityPath="
         MaximumWaitTimeOnRead = TimeSpan.FromSeconds(10.0)
     }
 
-    override x.Channel() = ""
     override x.Connect() =
         let toPartition p i = [{Partition=p; Index=i}]
         let ofPartition p = Offsets.partition p >> Offset.index
@@ -27,6 +27,7 @@ type HubTests() =
         |> Source.mapChannel ((fun _ -> ""), ignore)
         |> Source.mapIndex (ofPartition 0, toPartition 0)
         |> Source.mapCapabilities (MaskEnvelope.mapCapability (guid()) >> onPartition 0)
+        <| channel
 
     [<Test; Timeout(30000)>]
     member x.TestWriteSubscribe() =

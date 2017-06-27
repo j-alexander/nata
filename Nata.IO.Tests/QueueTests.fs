@@ -12,10 +12,10 @@ open NUnit.Framework
 open Nata.Core
 open Nata.Core.JsonValue.Codec
 open Nata.IO
-open Nata.IO.Capability
+open Nata.IO.Channel
 
 [<AbstractClass>]
-type QueueTests<'Channel>() =
+type QueueTests() =
 
     let event() =
         [| "text", JsonValue.String (guid()) |]
@@ -23,16 +23,12 @@ type QueueTests<'Channel>() =
         |> Event.create
         |> Event.map JsonValue.toBytes
 
-    abstract member Connect : unit -> Source<'Channel,byte[],int64>
-    abstract member Channel : unit -> 'Channel
-    abstract member Stream : 'Channel -> string
-
-    member private x.Capabilities() = x.Channel() |> x.Connect()
+    abstract member ConnectWithName : unit -> (Channel<byte[],int64>*string)
 
     [<Test; Timeout(15000)>]
     member x.TestWriteAndSubscribe() =
-        let name = x.Channel()
-        let queue, event = name |> x.Connect(), event()
+        let queue, name = x.ConnectWithName()
+        let event = event()
 
         do writer queue event
         let result =
@@ -40,13 +36,12 @@ type QueueTests<'Channel>() =
             |> Seq.head
 
         Assert.AreEqual(event.Data, result.Data)
-        Assert.AreEqual(name |> x.Stream |> Some, result |> Event.stream)
+        Assert.AreEqual(name |> Some, result |> Event.stream)
         Assert.True(result |> Event.createdAt |> Option.isSome)
 
     [<Test; Timeout(15000)>]
     member x.TestWriteAndSubscribeMany() =
-        let name = x.Channel()
-        let queue = name |> x.Connect()
+        let queue, name = x.ConnectWithName()
 
         let events =
             [ for i in [ 1..10 ] -> event() ]
@@ -60,13 +55,12 @@ type QueueTests<'Channel>() =
 
         for (before, after) in results do
             Assert.AreEqual(before.Data, after.Data)
-            Assert.AreEqual(name |> x.Stream |> Some, after |> Event.stream)
+            Assert.AreEqual(name |> Some, after |> Event.stream)
             Assert.True(after |> Event.createdAt |> Option.isSome)
 
     [<Test;Timeout(25000)>]
     member x.TestWriteIncreasesIndex() =
-        let name = x.Channel()
-        let queue = name |> x.Connect()
+        let queue, name = x.ConnectWithName()
 
         match tryIndexer queue with
         | None ->

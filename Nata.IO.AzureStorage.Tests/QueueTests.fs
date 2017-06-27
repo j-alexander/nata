@@ -20,14 +20,13 @@ open Nata.IO.AzureStorage.Queue
 
 [<TestFixture(Description="Azure-Queue")>]
 type QueueTests() =
-    inherit Nata.IO.Tests.QueueTests<Queue.Name>()
+    inherit Nata.IO.Tests.QueueTests()
         
-    let channel() : Queue.Name = guid()
-    let connect() =
+    let connect(name) =
         Emulator.Account.connectionString
         |> Account.create
         |> Queue.connect
+        <| name,
+        name
 
-    override x.Connect() = connect()
-    override x.Channel() = channel()
-    override x.Stream(c) = c
+    override x.ConnectWithName() = connect(guid())

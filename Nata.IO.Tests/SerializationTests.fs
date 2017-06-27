@@ -9,7 +9,7 @@ open NUnit.Framework
 open Nata.Core
 open Nata.Core.JsonValue.Codec
 open Nata.IO
-open Nata.IO.Capability
+open Nata.IO.Channel
 
 type DataType = {
     case : string
@@ -21,19 +21,16 @@ type DataType = {
 [<AbstractClass>]
 type SerializationTests() =
 
-    abstract member Connect : unit -> Source<string,byte[],int64>
-    abstract member Channel : unit -> string
+    abstract member Connect : unit -> Channel<byte[],int64>
 
     [<Test>]
     member x.TestSerializationCodecs() =
-        let connection =
-            x.Connect()
-            |> Source.mapData DataType.OfBytes
-        
         let write, read =
-            let stream = connection <| x.Channel()
-            writer stream,
-            reader stream
+            let connection =
+                x.Connect()
+                |> Channel.mapData DataType.OfBytes
+            writer connection,
+            reader connection
 
         let events =
             [ for i in 0..10 ->

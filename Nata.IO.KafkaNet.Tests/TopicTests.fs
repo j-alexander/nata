@@ -23,7 +23,7 @@ type TopicTests() =
     // num.partitions=1
     // auto.create.topics.enable=true
     
-    override x.Channel() = guid()
     override x.Connect() =
         Topic.connect cluster
         |> Source.mapIndex (Offsets.Codec.OffsetsToInt64 0)
+        <| guid()

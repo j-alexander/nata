@@ -23,8 +23,8 @@ type TopicPartitionTests() =
     // num.partitions=1
     // auto.create.topics.enable=true
     
-    override x.Channel() = guid()
     override x.Connect() =
         TopicPartition.connect cluster
         |> Source.mapChannel (fst, (fun (x) -> x,0))
         |> Source.mapIndex (Offset.position,(fun x -> {Offset.PartitionId=0;Position=x}))
+        <| guid()

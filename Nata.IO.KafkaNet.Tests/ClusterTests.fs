@@ -8,7 +8,7 @@ open NUnit.Framework
 
 open Nata.Core
 open Nata.IO
-open Nata.IO.Capability
+open Nata.IO.Channel
 open Nata.IO.KafkaNet
 
 [<TestFixture>]

@@ -8,7 +8,7 @@ open NUnit.Framework
 
 open Nata.Core
 open Nata.IO
-open Nata.IO.Capability
+open Nata.IO.Channel
 open Nata.IO.Kafunk
 
 [<TestFixture>]
@@ -23,10 +23,10 @@ type TopicTests() =
     // num.partitions=1
     // auto.create.topics.enable=true
     
-    override x.Channel() = guid()
     override x.Connect() =
         Topic.connect cluster
         |> Source.mapIndex (Offsets.Codec.OffsetsToInt64 0)
+        <| guid()
 
     [<Test; Timeout(360000)>]
     member x.TestReadWriteIntegers() =

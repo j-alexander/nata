@@ -8,5 +8,6 @@ open NUnit.Framework
 type LogStoreTests() = 
     inherit Nata.IO.Tests.LogStoreTests()
 
-    override x.Connect() = Configuration.connect()
-    override x.Channel() = Configuration.channel()
+    override x.Connect() =
+        Configuration.channel()
+        |> Configuration.connect()

@@ -3,7 +3,7 @@
 open System
 open Nata.Core
 open Nata.IO
-open Nata.IO.Capability
+open Nata.IO.Channel
 open Nata.IO.WebSocket
 open Nata.IO.WebSocket.Socket
 open NUnit.Framework

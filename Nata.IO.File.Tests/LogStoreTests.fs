@@ -33,5 +33,6 @@ type LogStoreTests() =
         Stream.connect()
         |> Source.mapData LogStoreTestEnvelope.Codec
 
-    override x.Connect() = connect()
-    override x.Channel() = channel()
+    override x.Connect() =
+        channel()
+        |> connect()

@@ -5,7 +5,7 @@ open System.Text
 open FSharp.Data
 open NUnit.Framework
 open Nata.IO
-open Nata.IO.Capability
+open Nata.IO.Channel
 
 [<AbstractClass>]
 type WriterTests() =
@@ -16,7 +16,7 @@ type WriterTests() =
         |> Event.withEventType "event_type"
         |> Event.withStream "event_stream"
 
-    abstract member Connect : unit -> List<Capability<'Data,int64>>
+    abstract member Connect : unit -> Channel<'Data,int64>
 
     member x.Connect(fn) =
         let stream = x.Connect()

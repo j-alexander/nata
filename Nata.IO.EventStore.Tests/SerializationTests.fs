@@ -6,5 +6,6 @@ open NUnit.Framework
 type SerializationTests() =
     inherit Nata.IO.Tests.SerializationTests()
 
-    override x.Connect() = Configuration.connect()
-    override x.Channel() = Configuration.channel()
+    override x.Connect() =
+        Configuration.channel()
+        |> Configuration.connect()
