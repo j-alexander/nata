@@ -2,7 +2,7 @@
 
 open Nata.Core
 
-type Competitor<'Data> = (Event<'Data> -> Event<'Data>) -> seq<Event<'Data>>
+type Competitor<'Data> = (Event<'Data> option -> Event<'Data>) -> seq<Event<'Data>>
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Competitor =
@@ -10,26 +10,30 @@ module Competitor =
     let mapData ((decode, encode):Codec<'DataIn,'DataOut>)
                 (competitor:Competitor<'DataIn>) : Competitor<'DataOut> =
         fun fn ->
-            competitor (Event.mapData decode >> fn >> Event.mapData encode)
+            competitor (Option.map (Event.mapData decode) >> fn >> Event.mapData encode)
             |> Seq.map (Event.mapData decode)
 
     let map = mapData
 
     let fallback (writeTo:WriterTo<'Data,'Index>)
-                 (subscribeFrom:SubscriberFrom<'Data,'Index>) : Competitor<'Data> =
-        fun (fn:Event<'Data>->Event<'Data>) ->
+                 (readFrom:ReaderFrom<'Data,'Index>) : Competitor<'Data> =
+        fun (fn:Event<'Data> option->Event<'Data>) ->
             let state() =
-                subscribeFrom (Position.Before Position.End)
-                |> Seq.head
-            let update(e,i) =
-                try writeTo (Position.After (Position.At i)) e |> Some
+                readFrom (Position.Before Position.End)
+                |> Seq.tryHead
+            let update(event,index) =
+                let position =
+                    index
+                    |> Option.map (Position.At >> Position.After)
+                    |> Option.getValueOr (Position.Start)
+                try writeTo position event |> Some
                 with :? Position.Invalid<'Index> -> None
             let rec apply(last) =
                 seq {
                     let eventIn, indexIn =
-                        match last with
-                        | Some (e,i) -> (e,i)
-                        | None -> state()
+                        last
+                        |> Option.coalesceYield state
+                        |> Option.distribute
 
                     let eventOut = fn eventIn
                     let result =

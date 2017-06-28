@@ -55,6 +55,7 @@ module Stream =
 
         let rec readFrom index =
             seq {
+                let index = Math.Max(0L, index)
                 match data.TryGetValue index with
                 | true, event when event.IsValueCreated ->
                     yield event.Value, index

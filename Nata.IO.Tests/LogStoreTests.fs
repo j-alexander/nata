@@ -310,9 +310,8 @@ type LogStoreTests() as x =
             tryWriter connection
         match tryCompetitor, tryReaderFrom, tryWriter with
         | Some compete, Some readFrom, Some write ->
-            write (Event.create 2)
             let generation : int list =
-                compete (Event.map ((*) 2))
+                compete (Option.getValueOr (Event.create 2) >> Event.map ((*) 2))
                 |> Seq.take 10
                 |> Seq.map Event.data
                 |> Seq.toList
@@ -321,7 +320,6 @@ type LogStoreTests() as x =
             Assert.AreEqual(expectation, generation)
             let verification =
                 readFrom Position.Start
-                |> Seq.skip 1
                 |> Seq.take 10
                 |> Seq.map (fst >> Event.data)
                 |> Seq.toList
@@ -343,10 +341,8 @@ type LogStoreTests() as x =
             tryWriter connection
         match tryCompetitor, tryReaderFrom, tryWriter with
         | Some compete, Some readFrom, Some write ->
-            write (Event.create 2)
-
             let generation (delay:int->int) : int seq =
-                compete (fun e ->
+                compete (Option.getValueOr (Event.create 2) >> fun e ->
                     let input = Event.data e
                     let output = input * 2
                     Thread.Sleep(delay input)
@@ -374,7 +370,6 @@ type LogStoreTests() as x =
 
             let verification =
                 readFrom Position.Start
-                |> Seq.skip 1
                 |> Seq.take 11
                 |> Seq.map (fst >> Event.data)
                 |> Seq.toList

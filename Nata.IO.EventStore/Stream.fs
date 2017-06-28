@@ -160,25 +160,23 @@ module Stream =
 
     let compete (connection : IEventStoreConnection)
                 (stream : string)
-                (fn : Event<Data>->Event<Data>) =
+                (fn : Event<Data> option->Event<Data>) =
         let state() =
-            let last =
-                read connection stream 1 Direction.Reverse Position.End 
-                |> Seq.tryPick Some
-            match last with
-            | Some (e,i) -> (e,i)
-            | None ->
-                listen connection stream Position.Start
-                |> Seq.head
-        let update(e,i) =
-            try write connection stream (Position.At (1L+i)) e |> Some
+            read connection stream 1 Direction.Reverse Position.End 
+            |> Seq.tryPick Some
+        let update(event,index) =
+            let position =
+                index
+                |> Option.map ((+) 1L >> Position.At)
+                |> Option.getValueOr (Position.Start)
+            try write connection stream position event |> Some
             with :? Position.Invalid<Index> -> None
-        let rec apply(last) =
+        let rec apply(last:(Event*Index) option) =
             seq {
                 let eventIn, indexIn =
-                    match last with
-                    | Some (e,i) -> (e,i)
-                    | None -> state()
+                    last 
+                    |> Option.coalesceYield state
+                    |> Option.distribute
                 let eventOut = fn eventIn
                 let result = 
                     update(eventOut, indexIn)
