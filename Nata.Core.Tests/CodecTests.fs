@@ -61,3 +61,11 @@ type CodecTests() =
     [<Test>]
     member x.TestNullByteArrayToString() =
         Assert.AreEqual("", null |> fst Codec.BytesToString)
+
+    [<Test>]
+    member x.TestDecimalSymmetry() =
+        let (encode,decode) = Codec.DecimalToString
+        for x in [ -0.002m .. 0.001m .. 0.01m ] do
+            let value = encode x
+            let result = decode value
+            Assert.AreEqual(x, result)

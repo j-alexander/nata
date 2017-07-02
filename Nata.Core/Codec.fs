@@ -41,6 +41,11 @@ module Codec =
         Int64.toString, Int64.ofString >> Option.getValueOr 0L
     let StringToInt64 : Codec<string,int64> =
         reverse Int64ToString
+
+    let DecimalToString : Codec<decimal,string> =
+        Decimal.toString, Decimal.ofString >> Option.getValueOr 0m
+    let StringToDecimal : Codec<string,decimal> =
+        reverse DecimalToString
         
     let inline NotImplemented x =
         raise(new NotImplementedException(sprintf "Codec From:%A" x))

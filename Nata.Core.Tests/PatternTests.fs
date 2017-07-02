@@ -8,6 +8,15 @@ open Nata.Core
 type PatternTests() =
 
     [<Test>]
+    member x.TestDecimalPattern() =
+        Assert.AreEqual(Some Decimal.MaxValue, (|Decimal|_|) <| Decimal.MaxValue.ToString())
+        Assert.AreEqual(Some Decimal.MinValue, (|Decimal|_|) <| Decimal.MinValue.ToString())
+        Assert.AreEqual(Some 0.0m, (|Decimal|_|) "0.0")
+        Assert.AreEqual(Some 0m, (|Decimal|_|) "0")
+        Assert.AreEqual(None, (|Decimal|_|) String.Empty)
+        Assert.AreEqual(None, (|Decimal|_|) null)
+
+    [<Test>]
     member x.TestInteger64Pattern() =
         Assert.AreEqual(Some Int64.MaxValue, (|Integer64|_|) <| Int64.MaxValue.ToString())
         Assert.AreEqual(Some Int64.MinValue, (|Integer64|_|) <| Int64.MinValue.ToString())

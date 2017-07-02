@@ -170,6 +170,17 @@ module Core =
             if x.HasValue then Some x.Value else None
         let ofOption =
             function Some x -> Nullable(x) | _ -> Nullable()
+
+    module Decimal =
+
+        let between (left_inclusive:decimal, right_inclusive:decimal) (x:decimal) =
+            let lower, upper =
+                Math.Min(left_inclusive, right_inclusive),
+                Math.Max(left_inclusive, right_inclusive)
+            Math.Max(lower, Math.Min(upper, x))
+        
+        let ofString = Decimal.TryParse >> function true, x -> Some x | _ -> None
+        let toString (x:decimal) = x.ToString()
     
     module Int64 =
 
