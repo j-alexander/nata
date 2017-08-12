@@ -376,9 +376,11 @@ type LogStoreTests() as x =
             Assert.AreEqual(expectation, verification)
         | _ ->
             Assert.Ignore("Competitor, ReaderFrom or Writer is reported to be unsupported by this source.")
-            
+           
     [<Test>]
-    member x.TestReadFromBeforeEnd() =
+    abstract member TestReadFromBeforeEnd : unit->unit
+
+    default x.TestReadFromBeforeEnd() =
         let connection = x.Connect()
         let write = writer connection
         let readFrom = readerFrom connection
@@ -402,7 +404,10 @@ type LogStoreTests() as x =
         Assert.AreEqual(event_0.Data,take(Position.Before(Position.Before(Position.Before(Position.End)))))
 
     [<Test>]
-    member x.TestSubscribeFromBeforeEnd() =
+    abstract member TestSubscribeFromBeforeEnd : unit->unit
+    
+    [<Test>]
+    default x.TestSubscribeFromBeforeEnd() =
         let connection = x.Connect()
         let write = writer connection
         let readFrom = readerFrom connection

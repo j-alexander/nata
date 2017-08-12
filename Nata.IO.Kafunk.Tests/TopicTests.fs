@@ -52,3 +52,8 @@ type TopicTests() =
             |> Seq.toList
 
         Assert.AreEqual(expected, actual)
+        
+    [<Test>]
+    override x.TestReadFromBeforeEnd() = Assert.Ignore("Not yet supported.")
+    [<Test>]
+    override x.TestSubscribeFromBeforeEnd() = Assert.Ignore("Not yet supported.")
