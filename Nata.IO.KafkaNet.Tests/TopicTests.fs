@@ -27,3 +27,8 @@ type TopicTests() =
         Topic.connect cluster
         |> Source.mapIndex (Offsets.Codec.OffsetsToInt64 0)
         <| guid()
+
+    [<Test>]
+    override x.TestReadFromBeforeEnd() = Assert.Ignore("Not yet supported.")
+    [<Test>]
+    override x.TestSubscribeFromBeforeEnd() = Assert.Ignore("Not yet supported.")
