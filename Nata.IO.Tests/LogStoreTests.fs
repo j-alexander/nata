@@ -376,3 +376,50 @@ type LogStoreTests() as x =
             Assert.AreEqual(expectation, verification)
         | _ ->
             Assert.Ignore("Competitor, ReaderFrom or Writer is reported to be unsupported by this source.")
+            
+    [<Test>]
+    member x.TestReadFromBeforeEnd() =
+        let connection = x.Connect()
+        let write = writer connection
+        let readFrom = readerFrom connection
+        let subscribeFrom = subscriberFrom connection
+        let event_0 = event("TestReadFromBeforeEnd-0")
+        let event_1 = event("TestReadFromBeforeEnd-1")
+        let event_2 = event("TestReadFromBeforeEnd-2")
+        write event_0
+        write event_1
+        write event_2
+        let flush =
+            subscribeFrom Position.Start
+            |> Seq.take 3
+        let take position =
+            readFrom position
+            |> Seq.map (fst >> Event.data)
+            |> Seq.head
+        Assert.AreEqual([], List.ofSeq(readFrom(Position.End)))
+        Assert.AreEqual(event_2.Data,take(Position.Before(Position.End)))
+        Assert.AreEqual(event_1.Data,take(Position.Before(Position.Before(Position.End))))
+        Assert.AreEqual(event_0.Data,take(Position.Before(Position.Before(Position.Before(Position.End)))))
+
+    [<Test>]
+    member x.TestSubscribeFromBeforeEnd() =
+        let connection = x.Connect()
+        let write = writer connection
+        let readFrom = readerFrom connection
+        let subscribeFrom = subscriberFrom connection
+        let event_0 = event("TestSubscribeFromBeforeEnd-0")
+        let event_1 = event("TestSubscribeFromBeforeEnd-1")
+        let event_2 = event("TestSubscribeFromBeforeEnd-2")
+        write event_0
+        write event_1
+        write event_2
+        let flush =
+            subscribeFrom Position.Start
+            |> Seq.take 3
+        let take position =
+            subscribeFrom position
+            |> Seq.map (fst >> Event.data)
+            |> Seq.head
+        Assert.AreEqual(event_2.Data,take(Position.Before(Position.End)))
+        Assert.AreEqual(event_1.Data,take(Position.Before(Position.Before(Position.End))))
+        Assert.AreEqual(event_0.Data,take(Position.Before(Position.Before(Position.Before(Position.End)))))
