@@ -47,9 +47,9 @@ module Competitor =
                 }
             apply(None)
 
-    let tryFallback (writerTo, subscribeFrom) =
+    let tryFallback (writerTo, readerFrom) =
         writerTo
         |> Option.bind(fun writerTo ->
-            subscribeFrom
-            |> Option.map(fun subscribeFrom ->
-                fallback writerTo subscribeFrom))
+            readerFrom
+            |> Option.map(fun readerFrom ->
+                fallback writerTo readerFrom))
