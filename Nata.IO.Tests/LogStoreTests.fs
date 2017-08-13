@@ -271,8 +271,9 @@ type LogStoreTests() as x =
         | None ->
             Assert.Ignore("Indexer is reported to be unsupported by this source.")
         | Some index ->
-            Assert.AreEqual(0, index Position.Start)
-            Assert.AreEqual(0, index Position.End)
+            let tail = index Position.End
+            Assert.AreEqual(tail, index Position.Start)
+            Assert.AreEqual(tail, index Position.End)
 
     [<Test>]
     member x.TestIndexWithWrites() =
@@ -282,17 +283,18 @@ type LogStoreTests() as x =
             tryWriter connection
         match tryIndex, tryWrite with
         | Some index, Some write ->
-            Assert.AreEqual(0, index Position.Start)
-            Assert.AreEqual(0, index Position.End)
+            let tail = index Position.End
+            Assert.AreEqual(tail, index Position.Start)
+            Assert.AreEqual(tail, index Position.End)
             write(event("TestIndexWithWrites-0"))
-            Assert.AreEqual(0, index Position.Start)
-            Assert.AreEqual(1, index Position.End)
+            Assert.AreEqual(tail, index Position.Start)
+            Assert.AreEqual(tail+1L, index Position.End)
             write(event("TestIndexWithWrites-1"))
-            Assert.AreEqual(0, index Position.Start)
-            Assert.AreEqual(2, index Position.End)
+            Assert.AreEqual(tail, index Position.Start)
+            Assert.AreEqual(tail+2L, index Position.End)
             write(event("TestIndexWithWrites-2"))
-            Assert.AreEqual(0, index Position.Start)
-            Assert.AreEqual(3, index Position.End)
+            Assert.AreEqual(tail, index Position.Start)
+            Assert.AreEqual(tail+3L, index Position.End)
         | _ ->
             Assert.Ignore("Indexer or Writer is reported to be unsupported by this source.")
 
@@ -377,9 +379,9 @@ type LogStoreTests() as x =
         | _ ->
             Assert.Ignore("Competitor, ReaderFrom or Writer is reported to be unsupported by this source.")
            
-    [<Test>]
     abstract member TestReadFromBeforeEnd : unit->unit
-
+    
+    [<Test>]
     default x.TestReadFromBeforeEnd() =
         let connection = x.Connect()
         let write = writer connection
@@ -403,7 +405,6 @@ type LogStoreTests() as x =
         Assert.AreEqual(event_1.Data,take(Position.Before(Position.Before(Position.End))))
         Assert.AreEqual(event_0.Data,take(Position.Before(Position.Before(Position.Before(Position.End)))))
 
-    [<Test>]
     abstract member TestSubscribeFromBeforeEnd : unit->unit
     
     [<Test>]
