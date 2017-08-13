@@ -31,10 +31,13 @@ module Client =
                 |> Seq.find(fun x -> x.AddressFamily = AddressFamily.InterNetwork)
             new IPEndPoint(address, settings.Server.Port)
         let connection = EventStoreConnection.Create(connectionSettings, endpoint)
-        let connected = new TaskCompletionSource<ClientConnectionEventArgs>()
-        connection.Connected.Add(connected.SetResult)
+        let connected = new TaskCompletionSource<unit>()
+        let completed = new Lazy<unit>((fun _ -> connected.SetResult()), true)
+        connection.Connected.Add(fun _ -> completed.Force())
+
         log.Info "%s:%d Connecting" settings.Server.Host settings.Server.Port
         connection.ConnectAsync().Wait()
         connected.Task.Wait()
+
         log.Info "%s:%d Connected" settings.Server.Host settings.Server.Port
         connection
