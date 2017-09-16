@@ -70,7 +70,7 @@ module Stream =
                 match data.TryGetValue index with
                 | true, event ->
                     yield event.Force(), index
-                    yield! readFrom(1L+index)
+                    yield! listenFrom(1L+index)
                 | _ ->
                     raise (Position.Invalid(Position.At index))
             }
