@@ -82,7 +82,7 @@ module Stream =
                        (stream : string)
                        (size : int)
                        (position : Position<Index>) : seq<Event*Index> =
-        let from = index connection stream size Direction.Forward position
+        let from = Math.Max(0L, index connection stream size Direction.Forward position)
         let queue = new BlockingCollection<Option<Event*Index>>(new ConcurrentQueue<Option<Event*Index>>())
         let subscription =
             let settings = CatchUpSubscriptionSettings.Default
@@ -91,14 +91,12 @@ module Stream =
                 Action<_,_>(fun _ -> decode >> Some >> queue.Add),
                 Action<_>(ignore)
             match from with
-            | -1L -> connection.SubscribeToStreamAsync(stream, true, onEvent, onDropped)
-                     |> Async.AwaitTask
-                     |> Async.RunSynchronously
-                     |> Client.Live
-            |  0L -> connection.SubscribeToStreamFrom(stream, Nullable(), settings, onEvent, onLive, onDropped)
-                     |> Client.Catchup
-            |  x -> connection.SubscribeToStreamFrom(stream, Nullable(x-1L), settings, onEvent, onLive, onDropped)
-                    |> Client.Catchup
+            | 0L ->
+                connection.SubscribeToStreamFrom(stream, Nullable(), settings, onEvent, onLive, onDropped)
+                |> Client.Catchup
+            | x ->
+                connection.SubscribeToStreamFrom(stream, Nullable(x-1L), settings, onEvent, onLive, onDropped)
+                |> Client.Catchup
 
         let rec traverse last =
             seq {
