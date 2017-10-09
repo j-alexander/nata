@@ -52,11 +52,13 @@ module TopicPartition =
     let private consume ({Topic={Consumer=consumer;Name=name};Partition=partition})
                         (hasCompleted:(OffsetRange*Offset)->bool)
                         (position:Position<Offset>) =
-        seq {
+        let offset, range =
             use consumer = consumer [partition]
             let range = offsetRangeFor(consumer, name, partition)
             let offset = indexOf range position
-
+            { offset with Position=Math.Max(0L, offset.Position) }, range
+        seq {
+            use consumer = consumer [partition]
             use enumerator = 
                 consumer.SetOffsetPosition(Offset.toKafka(offset))
                 consumer.Consume().GetEnumerator()

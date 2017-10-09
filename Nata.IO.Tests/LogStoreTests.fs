@@ -413,6 +413,20 @@ type LogStoreTests() as x =
         let write = writer connection
         let readFrom = readerFrom connection
         let subscribeFrom = subscriberFrom connection
+
+        let pretake position =
+            let subscription = subscribeFrom position
+            lazy(
+                subscription
+                |> Seq.map (fst >> Event.data)
+                |> Seq.head)
+        let pretakeBeforeEnd =
+            pretake(Position.Before(Position.End))
+        let pretakeBeforeBeforeEnd =
+            pretake(Position.Before(Position.Before(Position.End)))
+        let pretakeBeforeBeforeBeforeEnd =
+            pretake(Position.Before(Position.Before(Position.Before(Position.End))))
+
         let event_0 = event("TestSubscribeFromBeforeEnd-0")
         let event_1 = event("TestSubscribeFromBeforeEnd-1")
         let event_2 = event("TestSubscribeFromBeforeEnd-2")
@@ -429,3 +443,8 @@ type LogStoreTests() as x =
         Assert.AreEqual(event_2.Data,take(Position.Before(Position.End)))
         Assert.AreEqual(event_1.Data,take(Position.Before(Position.Before(Position.End))))
         Assert.AreEqual(event_0.Data,take(Position.Before(Position.Before(Position.Before(Position.End)))))
+        // the following subscribed when there was no data on the stream:
+        // waiting for the value before the end position should always return the first
+        Assert.AreEqual(event_0.Data,pretakeBeforeEnd.Force())
+        Assert.AreEqual(event_0.Data,pretakeBeforeBeforeEnd.Force())
+        Assert.AreEqual(event_0.Data,pretakeBeforeBeforeBeforeEnd.Force())

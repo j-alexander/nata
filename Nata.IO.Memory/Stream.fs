@@ -67,6 +67,7 @@ module Stream =
 
         let rec listenFrom index =
             seq {
+                let index = Math.Max(0L, index)
                 match data.TryGetValue index with
                 | true, event ->
                     yield event.Force(), index

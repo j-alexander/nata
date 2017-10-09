@@ -100,7 +100,8 @@ module TopicPartition =
         match OffsetRange.query connection topic partition with
         | None -> Seq.empty
         | Some range ->
-            indexOf range position
+            let offset = indexOf range position
+            { offset with Position=Math.Max(0L, offset.Position) }
             |> Offset.position
             |> consume live connection topic partition
 
