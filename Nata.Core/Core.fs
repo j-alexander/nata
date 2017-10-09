@@ -139,6 +139,16 @@ module Core =
             }
 
         let changes xs = changesBy id xs
+
+        // pairwise with the previous value, if it exists.
+        // e.g. [0..2] -> [(None, 0); (Some 0; 1); (Some 1; 2)]
+        let delta (xs:#seq<'a>) =
+            seq {
+                yield None
+                yield! Seq.map Some xs
+            }
+            |> Seq.pairwise
+            |> Seq.choose (function (_, None) -> None | (last, Some next) -> Some (last, next))
             
 
     module Option =
