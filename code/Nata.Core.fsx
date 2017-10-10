@@ -7,9 +7,9 @@ open System
 # Package
 1. *Nata.Core* from [NuGet](https://www.nuget.org/packages/Nata.Core/), or using [Paket](https://fsprojects.github.io/Paket/):
 
- ```powershell
-   ./.paket/paket.exe add nuget Nata.Core project MyProject
- ```
+```powershell
+./.paket/paket.exe add nuget Nata.Core project MyProject
+```
 
 2. *Reference* and open the Nata.Core library:
 *)
