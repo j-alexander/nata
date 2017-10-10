@@ -63,6 +63,7 @@
     <None Include="InstallEventStore.md" />
     <None Include="InstallKafka.md" />
     <None Include="Index.md" />
+    <None Include="Run.ps1" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
