@@ -87,10 +87,104 @@ a[name] {
 </tr>
 </table>
 <h1><a name="Extensions" class="anchor" href="#Extensions">Extensions</a></h1>
+<ul>
+<li>generate a unique id, or the bytes of one</li>
+</ul>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs13', 20)" onmouseover="showTip(event, 'fs13', 20)" class="f">guid</span>()
+<span class="c">// val it : string = &quot;b2bb73b79ad04871a75a20a478fb3c8c&quot;</span>
+
+<span onmouseout="hideTip(event, 'fs14', 21)" onmouseover="showTip(event, 'fs14', 21)" class="f">guidBytes</span>()
+<span class="c">// val it : byte [] = [|131uy; 238uy; 246uy; 245uy; 252uy; ...</span>
+
+<span class="c">// e.g., shuffle a list</span>
+[<span class="n">1..</span><span class="n">10</span>] <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs15', 22)" onmouseover="showTip(event, 'fs15', 22)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs16', 23)" onmouseover="showTip(event, 'fs16', 23)" class="f">sortBy</span> <span onmouseout="hideTip(event, 'fs13', 24)" onmouseover="showTip(event, 'fs13', 24)" class="f">guid</span>
+</code></pre></td>
+</tr>
+</table>
+<ul>
+<li><code>swap</code> the parameters of a function, to make pipelining easier</li>
+</ul>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// e.g. look up a long sequence of keys</span>
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs24', 36)" onmouseover="showTip(event, 'fs24', 36)" class="i">dataSeq</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs17', 37)" onmouseover="showTip(event, 'fs17', 37)" class="i">keySeq</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 38)" onmouseover="showTip(event, 'fs19', 38)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs25', 39)" onmouseover="showTip(event, 'fs25', 39)" class="f">choose</span> (<span onmouseout="hideTip(event, 'fs21', 40)" onmouseover="showTip(event, 'fs21', 40)" class="i">map</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs26', 41)" onmouseover="showTip(event, 'fs26', 41)" class="f">swap</span> <span onmouseout="hideTip(event, 'fs22', 42)" onmouseover="showTip(event, 'fs22', 42)" class="t">Map</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs27', 43)" onmouseover="showTip(event, 'fs27', 43)" class="f">tryFind</span>)
+</code></pre></td>
+</tr>
+</table>
+<ul>
+<li>compose functions to <code>mapFst</code> or <code>mapSnd</code> a tuple</li>
+</ul>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs28', 44)" onmouseover="showTip(event, 'fs28', 44)" class="f">unpack</span> <span class="o">:</span> (<span onmouseout="hideTip(event, 'fs29', 45)" onmouseover="showTip(event, 'fs29', 45)" class="t">Event</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs9', 46)" onmouseover="showTip(event, 'fs9', 46)" class="t">DataT</span><span class="o">&gt;</span><span class="o">*</span><span onmouseout="hideTip(event, 'fs10', 47)" onmouseover="showTip(event, 'fs10', 47)" class="t">IndexT</span>) <span class="k">-&gt;</span> (<span onmouseout="hideTip(event, 'fs9', 48)" onmouseover="showTip(event, 'fs9', 48)" class="t">DataT</span><span class="o">*</span><span onmouseout="hideTip(event, 'fs10', 49)" onmouseover="showTip(event, 'fs10', 49)" class="t">IndexT</span>) <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs30', 50)" onmouseover="showTip(event, 'fs30', 50)" class="f">mapFst</span> <span onmouseout="hideTip(event, 'fs29', 51)" onmouseover="showTip(event, 'fs29', 51)" class="t">Event</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 52)" onmouseover="showTip(event, 'fs31', 52)" class="f">data</span>
+</code></pre></td>
+</tr>
+</table>
 <h2><a name="Seq" class="anchor" href="#Seq">Seq</a></h2>
+<ul>
+<li>use <code>Seq.mapFst</code> or <code>Seq.mapSnd</code> to transform just the data or index of a seq</li>
+</ul>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs15', 21)" onmouseover="showTip(event, 'fs15', 21)" class="i">data</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs10', 22)" onmouseover="showTip(event, 'fs10', 22)" class="i">events</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs13', 23)" onmouseover="showTip(event, 'fs13', 23)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs16', 24)" onmouseover="showTip(event, 'fs16', 24)" class="f">mapFst</span> <span onmouseout="hideTip(event, 'fs12', 25)" onmouseover="showTip(event, 'fs12', 25)" class="t">Event</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs17', 26)" onmouseover="showTip(event, 'fs17', 26)" class="f">data</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs33', 60)" onmouseover="showTip(event, 'fs33', 60)" class="i">data</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs32', 61)" onmouseover="showTip(event, 'fs32', 61)" class="i">events</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 62)" onmouseover="showTip(event, 'fs19', 62)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs34', 63)" onmouseover="showTip(event, 'fs34', 63)" class="f">mapFst</span> <span onmouseout="hideTip(event, 'fs29', 64)" onmouseover="showTip(event, 'fs29', 64)" class="t">Event</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 65)" onmouseover="showTip(event, 'fs31', 65)" class="f">data</span>
+</code></pre></td>
+</tr>
+</table>
+<ul>
+<li>similarly use <code>Seq.filterFst/Snd</code> or <code>Seq.chooseFst/Snd</code> to select elements by data or index:</li>
+</ul>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs32', 69)" onmouseover="showTip(event, 'fs32', 69)" class="i">events</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 70)" onmouseover="showTip(event, 'fs19', 70)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs37', 71)" onmouseover="showTip(event, 'fs37', 71)" class="f">filterFst</span> (<span onmouseout="hideTip(event, 'fs29', 72)" onmouseover="showTip(event, 'fs29', 72)" class="t">Event</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 73)" onmouseover="showTip(event, 'fs31', 73)" class="f">data</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs35', 74)" onmouseover="showTip(event, 'fs35', 74)" class="f">isGood</span>)
+</code></pre></td>
+</tr>
+</table>
+<ul>
+<li><code>Seq.consume</code> from multiple sequences as data becomes available</li>
+</ul>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp">[ <span onmouseout="hideTip(event, 'fs38', 81)" onmouseover="showTip(event, 'fs38', 81)" class="i">blockedSeq</span>; <span onmouseout="hideTip(event, 'fs38', 82)" onmouseover="showTip(event, 'fs38', 82)" class="i">blockedSeq</span>; <span onmouseout="hideTip(event, 'fs39', 83)" onmouseover="showTip(event, 'fs39', 83)" class="i">readySeq</span>; <span onmouseout="hideTip(event, 'fs38', 84)" onmouseover="showTip(event, 'fs38', 84)" class="i">blockedSeq</span> ]
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 85)" onmouseover="showTip(event, 'fs19', 85)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs43', 86)" onmouseover="showTip(event, 'fs43', 86)" class="f">consume</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 87)" onmouseover="showTip(event, 'fs19', 87)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs44', 88)" onmouseover="showTip(event, 'fs44', 88)" class="f">iter</span> <span onmouseout="hideTip(event, 'fs40', 89)" onmouseover="showTip(event, 'fs40', 89)" class="f">calculate</span> <span class="c">// immediately calculates a value from readySeq</span>
+</code></pre></td>
+</tr>
+</table>
+<ul>
+<li><code>Seq.merge</code> pulls from left or right based on whichever value comes first</li>
+</ul>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs19', 90)" onmouseover="showTip(event, 'fs19', 90)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs45', 91)" onmouseover="showTip(event, 'fs45', 91)" class="f">merge</span> [ <span class="n">1</span>; <span class="n">2</span>; <span class="n">3</span>; <span class="n">7</span>; <span class="n">1</span>; ] [ <span class="n">0</span>; <span class="n">5</span>; <span class="n">8</span>; <span class="n">8</span> ]
+<span class="c">// val it : seq&lt;int&gt; = seq [0; 1; 2; 3; 5; 7; 1; 8; 8]</span>
+</code></pre></td>
+</tr>
+</table>
+<ul>
+<li><code>Seq.mergeBy</code> can be used to correctly merge streams of timeseries data</li>
+</ul>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs48', 106)" onmouseover="showTip(event, 'fs48', 106)" class="i">dataByTime</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs19', 107)" onmouseover="showTip(event, 'fs19', 107)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs49', 108)" onmouseover="showTip(event, 'fs49', 108)" class="f">mergeBy</span> <span onmouseout="hideTip(event, 'fs50', 109)" onmouseover="showTip(event, 'fs50', 109)" class="f">snd</span> <span onmouseout="hideTip(event, 'fs46', 110)" onmouseover="showTip(event, 'fs46', 110)" class="i">leftEvents</span> <span onmouseout="hideTip(event, 'fs47', 111)" onmouseover="showTip(event, 'fs47', 111)" class="i">rightEvents</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 112)" onmouseover="showTip(event, 'fs19', 112)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs51', 113)" onmouseover="showTip(event, 'fs51', 113)" class="f">map</span> (<span onmouseout="hideTip(event, 'fs52', 114)" onmouseover="showTip(event, 'fs52', 114)" class="f">fst</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs29', 115)" onmouseover="showTip(event, 'fs29', 115)" class="t">Event</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 116)" onmouseover="showTip(event, 'fs31', 116)" class="f">data</span>)
 </code></pre></td>
 </tr>
 </table>
@@ -115,19 +209,54 @@ a[name] {
 <div class="tip" id="fs2">namespace Nata</div>
 <div class="tip" id="fs3">namespace Nata.Core</div>
 <div class="tip" id="fs4">namespace Nata.IO</div>
-<div class="tip" id="fs5">type DataT = unit<br /><br />Full name: Nata.Core.DataT</div>
+<div class="tip" id="fs5">type SomeType = unit<br /><br />Full name: Nata.Core.SomeType</div>
 <div class="tip" id="fs6">type unit = Unit<br /><br />Full name: Microsoft.FSharp.Core.unit</div>
-<div class="tip" id="fs7">type IndexT = unit<br /><br />Full name: Nata.Core.IndexT</div>
-<div class="tip" id="fs8">type NewDataT = unit<br /><br />Full name: Nata.Core.NewDataT</div>
-<div class="tip" id="fs9">type NewIndexT = unit<br /><br />Full name: Nata.Core.NewIndexT</div>
-<div class="tip" id="fs10">val events : seq&lt;Event&lt;DataT&gt; * IndexT&gt;<br /><br />Full name: Nata.Core.events</div>
-<div class="tip" id="fs11">Multiple items<br />val seq : sequence:seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Core.Operators.seq<br /><br />--------------------<br />type seq&lt;&#39;T&gt; = Collections.Generic.IEnumerable&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.seq&lt;_&gt;</div>
-<div class="tip" id="fs12">Multiple items<br />module Event<br /><br />from Nata.IO<br /><br />--------------------<br />module Event<br /><br />from Microsoft.FSharp.Control<br /><br />--------------------<br />type Event&lt;&#39;Data&gt; =<br />&#160;&#160;{Data: &#39;Data;<br />&#160;&#160;&#160;Metadata: Value list;<br />&#160;&#160;&#160;At: DateTime;}<br /><br />Full name: Nata.IO.Event&lt;_&gt;<br /><br />--------------------<br />type Event&lt;&#39;Delegate,&#39;Args (requires delegate and &#39;Delegate :&gt; Delegate)&gt; =<br />&#160;&#160;new : unit -&gt; Event&lt;&#39;Delegate,&#39;Args&gt;<br />&#160;&#160;member Trigger : sender:obj * args:&#39;Args -&gt; unit<br />&#160;&#160;member Publish : IEvent&lt;&#39;Delegate,&#39;Args&gt;<br /><br />Full name: Microsoft.FSharp.Control.Event&lt;_,_&gt;<br /><br />--------------------<br />new : unit -&gt; Event&lt;&#39;Delegate,&#39;Args&gt;</div>
-<div class="tip" id="fs13">Multiple items<br />module Seq<br /><br />from Nata.Core.Core<br /><br />--------------------<br />module Seq<br /><br />from Microsoft.FSharp.Collections</div>
-<div class="tip" id="fs14">val empty&lt;&#39;T&gt; : seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.empty</div>
-<div class="tip" id="fs15">val data : seq&lt;DataT * IndexT&gt;<br /><br />Full name: Nata.Core.data</div>
-<div class="tip" id="fs16">val mapFst : fn:(&#39;a -&gt; &#39;b) -&gt; (seq&lt;&#39;a * &#39;c&gt; -&gt; seq&lt;&#39;b * &#39;c&gt;)<br /><br />Full name: Nata.Core.Core.Seq.mapFst</div>
-<div class="tip" id="fs17">val data : e:Event&lt;&#39;a&gt; -&gt; &#39;a<br /><br />Full name: Nata.IO.Event.data</div>
+<div class="tip" id="fs7">type SomeOtherType = unit<br /><br />Full name: Nata.Core.SomeOtherType</div>
+<div class="tip" id="fs8">type KeyT = SomeType<br /><br />Full name: Nata.Core.KeyT</div>
+<div class="tip" id="fs9">type DataT = SomeType<br /><br />Full name: Nata.Core.DataT</div>
+<div class="tip" id="fs10">type IndexT = SomeType<br /><br />Full name: Nata.Core.IndexT</div>
+<div class="tip" id="fs11">type NewDataT = SomeOtherType<br /><br />Full name: Nata.Core.NewDataT</div>
+<div class="tip" id="fs12">type NewIndexT = SomeOtherType<br /><br />Full name: Nata.Core.NewIndexT</div>
+<div class="tip" id="fs13">val guid : &#39;a -&gt; string<br /><br />Full name: Nata.Core.Core.guid</div>
+<div class="tip" id="fs14">val guidBytes : &#39;a -&gt; byte []<br /><br />Full name: Nata.Core.Core.guidBytes</div>
+<div class="tip" id="fs15">Multiple items<br />module List<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type List&lt;&#39;T&gt; =<br />&#160;&#160;| ( [] )<br />&#160;&#160;| ( :: ) of Head: &#39;T * Tail: &#39;T list<br />&#160;&#160;interface IEnumerable<br />&#160;&#160;interface IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;member GetSlice : startIndex:int option * endIndex:int option -&gt; &#39;T list<br />&#160;&#160;member Head : &#39;T<br />&#160;&#160;member IsEmpty : bool<br />&#160;&#160;member Item : index:int -&gt; &#39;T with get<br />&#160;&#160;member Length : int<br />&#160;&#160;member Tail : &#39;T list<br />&#160;&#160;static member Cons : head:&#39;T * tail:&#39;T list -&gt; &#39;T list<br />&#160;&#160;static member Empty : &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List&lt;_&gt;</div>
+<div class="tip" id="fs16">val sortBy : projection:(&#39;T -&gt; &#39;Key) -&gt; list:&#39;T list -&gt; &#39;T list (requires comparison)<br /><br />Full name: Microsoft.FSharp.Collections.List.sortBy</div>
+<div class="tip" id="fs17">val keySeq : seq&lt;KeyT&gt;<br /><br />Full name: Nata.Core.keySeq</div>
+<div class="tip" id="fs18">Multiple items<br />val seq : sequence:seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Core.Operators.seq<br /><br />--------------------<br />type seq&lt;&#39;T&gt; = Collections.Generic.IEnumerable&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.seq&lt;_&gt;</div>
+<div class="tip" id="fs19">Multiple items<br />module Seq<br /><br />from Nata.Core.Core<br /><br />--------------------<br />module Seq<br /><br />from Microsoft.FSharp.Collections</div>
+<div class="tip" id="fs20">val empty&lt;&#39;T&gt; : seq&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.empty</div>
+<div class="tip" id="fs21">val map : Map&lt;KeyT,DataT&gt;<br /><br />Full name: Nata.Core.map</div>
+<div class="tip" id="fs22">Multiple items<br />module Map<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type Map&lt;&#39;Key,&#39;Value (requires comparison)&gt; =<br />&#160;&#160;interface IEnumerable<br />&#160;&#160;interface IComparable<br />&#160;&#160;interface IEnumerable&lt;KeyValuePair&lt;&#39;Key,&#39;Value&gt;&gt;<br />&#160;&#160;interface ICollection&lt;KeyValuePair&lt;&#39;Key,&#39;Value&gt;&gt;<br />&#160;&#160;interface IDictionary&lt;&#39;Key,&#39;Value&gt;<br />&#160;&#160;new : elements:seq&lt;&#39;Key * &#39;Value&gt; -&gt; Map&lt;&#39;Key,&#39;Value&gt;<br />&#160;&#160;member Add : key:&#39;Key * value:&#39;Value -&gt; Map&lt;&#39;Key,&#39;Value&gt;<br />&#160;&#160;member ContainsKey : key:&#39;Key -&gt; bool<br />&#160;&#160;override Equals : obj -&gt; bool<br />&#160;&#160;member Remove : key:&#39;Key -&gt; Map&lt;&#39;Key,&#39;Value&gt;<br />&#160;&#160;...<br /><br />Full name: Microsoft.FSharp.Collections.Map&lt;_,_&gt;<br /><br />--------------------<br />new : elements:seq&lt;&#39;Key * &#39;Value&gt; -&gt; Map&lt;&#39;Key,&#39;Value&gt;</div>
+<div class="tip" id="fs23">val empty&lt;&#39;Key,&#39;T (requires comparison)&gt; : Map&lt;&#39;Key,&#39;T&gt; (requires comparison)<br /><br />Full name: Microsoft.FSharp.Collections.Map.empty</div>
+<div class="tip" id="fs24">val dataSeq : seq&lt;DataT&gt;<br /><br />Full name: Nata.Core.dataSeq</div>
+<div class="tip" id="fs25">val choose : chooser:(&#39;T -&gt; &#39;U option) -&gt; source:seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;U&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.choose</div>
+<div class="tip" id="fs26">val swap : fn:(&#39;a -&gt; &#39;b -&gt; &#39;c) -&gt; i:&#39;b -&gt; j:&#39;a -&gt; &#39;c<br /><br />Full name: Nata.Core.Core.swap</div>
+<div class="tip" id="fs27">val tryFind : key:&#39;Key -&gt; table:Map&lt;&#39;Key,&#39;T&gt; -&gt; &#39;T option (requires comparison)<br /><br />Full name: Microsoft.FSharp.Collections.Map.tryFind</div>
+<div class="tip" id="fs28">val unpack : (Event&lt;DataT&gt; * IndexT -&gt; DataT * IndexT)<br /><br />Full name: Nata.Core.unpack</div>
+<div class="tip" id="fs29">Multiple items<br />module Event<br /><br />from Nata.IO<br /><br />--------------------<br />module Event<br /><br />from Microsoft.FSharp.Control<br /><br />--------------------<br />type Event&lt;&#39;Data&gt; =<br />&#160;&#160;{Data: &#39;Data;<br />&#160;&#160;&#160;Metadata: Value list;<br />&#160;&#160;&#160;At: DateTime;}<br /><br />Full name: Nata.IO.Event&lt;_&gt;<br /><br />--------------------<br />type Event&lt;&#39;Delegate,&#39;Args (requires delegate and &#39;Delegate :&gt; Delegate)&gt; =<br />&#160;&#160;new : unit -&gt; Event&lt;&#39;Delegate,&#39;Args&gt;<br />&#160;&#160;member Trigger : sender:obj * args:&#39;Args -&gt; unit<br />&#160;&#160;member Publish : IEvent&lt;&#39;Delegate,&#39;Args&gt;<br /><br />Full name: Microsoft.FSharp.Control.Event&lt;_,_&gt;<br /><br />--------------------<br />new : unit -&gt; Event&lt;&#39;Delegate,&#39;Args&gt;</div>
+<div class="tip" id="fs30">val mapFst : fn:(&#39;a -&gt; &#39;b) -&gt; i:&#39;a * j:&#39;c -&gt; &#39;b * &#39;c<br /><br />Full name: Nata.Core.Core.mapFst</div>
+<div class="tip" id="fs31">val data : e:Event&lt;&#39;a&gt; -&gt; &#39;a<br /><br />Full name: Nata.IO.Event.data</div>
+<div class="tip" id="fs32">val events : seq&lt;Event&lt;DataT&gt; * IndexT&gt;<br /><br />Full name: Nata.Core.events</div>
+<div class="tip" id="fs33">val data : seq&lt;DataT * IndexT&gt;<br /><br />Full name: Nata.Core.data</div>
+<div class="tip" id="fs34">val mapFst : fn:(&#39;a -&gt; &#39;b) -&gt; (seq&lt;&#39;a * &#39;c&gt; -&gt; seq&lt;&#39;b * &#39;c&gt;)<br /><br />Full name: Nata.Core.Core.Seq.mapFst</div>
+<div class="tip" id="fs35">val isGood : DataT -&gt; bool<br /><br />Full name: Nata.Core.isGood</div>
+<div class="tip" id="fs36">type bool = Boolean<br /><br />Full name: Microsoft.FSharp.Core.bool</div>
+<div class="tip" id="fs37">val filterFst : fn:(&#39;a -&gt; bool) -&gt; (seq&lt;&#39;a * &#39;b&gt; -&gt; seq&lt;&#39;a * &#39;b&gt;)<br /><br />Full name: Nata.Core.Core.Seq.filterFst</div>
+<div class="tip" id="fs38">val blockedSeq : int list<br /><br />Full name: Nata.Core.blockedSeq</div>
+<div class="tip" id="fs39">val readySeq : int list<br /><br />Full name: Nata.Core.readySeq</div>
+<div class="tip" id="fs40">val calculate : (int -&gt; unit)<br /><br />Full name: Nata.Core.calculate</div>
+<div class="tip" id="fs41">Multiple items<br />val int : value:&#39;T -&gt; int (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.Operators.int<br /><br />--------------------<br />type int = int32<br /><br />Full name: Microsoft.FSharp.Core.int<br /><br />--------------------<br />type int&lt;&#39;Measure&gt; = int<br /><br />Full name: Microsoft.FSharp.Core.int&lt;_&gt;</div>
+<div class="tip" id="fs42">val ignore : value:&#39;T -&gt; unit<br /><br />Full name: Microsoft.FSharp.Core.Operators.ignore</div>
+<div class="tip" id="fs43">val consume : sequences:#seq&lt;&#39;T&gt; list -&gt; seq&lt;&#39;T&gt;<br /><br />Full name: Nata.Core.Core.Seq.consume</div>
+<div class="tip" id="fs44">val iter : action:(&#39;T -&gt; unit) -&gt; source:seq&lt;&#39;T&gt; -&gt; unit<br /><br />Full name: Microsoft.FSharp.Collections.Seq.iter</div>
+<div class="tip" id="fs45">val merge : l:seq&lt;&#39;a&gt; -&gt; r:seq&lt;&#39;a&gt; -&gt; seq&lt;&#39;a&gt; (requires comparison)<br /><br />Full name: Nata.Core.Core.Seq.merge</div>
+<div class="tip" id="fs46">val leftEvents : seq&lt;Event&lt;DataT&gt; * IndexT&gt;<br /><br />Full name: Nata.Core.leftEvents</div>
+<div class="tip" id="fs47">val rightEvents : seq&lt;Event&lt;DataT&gt; * IndexT&gt;<br /><br />Full name: Nata.Core.rightEvents</div>
+<div class="tip" id="fs48">val dataByTime : seq&lt;DataT&gt;<br /><br />Full name: Nata.Core.dataByTime</div>
+<div class="tip" id="fs49">val mergeBy : fn:(&#39;a -&gt; &#39;b) -&gt; l:#seq&lt;&#39;a&gt; -&gt; r:#seq&lt;&#39;a&gt; -&gt; seq&lt;&#39;a&gt; (requires comparison)<br /><br />Full name: Nata.Core.Core.Seq.mergeBy</div>
+<div class="tip" id="fs50">val snd : tuple:(&#39;T1 * &#39;T2) -&gt; &#39;T2<br /><br />Full name: Microsoft.FSharp.Core.Operators.snd</div>
+<div class="tip" id="fs51">val map : mapping:(&#39;T -&gt; &#39;U) -&gt; source:seq&lt;&#39;T&gt; -&gt; seq&lt;&#39;U&gt;<br /><br />Full name: Microsoft.FSharp.Collections.Seq.map</div>
+<div class="tip" id="fs52">val fst : tuple:(&#39;T1 * &#39;T2) -&gt; &#39;T1<br /><br />Full name: Microsoft.FSharp.Core.Operators.fst</div>
 
             </div>
             <div class="span1"></div>
