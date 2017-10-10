@@ -1,11 +1,11 @@
 source https://api.nuget.org/v3/index.json
 framework >= net461
 
-nuget FSharp.Compiler.Service 2.0.0.6
+nuget FSharp.Compiler.Service
 nuget FSharp.Data
 nuget FSharp.Formatting 2.14.4
 nuget FSharp.Formatting.CommandTool
-nuget FSharpVSPowerTools.Core 2.3.0
+nuget FSharpVSPowerTools.Core
 nuget Nata.Core
 nuget Nata.IO
 nuget Nata.IO.AzureStorage
