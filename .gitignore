@@ -1,7 +1,6 @@
 _site/
 paket-files/
 paket.exe
-paket.targets
 
 # User-specific files
 *.suo
