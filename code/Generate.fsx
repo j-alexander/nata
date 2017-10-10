@@ -35,19 +35,28 @@ let copy folder file =
         file.Directory.Create()
     File.Copy(input, output, true)
     
-let generateAs source target =
+let generateMarkdownAs source target =
     let template = Path.Combine(__SOURCE_DIRECTORY__, "Template.html")
     let source = Path.Combine(__SOURCE_DIRECTORY__, source)
     let target = Path.Combine(output, target)
     Literate.ProcessMarkdown(source, template, target, generateAnchors=true)
 
-let generate file =
-    generateAs (file |> sprintf "%s.md") (file |> sprintf "%s.html")
+let generateScriptAs source target =
+    let template = Path.Combine(__SOURCE_DIRECTORY__, "Template.html")
+    let source = Path.Combine(__SOURCE_DIRECTORY__, source)
+    let target = Path.Combine(output, target)
+    Literate.ProcessScriptFile(source, template, target, generateAnchors=true)
 
+let generateMarkdown file =
+    generateMarkdownAs (file |> sprintf "%s.md") (file |> sprintf "%s.html")
+    
+let generateScript file =
+    generateScriptAs (file |> sprintf "%s.fsx") (file |> sprintf "%s.html")
 
 copy "content" "style.css"
 copy "content" "tips.js"
 
-generate "InstallEventStore"
-generate "InstallKafka"
-generateAs "index.md" "index.html"
+generateMarkdown "InstallEventStore"
+generateMarkdown "InstallKafka"
+generateScript "Nata.Core"
+generateMarkdownAs "Index.md" "index.html"

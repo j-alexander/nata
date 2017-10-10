@@ -68,6 +68,7 @@
     <None Include="app.config" />
     <Compile Include="Generate.fsx" />
     <None Include="Template.html" />
+    <None Include="Nata.Core.fsx" />
     <None Include="InstallEventStore.md" />
     <None Include="InstallKafka.md" />
     <None Include="Index.md" />

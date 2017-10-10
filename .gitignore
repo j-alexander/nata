@@ -1,6 +1,7 @@
 _site/
 paket-files/
 paket.exe
+Paket.Restore.targets
 
 # User-specific files
 *.suo
