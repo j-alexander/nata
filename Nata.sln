@@ -40,8 +40,6 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.EventHub", "Nata.IO
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.EventHub.Tests", "Nata.IO.EventHub.Tests\Nata.IO.EventHub.Tests.fsproj", "{F0D10D96-77ED-4C85-9CF9-D4F2F6B49272}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Documentation", "Documentation\Documentation.fsproj", "{4F059E0F-12A0-4EFC-91CF-51466B6BCB7B}"
-EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Fun.JsonPath", "Nata.Fun.JsonPath\Nata.Fun.JsonPath.fsproj", "{714846EF-7B39-40DD-BF6A-AE694CEBA160}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.WebSocket", "Nata.IO.WebSocket\Nata.IO.WebSocket.fsproj", "{D72C8833-920D-4120-980E-96FA27D47505}"
@@ -140,10 +138,6 @@ Global
 		{F0D10D96-77ED-4C85-9CF9-D4F2F6B49272}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F0D10D96-77ED-4C85-9CF9-D4F2F6B49272}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F0D10D96-77ED-4C85-9CF9-D4F2F6B49272}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4F059E0F-12A0-4EFC-91CF-51466B6BCB7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4F059E0F-12A0-4EFC-91CF-51466B6BCB7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4F059E0F-12A0-4EFC-91CF-51466B6BCB7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4F059E0F-12A0-4EFC-91CF-51466B6BCB7B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{714846EF-7B39-40DD-BF6A-AE694CEBA160}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{714846EF-7B39-40DD-BF6A-AE694CEBA160}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{714846EF-7B39-40DD-BF6A-AE694CEBA160}.Release|Any CPU.ActiveCfg = Release|Any CPU
