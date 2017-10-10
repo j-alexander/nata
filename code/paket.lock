@@ -1,0 +1,11 @@
+RESTRICTION: >= net461
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    FSharp.Compiler.Service (2.0.0.6)
+    FSharp.Data (2.4.2)
+    FSharp.Formatting (2.14.4)
+      FSharp.Compiler.Service (2.0.0.6)
+      FSharpVSPowerTools.Core (>= 2.3 < 2.4)
+    FSharp.Formatting.CommandTool (2.14.4)
+    FSharpVSPowerTools.Core (2.3)
+      FSharp.Compiler.Service (>= 2.0.0.3)
