@@ -6,3 +6,15 @@ nuget FSharp.Data
 nuget FSharp.Formatting 2.14.4
 nuget FSharp.Formatting.CommandTool
 nuget FSharpVSPowerTools.Core 2.3.0
+nuget Nata.Core
+nuget Nata.IO
+nuget Nata.IO.AzureStorage
+nuget Nata.IO.EventHub
+nuget Nata.IO.EventStore
+nuget Nata.IO.File
+nuget Nata.IO.KafkaNet
+nuget Nata.IO.Kafunk
+nuget Nata.IO.Memory
+nuget Nata.IO.RabbitMQ
+nuget Nata.IO.WebSocket
+nuget Nata.Service

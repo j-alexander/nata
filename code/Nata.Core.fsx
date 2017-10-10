@@ -1,10 +1,10 @@
 ﻿(**
-### Nata.Core
+# Overview
 *)
 (*** hide ***)
 open System
 (**
-## Package
+# Package
 1. *Nata.Core* from [NuGet](https://www.nuget.org/packages/Nata.Core/), or using [Paket](https://fsprojects.github.io/Paket/):
 
  ```powershell
@@ -13,41 +13,58 @@ open System
 
 2. *Reference* and open the Nata.Core library:
 *)
-//#r "packages/FSharp.Data/lib/net45/FSharp.Data.dll"
+#r "packages/Nata.Core/lib/net461/Nata.Core.dll"
+open Nata.Core
+(**
+*)
+(*** hide ***)
+#r "packages/Nata.IO/lib/net461/Nata.IO.dll"
+open Nata.IO
+type DataT = unit
+type IndexT = unit
+(**
+# Extensions
+
+## Seq
+*)
+(*** hide ***)
+type NewDataT = unit
+type NewIndexT = unit
+let events : seq<Event<DataT> * IndexT> = Seq.empty
+(**
+*)
+let data = events |> Seq.mapFst Event.data
 
 (**
-## Extensions
-# Seq
+## Option
 
-# Option
+## Null
 
-# Null
+## Nullable
 
-# Nullable
+## Decimal
 
-# Decimal
+## Int64
 
-# Int64
+## Int32
 
-# Int32
+## String
 
-# String
+# Codec
 
-## Codec
+# JsonValue
 
-## JsonValue
+# DateTime
 
-## DateTime
+## DateTime.Resolution
 
-# DateTime.Resolution
+## DateTime.Codec
 
-# DateTime.Codec
+# Patterns
 
-## Patterns
+# GZip
 
-## GZip
+## GZip.Stream
 
-# GZip.Stream
-
-# GZip.File
+## GZip.File
 *)

@@ -2,3 +2,15 @@ FSharp.Compiler.Service
 FSharp.Formatting
 FSharp.Formatting.CommandTool
 FSharpVSPowerTools.Core
+Nata.Core
+Nata.IO
+Nata.IO.AzureStorage
+Nata.IO.EventHub
+Nata.IO.EventStore
+Nata.IO.File
+Nata.IO.KafkaNet
+Nata.IO.Kafunk
+Nata.IO.Memory
+Nata.IO.RabbitMQ
+Nata.IO.WebSocket
+Nata.Service
