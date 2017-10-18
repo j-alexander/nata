@@ -69,37 +69,21 @@ a[name] {
                 <h1><a name="Overview" class="anchor" href="#Overview">Overview</a></h1>
 <h1><a name="Package" class="anchor" href="#Package">Package</a></h1>
 <ol>
-<li>
-<p><em>Nata.Core</em> from <a href="https://www.nuget.org/packages/Nata.Core/">NuGet</a>, or using <a href="https://fsprojects.github.io/Paket/">Paket</a>:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="powershell">./.paket/paket.exe add nuget Nata.Core project MyProject
-</code></pre></td></tr></table>
-</li>
-<li><p><em>Reference</em> and open the Nata.Core library:</p></li>
+<li><em>Nata.Core</em> from <a href="https://www.nuget.org/packages/Nata.Core/">NuGet</a>, or using <a href="https://fsprojects.github.io/Paket/">Paket</a>:</li>
 </ol>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="prep">#r</span> <span class="s">&quot;packages/Nata.Core/lib/net461/Nata.Core.dll&quot;</span>
+<table class="pre"><tr><td class="snippet"><pre class="fssnip"><code lang="powershell">./.paket/paket.exe add nuget Nata.Core project MyProject
+</code></pre></td></tr></table>
+<ol>
+<li><em>Reference</em> and open the Nata.Core library:</li>
+</ol>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="prep">#r</span> <span class="s">&quot;packages/Nata.Core/lib/net461/Nata.Core.dll&quot;</span>
 <span class="k">open</span> <span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="i">Nata</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="i">Core</span>
-</code></pre></td>
-</tr>
-</table>
+</code></pre>
 <h1><a name="Extensions" class="anchor" href="#Extensions">Extensions</a></h1>
 <ul>
 <li>generate a unique id, or the bytes of one</li>
 </ul>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-<span class="l">5: </span>
-<span class="l">6: </span>
-<span class="l">7: </span>
-<span class="l">8: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs13', 20)" onmouseover="showTip(event, 'fs13', 20)" class="f">guid</span>()
+<pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs13', 20)" onmouseover="showTip(event, 'fs13', 20)" class="f">guid</span>()
 <span class="c">// val it : string = &quot;b2bb73b79ad04871a75a20a478fb3c8c&quot;</span>
 
 <span onmouseout="hideTip(event, 'fs14', 21)" onmouseover="showTip(event, 'fs14', 21)" class="f">guidBytes</span>()
@@ -107,87 +91,50 @@ a[name] {
 
 <span class="c">// e.g., shuffle a list</span>
 [<span class="n">1..</span><span class="n">10</span>] <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs15', 22)" onmouseover="showTip(event, 'fs15', 22)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs16', 23)" onmouseover="showTip(event, 'fs16', 23)" class="f">sortBy</span> <span onmouseout="hideTip(event, 'fs13', 24)" onmouseover="showTip(event, 'fs13', 24)" class="f">guid</span>
-</code></pre></td>
-</tr>
-</table>
+</code></pre>
 <ul>
 <li><code>swap</code> the parameters of a function, to make pipelining easier</li>
 </ul>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// e.g. look up a long sequence of keys</span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// e.g. look up a long sequence of keys</span>
 <span class="k">let</span> <span onmouseout="hideTip(event, 'fs24', 36)" onmouseover="showTip(event, 'fs24', 36)" class="i">dataSeq</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs17', 37)" onmouseover="showTip(event, 'fs17', 37)" class="i">keySeq</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 38)" onmouseover="showTip(event, 'fs19', 38)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs25', 39)" onmouseover="showTip(event, 'fs25', 39)" class="f">choose</span> (<span onmouseout="hideTip(event, 'fs21', 40)" onmouseover="showTip(event, 'fs21', 40)" class="i">map</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs26', 41)" onmouseover="showTip(event, 'fs26', 41)" class="f">swap</span> <span onmouseout="hideTip(event, 'fs22', 42)" onmouseover="showTip(event, 'fs22', 42)" class="t">Map</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs27', 43)" onmouseover="showTip(event, 'fs27', 43)" class="f">tryFind</span>)
-</code></pre></td>
-</tr>
-</table>
+</code></pre>
 <ul>
 <li>compose functions to <code>mapFst</code> or <code>mapSnd</code> a tuple</li>
 </ul>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs28', 44)" onmouseover="showTip(event, 'fs28', 44)" class="f">unpack</span> <span class="o">:</span> (<span onmouseout="hideTip(event, 'fs29', 45)" onmouseover="showTip(event, 'fs29', 45)" class="t">Event</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs9', 46)" onmouseover="showTip(event, 'fs9', 46)" class="t">DataT</span><span class="o">&gt;</span><span class="o">*</span><span onmouseout="hideTip(event, 'fs10', 47)" onmouseover="showTip(event, 'fs10', 47)" class="t">IndexT</span>) <span class="k">-&gt;</span> (<span onmouseout="hideTip(event, 'fs9', 48)" onmouseover="showTip(event, 'fs9', 48)" class="t">DataT</span><span class="o">*</span><span onmouseout="hideTip(event, 'fs10', 49)" onmouseover="showTip(event, 'fs10', 49)" class="t">IndexT</span>) <span class="o">=</span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs28', 44)" onmouseover="showTip(event, 'fs28', 44)" class="f">unpack</span> <span class="o">:</span> (<span onmouseout="hideTip(event, 'fs29', 45)" onmouseover="showTip(event, 'fs29', 45)" class="t">Event</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs9', 46)" onmouseover="showTip(event, 'fs9', 46)" class="t">DataT</span><span class="o">&gt;</span><span class="o">*</span><span onmouseout="hideTip(event, 'fs10', 47)" onmouseover="showTip(event, 'fs10', 47)" class="t">IndexT</span>) <span class="k">-&gt;</span> (<span onmouseout="hideTip(event, 'fs9', 48)" onmouseover="showTip(event, 'fs9', 48)" class="t">DataT</span><span class="o">*</span><span onmouseout="hideTip(event, 'fs10', 49)" onmouseover="showTip(event, 'fs10', 49)" class="t">IndexT</span>) <span class="o">=</span>
     <span onmouseout="hideTip(event, 'fs30', 50)" onmouseover="showTip(event, 'fs30', 50)" class="f">mapFst</span> <span onmouseout="hideTip(event, 'fs29', 51)" onmouseover="showTip(event, 'fs29', 51)" class="t">Event</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 52)" onmouseover="showTip(event, 'fs31', 52)" class="f">data</span>
-</code></pre></td>
-</tr>
-</table>
+</code></pre>
 <h2><a name="Seq" class="anchor" href="#Seq">Seq</a></h2>
 <ul>
 <li>use <code>Seq.mapFst</code> or <code>Seq.mapSnd</code> to transform just the data or index of a seq</li>
 </ul>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs33', 60)" onmouseover="showTip(event, 'fs33', 60)" class="i">data</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs32', 61)" onmouseover="showTip(event, 'fs32', 61)" class="i">events</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 62)" onmouseover="showTip(event, 'fs19', 62)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs34', 63)" onmouseover="showTip(event, 'fs34', 63)" class="f">mapFst</span> <span onmouseout="hideTip(event, 'fs29', 64)" onmouseover="showTip(event, 'fs29', 64)" class="t">Event</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 65)" onmouseover="showTip(event, 'fs31', 65)" class="f">data</span>
-</code></pre></td>
-</tr>
-</table>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs33', 60)" onmouseover="showTip(event, 'fs33', 60)" class="i">data</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs32', 61)" onmouseover="showTip(event, 'fs32', 61)" class="i">events</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 62)" onmouseover="showTip(event, 'fs19', 62)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs34', 63)" onmouseover="showTip(event, 'fs34', 63)" class="f">mapFst</span> <span onmouseout="hideTip(event, 'fs29', 64)" onmouseover="showTip(event, 'fs29', 64)" class="t">Event</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 65)" onmouseover="showTip(event, 'fs31', 65)" class="f">data</span>
+</code></pre>
 <ul>
 <li>similarly use <code>Seq.filterFst/Snd</code> or <code>Seq.chooseFst/Snd</code> to select elements by data or index:</li>
 </ul>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs32', 69)" onmouseover="showTip(event, 'fs32', 69)" class="i">events</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 70)" onmouseover="showTip(event, 'fs19', 70)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs37', 71)" onmouseover="showTip(event, 'fs37', 71)" class="f">filterFst</span> (<span onmouseout="hideTip(event, 'fs29', 72)" onmouseover="showTip(event, 'fs29', 72)" class="t">Event</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 73)" onmouseover="showTip(event, 'fs31', 73)" class="f">data</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs35', 74)" onmouseover="showTip(event, 'fs35', 74)" class="f">isGood</span>)
-</code></pre></td>
-</tr>
-</table>
+<pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs32', 69)" onmouseover="showTip(event, 'fs32', 69)" class="i">events</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 70)" onmouseover="showTip(event, 'fs19', 70)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs37', 71)" onmouseover="showTip(event, 'fs37', 71)" class="f">filterFst</span> (<span onmouseout="hideTip(event, 'fs29', 72)" onmouseover="showTip(event, 'fs29', 72)" class="t">Event</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 73)" onmouseover="showTip(event, 'fs31', 73)" class="f">data</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs35', 74)" onmouseover="showTip(event, 'fs35', 74)" class="f">isGood</span>)
+</code></pre>
 <ul>
 <li><code>Seq.consume</code> from multiple sequences as data becomes available</li>
 </ul>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp">[ <span onmouseout="hideTip(event, 'fs38', 81)" onmouseover="showTip(event, 'fs38', 81)" class="i">blockedSeq</span>; <span onmouseout="hideTip(event, 'fs38', 82)" onmouseover="showTip(event, 'fs38', 82)" class="i">blockedSeq</span>; <span onmouseout="hideTip(event, 'fs39', 83)" onmouseover="showTip(event, 'fs39', 83)" class="i">readySeq</span>; <span onmouseout="hideTip(event, 'fs38', 84)" onmouseover="showTip(event, 'fs38', 84)" class="i">blockedSeq</span> ]
+<pre class="fssnip highlighted"><code lang="fsharp">[ <span onmouseout="hideTip(event, 'fs38', 81)" onmouseover="showTip(event, 'fs38', 81)" class="i">blockedSeq</span>; <span onmouseout="hideTip(event, 'fs38', 82)" onmouseover="showTip(event, 'fs38', 82)" class="i">blockedSeq</span>; <span onmouseout="hideTip(event, 'fs39', 83)" onmouseover="showTip(event, 'fs39', 83)" class="i">readySeq</span>; <span onmouseout="hideTip(event, 'fs38', 84)" onmouseover="showTip(event, 'fs38', 84)" class="i">blockedSeq</span> ]
 <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 85)" onmouseover="showTip(event, 'fs19', 85)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs43', 86)" onmouseover="showTip(event, 'fs43', 86)" class="f">consume</span>
 <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 87)" onmouseover="showTip(event, 'fs19', 87)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs44', 88)" onmouseover="showTip(event, 'fs44', 88)" class="f">iter</span> <span onmouseout="hideTip(event, 'fs40', 89)" onmouseover="showTip(event, 'fs40', 89)" class="f">calculate</span> <span class="c">// immediately calculates a value from readySeq</span>
-</code></pre></td>
-</tr>
-</table>
+</code></pre>
 <ul>
 <li><code>Seq.merge</code> pulls from left or right based on whichever value comes first</li>
 </ul>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs19', 90)" onmouseover="showTip(event, 'fs19', 90)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs45', 91)" onmouseover="showTip(event, 'fs45', 91)" class="f">merge</span> [ <span class="n">1</span>; <span class="n">2</span>; <span class="n">3</span>; <span class="n">7</span>; <span class="n">1</span>; ] [ <span class="n">0</span>; <span class="n">5</span>; <span class="n">8</span>; <span class="n">8</span> ]
+<pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs19', 90)" onmouseover="showTip(event, 'fs19', 90)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs45', 91)" onmouseover="showTip(event, 'fs45', 91)" class="f">merge</span> [ <span class="n">1</span>; <span class="n">2</span>; <span class="n">3</span>; <span class="n">7</span>; <span class="n">1</span>; ] [ <span class="n">0</span>; <span class="n">5</span>; <span class="n">8</span>; <span class="n">8</span> ]
 <span class="c">// val it : seq&lt;int&gt; = seq [0; 1; 2; 3; 5; 7; 1; 8; 8]</span>
-</code></pre></td>
-</tr>
-</table>
+</code></pre>
 <ul>
 <li><code>Seq.mergeBy</code> can be used to correctly merge streams of timeseries data</li>
 </ul>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs48', 106)" onmouseover="showTip(event, 'fs48', 106)" class="i">dataByTime</span> <span class="o">=</span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs48', 106)" onmouseover="showTip(event, 'fs48', 106)" class="i">dataByTime</span> <span class="o">=</span>
     <span onmouseout="hideTip(event, 'fs19', 107)" onmouseover="showTip(event, 'fs19', 107)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs49', 108)" onmouseover="showTip(event, 'fs49', 108)" class="f">mergeBy</span> <span onmouseout="hideTip(event, 'fs50', 109)" onmouseover="showTip(event, 'fs50', 109)" class="f">snd</span> <span onmouseout="hideTip(event, 'fs46', 110)" onmouseover="showTip(event, 'fs46', 110)" class="i">leftEvents</span> <span onmouseout="hideTip(event, 'fs47', 111)" onmouseover="showTip(event, 'fs47', 111)" class="i">rightEvents</span>
     <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs19', 112)" onmouseover="showTip(event, 'fs19', 112)" class="t">Seq</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs51', 113)" onmouseover="showTip(event, 'fs51', 113)" class="f">map</span> (<span onmouseout="hideTip(event, 'fs52', 114)" onmouseover="showTip(event, 'fs52', 114)" class="f">fst</span> <span class="o">&gt;</span><span class="o">&gt;</span> <span onmouseout="hideTip(event, 'fs29', 115)" onmouseover="showTip(event, 'fs29', 115)" class="t">Event</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs31', 116)" onmouseover="showTip(event, 'fs31', 116)" class="f">data</span>)
-</code></pre></td>
-</tr>
-</table>
+</code></pre>
 <h2><a name="Option" class="anchor" href="#Option">Option</a></h2>
 <ul>
 <li>

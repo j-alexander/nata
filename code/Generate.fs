@@ -30,7 +30,7 @@ module Program =
         let template = Path.Combine(__SOURCE_DIRECTORY__, "Template.html")
         let source = Path.Combine(__SOURCE_DIRECTORY__, source)
         let target = Path.Combine(output, target)
-        Literate.ProcessScriptFile(source, template, target, generateAnchors=true)
+        Literate.ProcessScriptFile(source, template, target, generateAnchors=true, lineNumbers=false)
 
     let generateMarkdown file =
         generateMarkdownAs (file |> sprintf "%s.md") (file |> sprintf "%s.html")
