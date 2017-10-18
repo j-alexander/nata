@@ -92,9 +92,60 @@ let rightEvents : seq<Event<DataT> * IndexT> = Seq.empty
 let dataByTime =
     Seq.mergeBy snd leftEvents rightEvents
     |> Seq.map (fst >> Event.data)
+(*** hide ***)
+let maybeNone = None
+let maybeThree = Some 3
+let maybeFour = Some 4
+let maybeProduceAnExpensiveFour _ = Some 4
+let input:SomeType = ()
 (**
 ## Option
 
+- provides equivalent functions to [`Option.defaultValue`](https://github.com/fsharp/fsharp/blob/1de369ca6f4564044ff6adee667a5da54f8b7138/src/fsharp/FSharp.Core/option.fs#L20)
+  and [`Option.defaultWith`](https://github.com/fsharp/fsharp/blob/1de369ca6f4564044ff6adee667a5da54f8b7138/src/fsharp/FSharp.Core/option.fs#L23) from the newest F# core
+
+- `Option.whenTrue` will convert a value into an option type of `Some` only if the predicate is satisfied, otherwise yielding None
+*)
+let big = 3 |> Option.whenTrue (fun x -> x > 10)
+(**
+- similar to the SQL coalesce operator, `Option.coalesce` will take the first non-None value in the pipeline
+*)
+let maybeThreeOtherwiseFourOtherwiseNone =
+    maybeThree
+    |> Option.coalesce maybeFour
+    |> Option.coalesce maybeNone
+(**
+- `Option.coalesceYield` will attempt to fill in None using a function (similar to `Option.defaultWith`)
+*)
+let maybeFourIfNone =
+    maybeNone
+    |> Option.coalesceYield maybeProduceAnExpensiveFour
+(**
+- `Option.tryFunction` will sink any exceptions into `None`
+*)
+input
+|> Option.tryFunction (fun x -> failwith "error to sink"; x)
+//val it : SomeType option = None
+(**
+- split an optional tuple into two separate options using `Option.distribute`
+*)
+let someOne, someTwo =
+    Some (1,2)
+    |> Option.distribute
+//val someOne : int option = Some 1
+//val someTwo : int option = Some 2
+(**
+- collapse an `'a option option` field using `Option.join`
+*)
+Some (Some 3) |> Option.join
+// val it : int option = Some 3
+
+Some None |> Option.join
+// val it : int option = None
+
+None |> Option.join
+// val it : int option = None
+(**
 ## Null
 
 ## Nullable
