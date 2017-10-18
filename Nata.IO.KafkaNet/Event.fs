@@ -27,14 +27,14 @@ module Event =
           Message.PartitionId =
             event
             |> Event.partition 
-            |> Option.getValueOr 0
+            |> Option.defaultValue 0
           Message.Offset =
             event
             |> Event.index
-            |> Option.getValueOr 0L
+            |> Option.defaultValue 0L
           Message.Key =
             event
             |> Event.key
             |> Option.filter (String.IsNullOrWhiteSpace >> not)
             |> Option.map (Encoding.Default.GetBytes)
-            |> Option.getValueOrYield (Guid.NewGuid().ToByteArray) }
+            |> Option.defaultWith (Guid.NewGuid().ToByteArray) }

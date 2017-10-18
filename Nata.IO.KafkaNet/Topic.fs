@@ -86,7 +86,7 @@ module Topic =
                 Seq.unfold (fun (partitions, offsets) ->
                     (partitions, offsets)
                     |> Option.whenTrue (hasCompleted >> not)
-                    |> Option.getValueOrYield (fun _ -> offsetRangesFor(consumer,topic.Name), offsets)
+                    |> Option.defaultWith (fun _ -> offsetRangesFor(consumer,topic.Name), offsets)
                     |> Option.whenTrue (hasCompleted >> not)
                     |> Option.map get) (ranges, offsets)
         }

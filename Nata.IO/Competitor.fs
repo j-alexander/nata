@@ -25,14 +25,14 @@ module Competitor =
                 let position =
                     index
                     |> Option.map (Position.At >> Position.After)
-                    |> Option.getValueOr (Position.Start)
+                    |> Option.defaultValue (Position.Start)
                 try writeTo position event |> Some
                 with :? Position.Invalid<'Index> -> None
             let rec apply(last) =
                 seq {
                     let eventIn, indexIn =
                         last
-                        |> Option.coalesceYield state
+                        |> Option.coalesceWith state
                         |> Option.distribute
 
                     let eventOut = fn eventIn

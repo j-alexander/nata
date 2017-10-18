@@ -48,7 +48,7 @@ module Stream =
             read connection stream size Direction.Reverse position
             |> Seq.tryPick Some
             |> Option.map (snd >> (+) 1L)
-            |> Option.getValueOr (int64 StreamPosition.Start)
+            |> Option.defaultValue (int64 StreamPosition.Start)
         | Position.End -> (int64 StreamPosition.End)
 
 
@@ -129,8 +129,8 @@ module Stream =
                 | index -> index + 1L
         let eventId = Guid.NewGuid()
         let eventPosition = targetVersionOf position
-        let eventMetadata = Event.bytes event |> Option.getValueOr [||]
-        let eventType = Event.eventType event |> Option.getValueOrYield guid
+        let eventMetadata = Event.bytes event |> Option.defaultValue [||]
+        let eventType = Event.eventType event |> Option.defaultWith guid
         let eventData = new EventData(eventId, eventType, true, event.Data, eventMetadata)
         let result =
             connection.AppendToStreamAsync(targetStream, eventPosition, eventData)
@@ -160,14 +160,14 @@ module Stream =
             let position =
                 index
                 |> Option.map ((+) 1L >> Position.At)
-                |> Option.getValueOr (Position.Start)
+                |> Option.defaultValue (Position.Start)
             try write connection stream position event |> Some
             with :? Position.Invalid<Index> -> None
         let rec apply(last:(Event*Index) option) =
             seq {
                 let eventIn, indexIn =
                     last 
-                    |> Option.coalesceYield state
+                    |> Option.coalesceWith state
                     |> Option.distribute
                 let eventOut = fn eventIn
                 let result = 

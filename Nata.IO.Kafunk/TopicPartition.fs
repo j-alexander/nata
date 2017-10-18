@@ -127,7 +127,7 @@ module TopicPartition =
                 event
                 |> Event.key
                 |> Option.map Encoding.UTF8.GetBytes
-                |> Option.getValueOrYield guidBytes
+                |> Option.defaultWith guidBytes
             bytes
             |> ProducerMessage.ofBytes
             |> Producer.produce (producer.Force())

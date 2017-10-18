@@ -21,7 +21,7 @@ module Hub =
                 |> hub.GetPartitionRuntimeInformation
             information.LastEnqueuedOffset
             |> Index.ofString
-            |> Option.getValueOr Index.start
+            |> Option.defaultValue Index.start
 
         let rec indexOf = function
             | Position.Start -> start()
@@ -75,7 +75,7 @@ module Hub =
             data.PartitionKey <- 
                 event
                 |> Event.key
-                |> Option.getValueOr (guid())
+                |> Option.defaultValue (guid())
             data
             |> hub.Send
         | Some partition ->

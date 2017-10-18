@@ -43,7 +43,7 @@ module Queue =
 
     let rec index (queue:Queue) = function
         | Position.Start -> 0L
-        | Position.End -> length queue |> Option.getValueOr 0L
+        | Position.End -> length queue |> Option.defaultValue 0L
         | Position.At x -> x
         | Position.Before x -> -1L + index queue x
         | Position.After x -> 1L + index queue x

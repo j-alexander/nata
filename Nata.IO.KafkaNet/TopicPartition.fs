@@ -75,7 +75,7 @@ module TopicPartition =
                 Seq.unfold (fun (partitions, offset) ->
                     (partitions, offset)
                     |> Option.whenTrue (hasCompleted >> not)
-                    |> Option.getValueOrYield (fun _ -> offsetRangeFor(consumer,name,partition), offset)
+                    |> Option.defaultWith (fun _ -> offsetRangeFor(consumer,name,partition), offset)
                     |> Option.whenTrue (hasCompleted >> not)
                     |> Option.map get) (range, offset)
         }

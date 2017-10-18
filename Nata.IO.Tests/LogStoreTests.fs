@@ -313,7 +313,7 @@ type LogStoreTests() as x =
         match tryCompetitor, tryReaderFrom, tryWriter with
         | Some compete, Some readFrom, Some write ->
             let generation : int list =
-                compete (Option.getValueOr (Event.create 2) >> Event.map ((*) 2))
+                compete (Option.defaultValue (Event.create 2) >> Event.map ((*) 2))
                 |> Seq.take 10
                 |> Seq.map Event.data
                 |> Seq.toList
@@ -344,7 +344,7 @@ type LogStoreTests() as x =
         match tryCompetitor, tryReaderFrom, tryWriter with
         | Some compete, Some readFrom, Some write ->
             let generation (delay:int->int) : int seq =
-                compete (Option.getValueOr (Event.create 2) >> fun e ->
+                compete (Option.defaultValue (Event.create 2) >> fun e ->
                     let input = Event.data e
                     let output = input * 2
                     Thread.Sleep(delay input)

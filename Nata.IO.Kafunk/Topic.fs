@@ -60,7 +60,7 @@ module Topic =
             event
             |> Event.partition
             |> Option.map Partitioner.konst
-            |> Option.getValueOr Partitioner.crc32Key
+            |> Option.defaultValue Partitioner.crc32Key
         let producer =
             ProducerConfig.create(topic, partitioner)
             |> Producer.create cluster
@@ -70,7 +70,7 @@ module Topic =
             event
             |> Event.key
             |> Option.map Encoding.UTF8.GetBytes
-            |> Option.getValueOrYield guidBytes
+            |> Option.defaultWith guidBytes
         bytes
         |> ProducerMessage.ofBytes
         |> Producer.produce producer

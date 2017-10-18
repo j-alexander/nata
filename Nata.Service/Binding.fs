@@ -7,7 +7,7 @@ open Nata.IO
 module Binding =
 
     let private isRequired reason =
-        Option.getValueOrYield(fun () -> reason |> NotSupportedException |> raise)
+        Option.defaultWith(fun () -> reason |> NotSupportedException |> raise)
 
     let private readerFrom channel =
         Channel.tryReaderFrom channel

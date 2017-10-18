@@ -88,7 +88,7 @@ module Consumer =
             let positionFor index =
                 index
                 |> Option.map (Position.At >> Position.After)
-                |> Option.getValueOr Position.Start
+                |> Option.defaultValue Position.Start
             let input, index =
                 [ (l (positionFor indexL)) |> Seq.mapFst Choice1Of2 |> Seq.mapSnd Choice1Of2
                   (r (positionFor indexR)) |> Seq.mapFst Choice2Of2 |> Seq.mapSnd Choice2Of2 ]
@@ -136,12 +136,12 @@ module Consumer =
                 last
                 |> Option.map (function { Event.Data={ State=state; Index=index }} -> state, index)
                 |> Option.distribute
-                |> mapSnd (Option.getValueOr Map.empty)
+                |> mapSnd (Option.defaultValue Map.empty)
             let positionFor name =
                 indexes
                 |> Map.tryFind name
                 |> Option.map (Position.At >> Position.After)
-                |> Option.getValueOr Position.Start
+                |> Option.defaultValue Position.Start
             let name,index,input =
                 subscribersByCheckpoint
                 |> Map.toList

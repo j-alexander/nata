@@ -33,17 +33,17 @@ module Codec =
         reverse StringToBytes
 
     let Int32ToString : Codec<int32,string> =
-        Int32.toString, Int32.ofString >> Option.getValueOr 0
+        Int32.toString, Int32.ofString >> Option.defaultValue 0
     let StringToInt32 : Codec<string,int32> =
         reverse Int32ToString
 
     let Int64ToString : Codec<int64,string> =
-        Int64.toString, Int64.ofString >> Option.getValueOr 0L
+        Int64.toString, Int64.ofString >> Option.defaultValue 0L
     let StringToInt64 : Codec<string,int64> =
         reverse Int64ToString
 
     let DecimalToString : Codec<decimal,string> =
-        Decimal.toString, Decimal.ofString >> Option.getValueOr 0m
+        Decimal.toString, Decimal.ofString >> Option.defaultValue 0m
     let StringToDecimal : Codec<string,decimal> =
         reverse DecimalToString
         

@@ -154,13 +154,12 @@ module Core =
     module Option =
         
         let whenTrue fn x = if fn x then Some x else None
-        let filter fn = Option.bind(whenTrue fn)
 
         let coalesce snd fst = match fst with None -> snd | x -> x
-        let coalesceYield snd fst = match fst with None -> snd() | x -> x
+        let coalesceWith snd fst = match fst with None -> snd() | x -> x
 
-        let getValueOr x = function None -> x | Some x -> x
-        let getValueOrYield fn = function None -> fn() | Some x -> x
+        let defaultValue x = function None -> x | Some x -> x
+        let defaultWith fn = function None -> fn() | Some x -> x
 
         let tryFunction fn x = try Some <| fn x with _ -> None
         
