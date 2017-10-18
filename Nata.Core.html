@@ -143,83 +143,43 @@ and <a href="https://github.com/fsharp/fsharp/blob/1de369ca6f4564044ff6adee667a5
 </li>
 <li><p><code>Option.whenTrue</code> will convert a value into an option type of <code>Some</code> only if the predicate is satisfied, otherwise yielding None</p></li>
 </ul>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs60', 127)" onmouseover="showTip(event, 'fs60', 127)" class="i">big</span> <span class="o">=</span> <span class="n">3</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs61', 128)" onmouseover="showTip(event, 'fs61', 128)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs62', 129)" onmouseover="showTip(event, 'fs62', 129)" class="f">whenTrue</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs63', 130)" onmouseover="showTip(event, 'fs63', 130)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs63', 131)" onmouseover="showTip(event, 'fs63', 131)" class="i">x</span> <span class="o">&gt;</span> <span class="n">10</span>)
-</code></pre></td>
-</tr>
-</table>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs60', 127)" onmouseover="showTip(event, 'fs60', 127)" class="i">big</span> <span class="o">=</span> <span class="n">3</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs61', 128)" onmouseover="showTip(event, 'fs61', 128)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs62', 129)" onmouseover="showTip(event, 'fs62', 129)" class="f">whenTrue</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs63', 130)" onmouseover="showTip(event, 'fs63', 130)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs63', 131)" onmouseover="showTip(event, 'fs63', 131)" class="i">x</span> <span class="o">&gt;</span> <span class="n">10</span>)
+</code></pre>
 <ul>
 <li>similar to the SQL coalesce operator, <code>Option.coalesce</code> will take the first non-None value in the pipeline</li>
 </ul>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs64', 132)" onmouseover="showTip(event, 'fs64', 132)" class="i">maybeThreeOtherwiseFourOtherwiseNone</span> <span class="o">=</span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs64', 132)" onmouseover="showTip(event, 'fs64', 132)" class="i">maybeThreeOtherwiseFourOtherwiseNone</span> <span class="o">=</span>
     <span onmouseout="hideTip(event, 'fs55', 133)" onmouseover="showTip(event, 'fs55', 133)" class="i">maybeThree</span>
     <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs61', 134)" onmouseover="showTip(event, 'fs61', 134)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs65', 135)" onmouseover="showTip(event, 'fs65', 135)" class="f">coalesce</span> <span onmouseout="hideTip(event, 'fs57', 136)" onmouseover="showTip(event, 'fs57', 136)" class="i">maybeFour</span>
     <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs61', 137)" onmouseover="showTip(event, 'fs61', 137)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs65', 138)" onmouseover="showTip(event, 'fs65', 138)" class="f">coalesce</span> <span onmouseout="hideTip(event, 'fs53', 139)" onmouseover="showTip(event, 'fs53', 139)" class="i">maybeNone</span>
-</code></pre></td>
-</tr>
-</table>
+</code></pre>
 <ul>
 <li><code>Option.coalesceYield</code> will attempt to fill in None using a function (similar to <code>Option.defaultWith</code>)</li>
 </ul>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs66', 140)" onmouseover="showTip(event, 'fs66', 140)" class="i">maybeFourIfNone</span> <span class="o">=</span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs66', 140)" onmouseover="showTip(event, 'fs66', 140)" class="i">maybeFourIfNone</span> <span class="o">=</span>
     <span onmouseout="hideTip(event, 'fs53', 141)" onmouseover="showTip(event, 'fs53', 141)" class="i">maybeNone</span>
     <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs61', 142)" onmouseover="showTip(event, 'fs61', 142)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs67', 143)" onmouseover="showTip(event, 'fs67', 143)" class="f">coalesceYield</span> <span onmouseout="hideTip(event, 'fs58', 144)" onmouseover="showTip(event, 'fs58', 144)" class="f">maybeProduceAnExpensiveFour</span>
-</code></pre></td>
-</tr>
-</table>
+</code></pre>
 <ul>
 <li><code>Option.tryFunction</code> will sink any exceptions into <code>None</code></li>
 </ul>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs59', 145)" onmouseover="showTip(event, 'fs59', 145)" class="i">input</span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs59', 145)" onmouseover="showTip(event, 'fs59', 145)" class="i">input</span>
 <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs61', 146)" onmouseover="showTip(event, 'fs61', 146)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs68', 147)" onmouseover="showTip(event, 'fs68', 147)" class="f">tryFunction</span> (<span class="k">fun</span> <span onmouseout="hideTip(event, 'fs69', 148)" onmouseover="showTip(event, 'fs69', 148)" class="i">x</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs70', 149)" onmouseover="showTip(event, 'fs70', 149)" class="f">failwith</span> <span class="s">&quot;error to sink&quot;</span>; <span onmouseout="hideTip(event, 'fs69', 150)" onmouseover="showTip(event, 'fs69', 150)" class="i">x</span>)
 <span class="c">//val it : SomeType option = None</span>
-</code></pre></td>
-</tr>
-</table>
+</code></pre>
 <ul>
 <li>split an optional tuple into two separate options using <code>Option.distribute</code></li>
 </ul>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-<span class="l">5: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs71', 151)" onmouseover="showTip(event, 'fs71', 151)" class="i">someOne</span>, <span onmouseout="hideTip(event, 'fs72', 152)" onmouseover="showTip(event, 'fs72', 152)" class="i">someTwo</span> <span class="o">=</span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs71', 151)" onmouseover="showTip(event, 'fs71', 151)" class="i">someOne</span>, <span onmouseout="hideTip(event, 'fs72', 152)" onmouseover="showTip(event, 'fs72', 152)" class="i">someTwo</span> <span class="o">=</span>
     <span onmouseout="hideTip(event, 'fs56', 153)" onmouseover="showTip(event, 'fs56', 153)" class="p">Some</span> (<span class="n">1</span>,<span class="n">2</span>)
     <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs61', 154)" onmouseover="showTip(event, 'fs61', 154)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs73', 155)" onmouseover="showTip(event, 'fs73', 155)" class="f">distribute</span>
 <span class="c">//val someOne : int option = Some 1</span>
 <span class="c">//val someTwo : int option = Some 2</span>
-</code></pre></td>
-</tr>
-</table>
+</code></pre>
 <ul>
 <li>collapse an <code>'a option option</code> field using <code>Option.join</code></li>
 </ul>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-<span class="l">5: </span>
-<span class="l">6: </span>
-<span class="l">7: </span>
-<span class="l">8: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs56', 156)" onmouseover="showTip(event, 'fs56', 156)" class="p">Some</span> (<span onmouseout="hideTip(event, 'fs56', 157)" onmouseover="showTip(event, 'fs56', 157)" class="p">Some</span> <span class="n">3</span>) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs61', 158)" onmouseover="showTip(event, 'fs61', 158)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs74', 159)" onmouseover="showTip(event, 'fs74', 159)" class="f">join</span>
+<pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs56', 156)" onmouseover="showTip(event, 'fs56', 156)" class="p">Some</span> (<span onmouseout="hideTip(event, 'fs56', 157)" onmouseover="showTip(event, 'fs56', 157)" class="p">Some</span> <span class="n">3</span>) <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs61', 158)" onmouseover="showTip(event, 'fs61', 158)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs74', 159)" onmouseover="showTip(event, 'fs74', 159)" class="f">join</span>
 <span class="c">// val it : int option = Some 3</span>
 
 <span onmouseout="hideTip(event, 'fs56', 160)" onmouseover="showTip(event, 'fs56', 160)" class="p">Some</span> <span onmouseout="hideTip(event, 'fs54', 161)" onmouseover="showTip(event, 'fs54', 161)" class="p">None</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs61', 162)" onmouseover="showTip(event, 'fs61', 162)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs74', 163)" onmouseover="showTip(event, 'fs74', 163)" class="f">join</span>
@@ -227,9 +187,7 @@ and <a href="https://github.com/fsharp/fsharp/blob/1de369ca6f4564044ff6adee667a5
 
 <span onmouseout="hideTip(event, 'fs54', 164)" onmouseover="showTip(event, 'fs54', 164)" class="p">None</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs61', 165)" onmouseover="showTip(event, 'fs61', 165)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs74', 166)" onmouseover="showTip(event, 'fs74', 166)" class="f">join</span>
 <span class="c">// val it : int option = None</span>
-</code></pre></td>
-</tr>
-</table>
+</code></pre>
 <h2><a name="Null" class="anchor" href="#Null">Null</a></h2>
 <h2><a name="Nullable" class="anchor" href="#Nullable">Nullable</a></h2>
 <h2><a name="Decimal" class="anchor" href="#Decimal">Decimal</a></h2>
