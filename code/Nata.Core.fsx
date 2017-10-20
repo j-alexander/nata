@@ -132,8 +132,8 @@ input
 let someOne, someTwo =
     Some (1,2)
     |> Option.distribute
-//val someOne : int option = Some 1
-//val someTwo : int option = Some 2
+// val someOne : int option = Some 1
+// val someTwo : int option = Some 2
 (**
 - collapse an `'a option option` field using `Option.join`
 *)
@@ -145,11 +145,44 @@ Some None |> Option.join
 
 None |> Option.join
 // val it : int option = None
+(*** hide ***)
+let nullString : string = null
 (**
 ## Null
 
+- safely convert null values to options
+*)
+nullString
+|> Null.toOption
+// val it : string option = None
+(*** hide ***)
+
+(**
 ## Nullable
 
+- transform nullable values, or exchange them for options
+
+- apply `Nullable.map` as you would with `Option.map`
+*)
+Nullable 3
+|> Nullable.map ((+) 2)
+// val it : Nullable<int> = 5
+
+Nullable ()
+|> Nullable.map ((+) 2)
+// val it : Nullable<int> = null
+(**
+- convert a `Nullable.toOption` and get the `Nullable.ofOption` values
+*)
+let threeOption =
+    Nullable 3
+    |> Nullable.toOption
+// val threeOption : Option<int> = Some 3
+
+threeOption
+|> Nullable.ofOption
+// val it : Nullable<int> = 3
+(**
 ## Decimal
 
 ## Int64

@@ -173,8 +173,8 @@ and <a href="https://github.com/fsharp/fsharp/blob/1de369ca6f4564044ff6adee667a5
 <pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs71', 151)" onmouseover="showTip(event, 'fs71', 151)" class="i">someOne</span>, <span onmouseout="hideTip(event, 'fs72', 152)" onmouseover="showTip(event, 'fs72', 152)" class="i">someTwo</span> <span class="o">=</span>
     <span onmouseout="hideTip(event, 'fs56', 153)" onmouseover="showTip(event, 'fs56', 153)" class="p">Some</span> (<span class="n">1</span>,<span class="n">2</span>)
     <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs61', 154)" onmouseover="showTip(event, 'fs61', 154)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs73', 155)" onmouseover="showTip(event, 'fs73', 155)" class="f">distribute</span>
-<span class="c">//val someOne : int option = Some 1</span>
-<span class="c">//val someTwo : int option = Some 2</span>
+<span class="c">// val someOne : int option = Some 1</span>
+<span class="c">// val someTwo : int option = Some 2</span>
 </code></pre>
 <ul>
 <li>collapse an <code>'a option option</code> field using <code>Option.join</code></li>
@@ -189,7 +189,38 @@ and <a href="https://github.com/fsharp/fsharp/blob/1de369ca6f4564044ff6adee667a5
 <span class="c">// val it : int option = None</span>
 </code></pre>
 <h2><a name="Null" class="anchor" href="#Null">Null</a></h2>
+<ul>
+<li>safely convert null values to options</li>
+</ul>
+<pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs75', 169)" onmouseover="showTip(event, 'fs75', 169)" class="i">nullString</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs77', 170)" onmouseover="showTip(event, 'fs77', 170)" class="t">Null</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs78', 171)" onmouseover="showTip(event, 'fs78', 171)" class="f">toOption</span>
+<span class="c">// val it : string option = None</span>
+</code></pre>
 <h2><a name="Nullable" class="anchor" href="#Nullable">Nullable</a></h2>
+<ul>
+<li>transform nullable values, or exchange them for options</li>
+<li><p>apply <code>Nullable.map</code> as you would with <code>Option.map</code></p></li>
+</ul>
+<pre class="fssnip highlighted"><code lang="fsharp"><span onmouseout="hideTip(event, 'fs79', 172)" onmouseover="showTip(event, 'fs79', 172)" class="t">Nullable</span> <span class="n">3</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs79', 173)" onmouseover="showTip(event, 'fs79', 173)" class="t">Nullable</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs80', 174)" onmouseover="showTip(event, 'fs80', 174)" class="f">map</span> ((<span class="o">+</span>) <span class="n">2</span>)
+<span class="c">// val it : Nullable&lt;int&gt; = 5</span>
+
+<span onmouseout="hideTip(event, 'fs79', 175)" onmouseover="showTip(event, 'fs79', 175)" class="t">Nullable</span> ()
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs79', 176)" onmouseover="showTip(event, 'fs79', 176)" class="t">Nullable</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs80', 177)" onmouseover="showTip(event, 'fs80', 177)" class="f">map</span> ((<span class="o">+</span>) <span class="n">2</span>)
+<span class="c">// val it : Nullable&lt;int&gt; = null</span>
+</code></pre>
+<ul>
+<li>convert a <code>Nullable.toOption</code> and get the <code>Nullable.ofOption</code> values</li>
+</ul>
+<pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs81', 178)" onmouseover="showTip(event, 'fs81', 178)" class="i">threeOption</span> <span class="o">=</span>
+    <span onmouseout="hideTip(event, 'fs79', 179)" onmouseover="showTip(event, 'fs79', 179)" class="t">Nullable</span> <span class="n">3</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs79', 180)" onmouseover="showTip(event, 'fs79', 180)" class="t">Nullable</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs82', 181)" onmouseover="showTip(event, 'fs82', 181)" class="f">toOption</span>
+<span class="c">// val threeOption : Option&lt;int&gt; = Some 3</span>
+
+<span onmouseout="hideTip(event, 'fs81', 182)" onmouseover="showTip(event, 'fs81', 182)" class="i">threeOption</span>
+<span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs79', 183)" onmouseover="showTip(event, 'fs79', 183)" class="t">Nullable</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs83', 184)" onmouseover="showTip(event, 'fs83', 184)" class="f">ofOption</span>
+<span class="c">// val it : Nullable&lt;int&gt; = 3</span>
+</code></pre>
 <h2><a name="Decimal" class="anchor" href="#Decimal">Decimal</a></h2>
 <h2><a name="Int64" class="anchor" href="#Int64">Int64</a></h2>
 <h2><a name="Int32" class="anchor" href="#Int32">Int32</a></h2>
@@ -278,6 +309,15 @@ and <a href="https://github.com/fsharp/fsharp/blob/1de369ca6f4564044ff6adee667a5
 <div class="tip" id="fs72">val someTwo : int option<br /><br />Full name: Nata.Core.someTwo</div>
 <div class="tip" id="fs73">val distribute : _arg1:(&#39;a * &#39;b) option -&gt; &#39;a option * &#39;b option<br /><br />Full name: Nata.Core.Core.Option.distribute</div>
 <div class="tip" id="fs74">val join : _arg1:&#39;a option option -&gt; &#39;a option<br /><br />Full name: Nata.Core.Core.Option.join</div>
+<div class="tip" id="fs75">val nullString : string<br /><br />Full name: Nata.Core.nullString</div>
+<div class="tip" id="fs76">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
+<div class="tip" id="fs77">module Null<br /><br />from Nata.Core.Core</div>
+<div class="tip" id="fs78">val toOption : _arg1:&#39;a -&gt; &#39;a option (requires &#39;a : null)<br /><br />Full name: Nata.Core.Core.Null.toOption</div>
+<div class="tip" id="fs79">Multiple items<br />active recognizer Nullable: Nullable&lt;&#39;a&gt; -&gt; Option&lt;&#39;a&gt;<br /><br />Full name: Nata.Core.Patterns.( |Nullable|_| )<br /><br />--------------------<br />type Nullable =<br />&#160;&#160;static member Compare&lt;&#39;T&gt; : n1:Nullable&lt;&#39;T&gt; * n2:Nullable&lt;&#39;T&gt; -&gt; int<br />&#160;&#160;static member Equals&lt;&#39;T&gt; : n1:Nullable&lt;&#39;T&gt; * n2:Nullable&lt;&#39;T&gt; -&gt; bool<br />&#160;&#160;static member GetUnderlyingType : nullableType:Type -&gt; Type<br /><br />Full name: System.Nullable<br /><br />--------------------<br />type Nullable&lt;&#39;T (requires default constructor and value type and &#39;T :&gt; ValueType)&gt; =<br />&#160;&#160;struct<br />&#160;&#160;&#160;&#160;new : value:&#39;T -&gt; Nullable&lt;&#39;T&gt;<br />&#160;&#160;&#160;&#160;member Equals : other:obj -&gt; bool<br />&#160;&#160;&#160;&#160;member GetHashCode : unit -&gt; int<br />&#160;&#160;&#160;&#160;member GetValueOrDefault : unit -&gt; &#39;T + 1 overload<br />&#160;&#160;&#160;&#160;member HasValue : bool<br />&#160;&#160;&#160;&#160;member ToString : unit -&gt; string<br />&#160;&#160;&#160;&#160;member Value : &#39;T<br />&#160;&#160;end<br /><br />Full name: System.Nullable&lt;_&gt;<br /><br />--------------------<br />Nullable()<br />Nullable(value: &#39;T) : unit</div>
+<div class="tip" id="fs80">val map : fn:(&#39;T -&gt; &#39;U) -&gt; x:Nullable&lt;&#39;T&gt; -&gt; Nullable&lt;&#39;U&gt; (requires default constructor and value type and &#39;T :&gt; ValueType and default constructor and value type and &#39;U :&gt; ValueType)<br /><br />Full name: Nata.Core.Core.Nullable.map</div>
+<div class="tip" id="fs81">val threeOption : Option&lt;int&gt;<br /><br />Full name: Nata.Core.threeOption</div>
+<div class="tip" id="fs82">val toOption : x:Nullable&lt;&#39;T&gt; -&gt; Option&lt;&#39;T&gt; (requires default constructor and value type and &#39;T :&gt; ValueType)<br /><br />Full name: Nata.Core.Core.Nullable.toOption</div>
+<div class="tip" id="fs83">val ofOption : _arg1:&#39;a option -&gt; Nullable&lt;&#39;a&gt; (requires default constructor and value type and &#39;a :&gt; ValueType)<br /><br />Full name: Nata.Core.Core.Nullable.ofOption</div>
 
             </div>
             <div class="span1"></div>
