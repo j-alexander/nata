@@ -192,6 +192,8 @@ gh-pages/
 
 # Current Packet Version
 .paket/paket.exe
+.paket/Paket.Restore.targets
+paket-files/
 
 # Visual Studio Config Files
 .vs/
