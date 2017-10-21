@@ -115,11 +115,11 @@ let maybeThreeOtherwiseFourOtherwiseNone =
     |> Option.coalesce maybeFour
     |> Option.coalesce maybeNone
 (**
-- `Option.coalesceYield` will attempt to fill in None using a function (similar to `Option.defaultWith`)
+- `Option.coalesceWith` will attempt to fill in None using a function (similar to `Option.defaultWith`)
 *)
 let maybeFourIfNone =
     maybeNone
-    |> Option.coalesceYield maybeProduceAnExpensiveFour
+    |> Option.coalesceWith maybeProduceAnExpensiveFour
 (**
 - `Option.tryFunction` will sink any exceptions into `None`
 *)

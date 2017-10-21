@@ -154,11 +154,11 @@ and <a href="https://github.com/fsharp/fsharp/blob/1de369ca6f4564044ff6adee667a5
     <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs61', 137)" onmouseover="showTip(event, 'fs61', 137)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs65', 138)" onmouseover="showTip(event, 'fs65', 138)" class="f">coalesce</span> <span onmouseout="hideTip(event, 'fs53', 139)" onmouseover="showTip(event, 'fs53', 139)" class="i">maybeNone</span>
 </code></pre>
 <ul>
-<li><code>Option.coalesceYield</code> will attempt to fill in None using a function (similar to <code>Option.defaultWith</code>)</li>
+<li><code>Option.coalesceWith</code> will attempt to fill in None using a function (similar to <code>Option.defaultWith</code>)</li>
 </ul>
 <pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span onmouseout="hideTip(event, 'fs66', 140)" onmouseover="showTip(event, 'fs66', 140)" class="i">maybeFourIfNone</span> <span class="o">=</span>
     <span onmouseout="hideTip(event, 'fs53', 141)" onmouseover="showTip(event, 'fs53', 141)" class="i">maybeNone</span>
-    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs61', 142)" onmouseover="showTip(event, 'fs61', 142)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs67', 143)" onmouseover="showTip(event, 'fs67', 143)" class="f">coalesceYield</span> <span onmouseout="hideTip(event, 'fs58', 144)" onmouseover="showTip(event, 'fs58', 144)" class="f">maybeProduceAnExpensiveFour</span>
+    <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs61', 142)" onmouseover="showTip(event, 'fs61', 142)" class="t">Option</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs67', 143)" onmouseover="showTip(event, 'fs67', 143)" class="f">coalesceWith</span> <span onmouseout="hideTip(event, 'fs58', 144)" onmouseover="showTip(event, 'fs58', 144)" class="f">maybeProduceAnExpensiveFour</span>
 </code></pre>
 <ul>
 <li><code>Option.tryFunction</code> will sink any exceptions into <code>None</code></li>
@@ -301,7 +301,7 @@ and <a href="https://github.com/fsharp/fsharp/blob/1de369ca6f4564044ff6adee667a5
 <div class="tip" id="fs64">val maybeThreeOtherwiseFourOtherwiseNone : int option<br /><br />Full name: Nata.Core.maybeThreeOtherwiseFourOtherwiseNone</div>
 <div class="tip" id="fs65">val coalesce : snd:&#39;a option -&gt; fst:&#39;a option -&gt; &#39;a option<br /><br />Full name: Nata.Core.Core.Option.coalesce</div>
 <div class="tip" id="fs66">val maybeFourIfNone : int option<br /><br />Full name: Nata.Core.maybeFourIfNone</div>
-<div class="tip" id="fs67">val coalesceYield : snd:(unit -&gt; &#39;a option) -&gt; fst:&#39;a option -&gt; &#39;a option<br /><br />Full name: Nata.Core.Core.Option.coalesceYield</div>
+<div class="tip" id="fs67">val coalesceWith : snd:(unit -&gt; &#39;a option) -&gt; fst:&#39;a option -&gt; &#39;a option<br /><br />Full name: Nata.Core.Core.Option.coalesceWith</div>
 <div class="tip" id="fs68">val tryFunction : fn:(&#39;a -&gt; &#39;b) -&gt; x:&#39;a -&gt; &#39;b option<br /><br />Full name: Nata.Core.Core.Option.tryFunction</div>
 <div class="tip" id="fs69">val x : SomeType</div>
 <div class="tip" id="fs70">val failwith : message:string -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.Operators.failwith</div>
