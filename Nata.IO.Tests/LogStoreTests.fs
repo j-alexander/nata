@@ -404,9 +404,42 @@ type LogStoreTests() as x =
         Assert.AreEqual(event_2.Data,take(Position.Before(Position.End)))
         Assert.AreEqual(event_1.Data,take(Position.Before(Position.Before(Position.End))))
         Assert.AreEqual(event_0.Data,take(Position.Before(Position.Before(Position.Before(Position.End)))))
+        
+    abstract member TestReadFromBeforeEndAsSnapshot : unit->unit
+
+    [<Test>]
+    default x.TestReadFromBeforeEndAsSnapshot() =
+        let connection = x.Connect()
+        let write, readFrom =
+            writer connection,
+            readerFrom connection
+        let flush =
+            let subscribeFrom = subscriberFrom connection
+            fun n ->
+                subscribeFrom(Position.Start)
+                |> Seq.take n
+                |> Seq.iter ignore
+        let snapshot _ =
+            readFrom (Position.Before Position.End)
+            |> Seq.tryPick (fst >> Event.data >> Some)
+            |> Option.toList
+        Assert.AreEqual([], snapshot())
+        let events =
+            [ event("TestReadFromBeforeEnd-0")
+              event("TestReadFromBeforeEnd-1")
+              event("TestReadFromBeforeEnd-2") ]
+        write events.[0]
+        flush 1
+        Assert.AreEqual([events.[0].Data], snapshot())
+        write events.[1]
+        flush 2
+        Assert.AreEqual([events.[1].Data], snapshot())
+        write events.[2]
+        flush 3
+        Assert.AreEqual([events.[2].Data], snapshot())
 
     abstract member TestSubscribeFromBeforeEnd : unit->unit
-    
+
     [<Test>]
     default x.TestSubscribeFromBeforeEnd() =
         let connection = x.Connect()
