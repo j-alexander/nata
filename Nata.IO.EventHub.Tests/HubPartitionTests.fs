@@ -129,4 +129,6 @@ type HubPartitionTests() =
     [<Test>]
     override x.TestReadFromBeforeEnd() = Assert.Ignore("Not yet supported.")
     [<Test>]
+    override x.TestReadFromBeforeEndAsSnapshot() = Assert.Ignore("Not yet supported.")
+    [<Test>]
     override x.TestSubscribeFromBeforeEnd() = Assert.Ignore("Not yet supported.")
