@@ -68,6 +68,7 @@
     <None Include="paket.references" />
     <None Include="paket.template" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Codec.fs" />
     <Compile Include="Settings.fs" />
     <Compile Include="Consul.fs" />
   </ItemGroup>

@@ -56,3 +56,9 @@ open Nata.IO.AzureStorage
 #r @"bin/Debug/WebSocket4Net.dll"
 #r @"bin/Debug/Nata.IO.WebSocket.dll"
 open Nata.IO.WebSocket
+
+// Consul:
+#r @"bin/Debug/Consul.dll"
+#r @"bin/Debug/Nata.IO.Consul.dll"
+open Nata.IO.Consul
+

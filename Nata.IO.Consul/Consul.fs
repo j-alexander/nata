@@ -6,8 +6,6 @@ open Consul
 open Nata.IO
 
 type Client = IKVEndpoint
-type Key = string
-type Value = byte[]
 
 type WriteException(s) =
     inherit Exception(s)
@@ -17,12 +15,12 @@ module Client =
 
     let create { Settings.Address=address
                  Settings.DataCenter=dataCenter } =
-        let client = new ConsulClient(fun configuration ->
+        let client = new Consul.ConsulClient(fun configuration ->
             configuration.Address <- new Uri(address)
             configuration.Datacenter <- dataCenter)
         client.KV
     
-    let toEvent (prefix:string) : KVPair -> Event<Key*Value> option =
+    let toEvent (prefix:string) : KVPair -> Event<KeyValue> option =
         function
         | null -> None
         | pair ->
@@ -30,9 +28,9 @@ module Client =
             |> Event.create
             |> Some
 
-    let ofEvent : Event<Key*Value> -> KVPair =
+    let ofEvent : Event<KeyValue> -> Consul.KVPair =
         Event.data >> fun (key,value) ->
-            let pair = new KVPair(key)
+            let pair = new Consul.KVPair(key)
             pair.Value <- value
             pair
         
@@ -44,7 +42,7 @@ module Client =
         result.Response
         |> Seq.choose (toEvent prefix)
 
-    let write (client:Client) prefix (event:Event<Key*Value>) =
+    let write (client:Client) prefix (event:Event<KeyValue>) =
         let result =
             event
             |> Event.mapData (fun (k,v) ->
@@ -67,9 +65,9 @@ module Client =
         let client = create settings
         fun prefix ->
             [
-                Nata.IO.Capability.Reader <| fun () ->
+                Capability.Reader <| fun () ->
                     read client prefix
 
-                Nata.IO.Capability.Writer <|
+                Capability.Writer <|
                     write client prefix
             ]
