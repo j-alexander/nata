@@ -16,13 +16,13 @@ module Codec =
     let JsonValueToValue : Codec<JsonValue, Value> = JsonValue.Codec.JsonValueToBytes
     let ValueToJsonValue = Codec.reverse JsonValueToValue
 
-    let KeyStringToKeyValue : Codec<Key*string, Key*Value> =
+    let KeyStringToKeyValue : Codec<Key*string, KeyValue> =
         let encode, decode = StringToValue
         (fun (k,v) -> k, encode v),
         (fun (k,v) -> k, decode v)
     let KeyValueToKeyString = Codec.reverse KeyStringToKeyValue
 
-    let KeyJsonValueToKeyValue : Codec<Key*JsonValue, Key*Value> =
+    let KeyJsonValueToKeyValue : Codec<Key*JsonValue, KeyValue> =
         let encode, decode = JsonValueToValue
         (fun (k,v) -> k, encode v),
         (fun (k,v) -> k, decode v)
