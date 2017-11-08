@@ -63,3 +63,43 @@ type BindingTests() =
             |> Seq.toList
         Assert.AreEqual([2;4;6;8;10], states)
         Assert.AreEqual(10, snapshot output)
+
+    [<Test>]
+    member x.TestBifold() =
+        let output, left, right =
+            channel(), channel(), channel()
+        let fn state x =
+            let state = Option.defaultValue [] state
+            x :: state
+        let consume =
+            let bifold = Binding.bifold fn output (left,right)
+            fun () ->
+                bifold
+                |> Seq.head
+                |> Consumer.state
+        let writeLeft, writeRight =
+            Event.create >> Channel.writer left,
+            Event.create >> Channel.writer right
+        let check (expect:Choice<int,string> list) =
+            let result = consume()
+            Assert.AreEqual(expect, result)
+        writeLeft 1
+        check[Choice1Of2 1]
+        writeRight "2"
+        check[Choice2Of2 "2"
+              Choice1Of2 1]
+        writeLeft 3
+        check[Choice1Of2 3
+              Choice2Of2 "2"
+              Choice1Of2 1]
+        writeLeft 4
+        check[Choice1Of2 4
+              Choice1Of2 3
+              Choice2Of2 "2"
+              Choice1Of2 1]
+        writeRight "5"
+        check[Choice2Of2 "5"
+              Choice1Of2 4
+              Choice1Of2 3
+              Choice2Of2 "2"
+              Choice1Of2 1]
