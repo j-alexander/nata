@@ -202,3 +202,38 @@ type BindingTests() =
         check 4
         writeB 9
         check 4
+
+    [<Test>]
+    member x.TestDistribute() =
+        let input = channel()
+        let odd, even =
+            channel(), channel()
+        let zero, one, two =
+            channel(), channel(), channel()
+        let outputFor i =
+            [
+              if i % 2 = 0 then yield even
+              else yield odd
+
+              if i % 3 = 0 then yield zero
+              if i % 3 = 1 then yield one
+              if i % 3 = 2 then yield two
+            ]
+            |> List.map (fun x -> i, x)
+        [0..5]
+        |> List.iter (Event.create >> Channel.writer input)
+        let states =
+            input
+            |> Binding.distribute outputFor (channel())
+            |> Seq.take 6
+            |> Seq.toList
+        let toList channel : int list =
+            let reader = Channel.reader channel
+            reader()
+            |> Seq.map (Event.data >> Consumer.state)
+            |> Seq.toList
+        Assert.AreEqual([1;3;5], toList odd)
+        Assert.AreEqual([0;2;4], toList even)
+        Assert.AreEqual([0;3], toList zero)
+        Assert.AreEqual([1;4], toList one)
+        Assert.AreEqual([2;5], toList two)
