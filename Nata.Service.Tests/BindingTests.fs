@@ -17,6 +17,12 @@ type BindingTests() =
         Stream.connect()
         <| guid()
 
+    let snapshot channel =
+        let readFrom = Channel.readerFrom channel
+        readFrom(Position.Before Position.End)
+        |> Seq.map (fst >> Event.data >> Consumer.state)
+        |> Seq.head
+
     [<Test>]
     member x.TestFold() =
         let input, output =
@@ -34,14 +40,26 @@ type BindingTests() =
             |> Binding.fold fn output
             |> Seq.take 3
             |> Seq.toList
-        let result =
-            let readFrom = Channel.readerFrom output
-            readFrom(Position.Before Position.End)
-            |> Seq.map (fst >> Event.data >> Consumer.state)
-            |> Seq.head
+        let result = snapshot output
         Assert.AreEqual(list, result)
         Assert.AreEqual(
             [["c"];["b";"c"];["a";"b";"c"]],
             states
             |> Seq.map Consumer.state
             |> Seq.toList)
+
+    [<Test>]
+    member x.TestMap() =
+        let input, output =
+            channel(), channel()
+        let fn x = x * 2
+        [1..5]
+        |> List.iter (Event.create >> Channel.writer input)
+        let states =
+            input
+            |> Binding.map fn output
+            |> Seq.take 5
+            |> Seq.map Consumer.state
+            |> Seq.toList
+        Assert.AreEqual([2;4;6;8;10], states)
+        Assert.AreEqual(10, snapshot output)
