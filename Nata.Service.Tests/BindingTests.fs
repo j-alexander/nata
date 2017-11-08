@@ -260,3 +260,41 @@ type BindingTests() =
         Assert.AreEqual([0;3], toList zero)
         Assert.AreEqual([1;4], toList one)
         Assert.AreEqual([2;5], toList two)
+
+    [<Test>]
+    member x.TestMultiPartition() =
+        let odd, even =
+            channel(), channel()
+        let outputFor x =
+            if x % 2 = 0 then even
+            else odd
+        let publish =
+            let publisher _ =
+                let id = guid()
+                let input = channel()
+                let write = Channel.writer input
+                let multipartition = Binding.multipartition id outputFor (channel()) input
+                fun (x:int) ->
+                    Event.create x
+                    |> write
+                    multipartition
+                    |> Seq.head
+                    |> ignore
+            let publishers =
+                [0..10]
+                |> List.map publisher
+            fun (x:int) ->
+                publishers.[x % 11] x
+        let consume =
+            Channel.read
+            >> Seq.map (Event.data >> Consumer.state)
+            >> Set.ofSeq
+
+        let input = [50..100]
+        List.iter publish input
+        Assert.AreEqual(
+            Set (List.filter (fun x -> x % 2 = 0) input),
+            consume even)
+        Assert.AreEqual(
+            Set (List.filter (fun x -> x % 2 = 1) input),
+            consume odd)
