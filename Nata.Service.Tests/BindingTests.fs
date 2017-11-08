@@ -172,3 +172,33 @@ type BindingTests() =
         check(1+2+3+4)
         writeA 5
         check(1+2+3+4+5)
+
+    [<Test>]
+    member x.TestMultimap() =
+        let fn x = (x%2) + 3
+        let output = channel()
+        let inputs =
+            [ "A", channel()
+              "B", channel()
+              "C", channel() ]
+        let consume =
+            let multimap = Binding.multimap fn output inputs
+            fun () ->
+                multimap
+                |> Seq.head
+                |> Consumer.state
+        let writeA, writeB, writeC =
+            Event.create >> (snd inputs.[0] |> Channel.writer),
+            Event.create >> (snd inputs.[1] |> Channel.writer),
+            Event.create >> (snd inputs.[2] |> Channel.writer)
+        let check (expect:int) =
+            let result = consume()
+            Assert.AreEqual(expect, result)
+        writeA 7
+        check 4
+        writeB 8
+        check 3
+        writeC 5
+        check 4
+        writeB 9
+        check 4
