@@ -103,3 +103,38 @@ type BindingTests() =
               Choice1Of2 3
               Choice2Of2 "2"
               Choice1Of2 1]
+
+    [<Test>]
+    member x.TestBimap() =
+        let output, left, right =
+            channel(), channel(), channel()
+        let fn =
+            function
+            | Choice1Of2 l -> 2 * l
+            | Choice2Of2 r -> 3 * r
+        let consume =
+            let bimap = Binding.bimap fn output (left,right)
+            fun () ->
+                bimap
+                |> Seq.head
+                |> Consumer.state
+        let writeLeft, writeRight =
+            Event.create >> Channel.writer left,
+            Event.create >> Channel.writer right
+        let check (expect:int) =
+            let result = consume()
+            Assert.AreEqual(expect, result)
+        writeLeft 1
+        check 2
+        writeRight 2
+        check 6
+        writeLeft 3
+        check 6
+        writeRight 4
+        check 12
+        writeLeft 5
+        check 10
+        writeRight 6
+        check 18
+        writeLeft 7
+        check 14
