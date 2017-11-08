@@ -138,3 +138,37 @@ type BindingTests() =
         check 18
         writeLeft 7
         check 14
+
+    [<Test>]
+    member x.TestMultifold() =
+        let fn state x =
+            let state = Option.defaultValue 0 state
+            x + state
+        let output = channel()
+        let inputs =
+            [ "A", channel()
+              "B", channel()
+              "C", channel() ]
+        let consume =
+            let multifold = Binding.multifold fn output inputs
+            fun () ->
+                multifold
+                |> Seq.head
+                |> Consumer.state
+        let writeA, writeB, writeC =
+            Event.create >> (snd inputs.[0] |> Channel.writer),
+            Event.create >> (snd inputs.[1] |> Channel.writer),
+            Event.create >> (snd inputs.[2] |> Channel.writer)
+        let check (expect:int) =
+            let result = consume()
+            Assert.AreEqual(expect, result)
+        writeA 1
+        check(1)
+        writeB 2
+        check(1+2)
+        writeC 3
+        check(1+2+3)
+        writeB 4
+        check(1+2+3+4)
+        writeA 5
+        check(1+2+3+4+5)
