@@ -204,6 +204,29 @@ type BindingTests() =
         check 4
 
     [<Test>]
+    member x.TestPartition() =
+        let input = channel()
+        let odd, even =
+            channel(), channel()
+        let outputFor i =
+            if i % 2 = 0 then even
+            else odd
+        [0..5]
+        |> List.iter (Event.create >> Channel.writer input)
+        let states =
+            input
+            |> Binding.partition outputFor (channel())
+            |> Seq.take 6
+            |> Seq.toList
+        let toList channel : int list =
+            let reader = Channel.reader channel
+            reader()
+            |> Seq.map (Event.data >> Consumer.state)
+            |> Seq.toList
+        Assert.AreEqual([1;3;5], toList odd)
+        Assert.AreEqual([0;2;4], toList even)
+
+    [<Test>]
     member x.TestDistribute() =
         let input = channel()
         let odd, even =
