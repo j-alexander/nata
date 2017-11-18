@@ -29,8 +29,8 @@ type TopicTests() =
         <| guid()
 
     [<Test>]
-    override x.TestReadFromBeforeEnd() = Assert.Ignore("Not yet supported.")
+    override x.TestReadFromRelativePositions() = Assert.Ignore("Not yet supported.")
     [<Test>]
     override x.TestReadFromBeforeEndAsSnapshot() = Assert.Ignore("Not yet supported.")
     [<Test>]
-    override x.TestSubscribeFromBeforeEnd() = Assert.Ignore("Not yet supported.")
+    override x.TestSubscribeFromRelativePositions() = Assert.Ignore("Not yet supported.")

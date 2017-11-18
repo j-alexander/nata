@@ -216,48 +216,10 @@ type LogStoreTests() as x =
         |> Array.zip expected
         |> Array.iter(fun (expected, (actual, index)) ->
             Assert.AreEqual(expected.Data, actual.Data))
-        subscribeFrom (Position.Before (Position.At (indexes.[1])))
-        |> Seq.take 3
-        |> Seq.toArray
-        |> Array.zip expected
-        |> Array.iter(fun (expected, (actual, index)) ->
-            Assert.AreEqual(expected.Data, actual.Data))
-        subscribeFrom (Position.Before (Position.Before (Position.At (indexes.[2]))))
-        |> Seq.take 3
-        |> Seq.toArray
-        |> Array.zip expected
-        |> Array.iter(fun (expected, (actual, index)) ->
-            Assert.AreEqual(expected.Data, actual.Data))
-
-        subscribeFrom (Position.After (Position.At (indexes.[0])))
-        |> Seq.take 2
-        |> Seq.toArray
-        |> Array.zip (expected.[1..2])
-        |> Array.iter(fun (expected, (actual, index)) ->
-            Assert.AreEqual(expected.Data, actual.Data))
         subscribeFrom (Position.At (indexes.[1]))
         |> Seq.take 2
         |> Seq.toArray
         |> Array.zip (expected.[1..2])
-        |> Array.iter(fun (expected, (actual, index)) ->
-            Assert.AreEqual(expected.Data, actual.Data))
-        subscribeFrom (Position.Before (Position.At (indexes.[2])))
-        |> Seq.take 2
-        |> Seq.toArray
-        |> Array.zip (expected.[1..2])
-        |> Array.iter(fun (expected, (actual, index)) ->
-            Assert.AreEqual(expected.Data, actual.Data))
-
-        subscribeFrom (Position.After (Position.After (Position.At (indexes.[0]))))
-        |> Seq.take 1
-        |> Seq.toArray
-        |> Array.zip (expected.[2..2])
-        |> Array.iter(fun (expected, (actual, index)) ->
-            Assert.AreEqual(expected.Data, actual.Data))
-        subscribeFrom (Position.After (Position.At (indexes.[1])))
-        |> Seq.take 1
-        |> Seq.toArray
-        |> Array.zip (expected.[2..2])
         |> Array.iter(fun (expected, (actual, index)) ->
             Assert.AreEqual(expected.Data, actual.Data))
         subscribeFrom (Position.At (indexes.[2]))
@@ -416,32 +378,49 @@ type LogStoreTests() as x =
             Assert.AreEqual(expectation, verification)
         | _ ->
             Assert.Ignore("Competitor, ReaderFrom or Writer is reported to be unsupported by this source.")
-           
-    abstract member TestReadFromBeforeEnd : unit->unit
+
+
+    abstract member TestReadFromRelativePositions : unit->unit
     
     [<Test>]
-    default x.TestReadFromBeforeEnd() =
+    default x.TestReadFromRelativePositions() =
         let connection = x.Connect()
         let write = writer connection
         let readFrom = readerFrom connection
         let subscribeFrom = subscriberFrom connection
-        let event_0 = event("TestReadFromBeforeEnd-0")
-        let event_1 = event("TestReadFromBeforeEnd-1")
-        let event_2 = event("TestReadFromBeforeEnd-2")
-        write event_0
-        write event_1
-        write event_2
-        let flush =
+        let events =
+            List.map (sprintf "TestReadFromBeforeEnd-%d" >> event) [ 0..2 ]
+        List.iter write events
+
+        let data,index =
             subscribeFrom Position.Start
             |> Seq.take 3
+            |> Seq.mapFst Event.data
+            |> Seq.toList
+            |> List.unzip
+        Assert.AreEqual(List.map Event.data events, data)
+
         let take position =
             readFrom position
             |> Seq.map (fst >> Event.data)
             |> Seq.head
         Assert.AreEqual([], List.ofSeq(readFrom(Position.End)))
-        Assert.AreEqual(event_2.Data,take(Position.Before(Position.End)))
-        Assert.AreEqual(event_1.Data,take(Position.Before(Position.Before(Position.End))))
-        Assert.AreEqual(event_0.Data,take(Position.Before(Position.Before(Position.Before(Position.End)))))
+
+        Assert.AreEqual(data.[2],take(Position.Before(Position.End)))
+        Assert.AreEqual(data.[2],take(Position.At(index.[2])))
+        Assert.AreEqual(data.[2],take(Position.After(Position.At(index.[1]))))
+        Assert.AreEqual(data.[2],take(Position.After(Position.After(Position.At(index.[0])))))
+
+        Assert.AreEqual(data.[1],take(Position.Before(Position.Before(Position.End))))
+        Assert.AreEqual(data.[1],take(Position.Before(Position.At(index.[2]))))
+        Assert.AreEqual(data.[1],take(Position.At(index.[1])))
+        Assert.AreEqual(data.[1],take(Position.After(Position.At(index.[0]))))
+
+        Assert.AreEqual(data.[0],take(Position.Before(Position.Before(Position.Before(Position.End)))))
+        Assert.AreEqual(data.[0],take(Position.Before(Position.Before(Position.At(index.[2])))))
+        Assert.AreEqual(data.[0],take(Position.Before(Position.At(index.[1]))))
+        Assert.AreEqual(data.[0],take(Position.At(index.[0])))
+
         
     abstract member TestReadFromBeforeEndAsSnapshot : unit->unit
 
@@ -476,10 +455,10 @@ type LogStoreTests() as x =
         flush 3
         Assert.AreEqual([events.[2].Data], snapshot())
 
-    abstract member TestSubscribeFromBeforeEnd : unit->unit
+    abstract member TestSubscribeFromRelativePositions : unit->unit
 
     [<Test>]
-    default x.TestSubscribeFromBeforeEnd() =
+    default x.TestSubscribeFromRelativePositions() =
         let connection = x.Connect()
         let write = writer connection
         let readFrom = readerFrom connection
@@ -497,25 +476,40 @@ type LogStoreTests() as x =
             pretake(Position.Before(Position.Before(Position.End)))
         let pretakeBeforeBeforeBeforeEnd =
             pretake(Position.Before(Position.Before(Position.Before(Position.End))))
+        let events =
+            List.map (sprintf "TestReadFromBeforeEnd-%d" >> event) [ 0..2 ]
+        List.iter write events
 
-        let event_0 = event("TestSubscribeFromBeforeEnd-0")
-        let event_1 = event("TestSubscribeFromBeforeEnd-1")
-        let event_2 = event("TestSubscribeFromBeforeEnd-2")
-        write event_0
-        write event_1
-        write event_2
-        let flush =
+        let data,index =
             subscribeFrom Position.Start
             |> Seq.take 3
+            |> Seq.mapFst Event.data
+            |> Seq.toList
+            |> List.unzip
+        Assert.AreEqual(List.map Event.data events, data)
+
         let take position =
             subscribeFrom position
             |> Seq.map (fst >> Event.data)
             |> Seq.head
-        Assert.AreEqual(event_2.Data,take(Position.Before(Position.End)))
-        Assert.AreEqual(event_1.Data,take(Position.Before(Position.Before(Position.End))))
-        Assert.AreEqual(event_0.Data,take(Position.Before(Position.Before(Position.Before(Position.End)))))
+        Assert.AreEqual(data.[2],take(Position.Before(Position.End)))
+        Assert.AreEqual(data.[2],take(Position.At(index.[2])))
+        Assert.AreEqual(data.[2],take(Position.After(Position.At(index.[1]))))
+        Assert.AreEqual(data.[2],take(Position.After(Position.After(Position.At(index.[0])))))
+        
+
+        Assert.AreEqual(data.[1],take(Position.Before(Position.Before(Position.End))))
+        Assert.AreEqual(data.[1],take(Position.Before(Position.At(index.[2]))))
+        Assert.AreEqual(data.[1],take(Position.At(index.[1])))
+        Assert.AreEqual(data.[1],take(Position.After(Position.At(index.[0]))))
+
+        Assert.AreEqual(data.[0],take(Position.Before(Position.Before(Position.Before(Position.End)))))
+        Assert.AreEqual(data.[0],take(Position.Before(Position.Before(Position.At(index.[2])))))
+        Assert.AreEqual(data.[0],take(Position.Before(Position.At(index.[1]))))
+        Assert.AreEqual(data.[0],take(Position.At(index.[0])))
+
         // the following subscribed when there was no data on the stream:
         // waiting for the value before the end position should always return the first
-        Assert.AreEqual(event_0.Data,pretakeBeforeEnd.Force())
-        Assert.AreEqual(event_0.Data,pretakeBeforeBeforeEnd.Force())
-        Assert.AreEqual(event_0.Data,pretakeBeforeBeforeBeforeEnd.Force())
+        Assert.AreEqual(data.[0],pretakeBeforeEnd.Force())
+        Assert.AreEqual(data.[0],pretakeBeforeBeforeEnd.Force())
+        Assert.AreEqual(data.[0],pretakeBeforeBeforeBeforeEnd.Force())
