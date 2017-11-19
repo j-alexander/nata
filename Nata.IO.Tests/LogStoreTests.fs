@@ -216,10 +216,48 @@ type LogStoreTests() as x =
         |> Array.zip expected
         |> Array.iter(fun (expected, (actual, index)) ->
             Assert.AreEqual(expected.Data, actual.Data))
+        subscribeFrom (Position.Before (Position.At (indexes.[1])))
+        |> Seq.take 3
+        |> Seq.toArray
+        |> Array.zip expected
+        |> Array.iter(fun (expected, (actual, index)) ->
+            Assert.AreEqual(expected.Data, actual.Data))
+        subscribeFrom (Position.Before (Position.Before (Position.At (indexes.[2]))))
+        |> Seq.take 3
+        |> Seq.toArray
+        |> Array.zip expected
+        |> Array.iter(fun (expected, (actual, index)) ->
+            Assert.AreEqual(expected.Data, actual.Data))
+
+        subscribeFrom (Position.After (Position.At (indexes.[0])))
+        |> Seq.take 2
+        |> Seq.toArray
+        |> Array.zip (expected.[1..2])
+        |> Array.iter(fun (expected, (actual, index)) ->
+            Assert.AreEqual(expected.Data, actual.Data))
         subscribeFrom (Position.At (indexes.[1]))
         |> Seq.take 2
         |> Seq.toArray
         |> Array.zip (expected.[1..2])
+        |> Array.iter(fun (expected, (actual, index)) ->
+            Assert.AreEqual(expected.Data, actual.Data))
+        subscribeFrom (Position.Before (Position.At (indexes.[2])))
+        |> Seq.take 2
+        |> Seq.toArray
+        |> Array.zip (expected.[1..2])
+        |> Array.iter(fun (expected, (actual, index)) ->
+            Assert.AreEqual(expected.Data, actual.Data))
+
+        subscribeFrom (Position.After (Position.After (Position.At (indexes.[0]))))
+        |> Seq.take 1
+        |> Seq.toArray
+        |> Array.zip (expected.[2..2])
+        |> Array.iter(fun (expected, (actual, index)) ->
+            Assert.AreEqual(expected.Data, actual.Data))
+        subscribeFrom (Position.After (Position.At (indexes.[1])))
+        |> Seq.take 1
+        |> Seq.toArray
+        |> Array.zip (expected.[2..2])
         |> Array.iter(fun (expected, (actual, index)) ->
             Assert.AreEqual(expected.Data, actual.Data))
         subscribeFrom (Position.At (indexes.[2]))
