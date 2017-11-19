@@ -55,11 +55,10 @@ module Stream =
             | x -> failwith (sprintf "Stream %s produced undocumented response: %A" stream x)
 
         let index (connection : IEventStoreConnection)
-                  (stream : string)
-                  (size : int) :  Position<Index> -> Index =
+                  (stream : string) :  Position<Index> -> Index =
             let rec net (offset : Index) =
                 function
-                | Position.At x -> x
+                | Position.At x -> offset + x
                 | Position.Before x -> net (offset - 1L) x
                 | Position.After x -> net (offset + 1L) x
                 | Position.Start when offset < 0L -> int64 StreamPosition.Start
@@ -77,7 +76,7 @@ module Stream =
                      (size : int)
                      (position : Position<Index>) : seq<Event*Index> =
             seq {
-                let from = index connection stream size position
+                let from = index connection stream position
                 let slice =
                     connection.ReadStreamEventsForwardAsync(stream, from, size, true)
                     |> Async.AwaitTask
@@ -96,10 +95,10 @@ module Stream =
             }
 
         let rec listen (connection : IEventStoreConnection)
-                               (stream : string)
-                               (size : int)
-                               (position : Position<Index>) : seq<Event*Index> =
-            let from = index connection stream size position
+                       (stream : string)
+                       (size : int)
+                       (position : Position<Index>) : seq<Event*Index> =
+            let from = index connection stream position
             let queue = new BlockingCollection<Option<Event*Index>>(new ConcurrentQueue<Option<Event*Index>>())
             let subscription =
                 let settings = CatchUpSubscriptionSettings.Default
@@ -202,7 +201,7 @@ module Stream =
             fun stream ->
             [   
                 Capability.Indexer <|
-                    Traversal.index connection stream size
+                    Traversal.index connection stream
 
                 Capability.Reader <| fun () ->
                     Traversal.read connection stream size Position.Start |> Seq.map fst
