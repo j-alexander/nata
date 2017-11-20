@@ -68,6 +68,8 @@
     <None Include="paket.references" />
     <None Include="paket.template" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Endpoint.fs" />
+    <Compile Include="Collection.fs" />
     <Compile Include="Document.fs" />
   </ItemGroup>
   <ItemGroup>
