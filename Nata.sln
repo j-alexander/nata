@@ -70,6 +70,10 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Service", "Nata.Servic
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Service.Tests", "Nata.Service.Tests\Nata.Service.Tests.fsproj", "{947486E6-0AE7-4121-8671-CC201F8CABC2}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.CosmosDB", "Nata.IO.CosmosDB\Nata.IO.CosmosDB.fsproj", "{ADDA18FE-93A5-48BF-BC90-6C36E595626F}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.CosmosDB.Tests", "Nata.IO.CosmosDB.Tests\Nata.IO.CosmosDB.Tests.fsproj", "{D4142BEA-4EB8-48E3-993E-F26EA6696DF6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -200,6 +204,14 @@ Global
 		{947486E6-0AE7-4121-8671-CC201F8CABC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{947486E6-0AE7-4121-8671-CC201F8CABC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{947486E6-0AE7-4121-8671-CC201F8CABC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADDA18FE-93A5-48BF-BC90-6C36E595626F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADDA18FE-93A5-48BF-BC90-6C36E595626F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADDA18FE-93A5-48BF-BC90-6C36E595626F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADDA18FE-93A5-48BF-BC90-6C36E595626F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4142BEA-4EB8-48E3-993E-F26EA6696DF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4142BEA-4EB8-48E3-993E-F26EA6696DF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4142BEA-4EB8-48E3-993E-F26EA6696DF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4142BEA-4EB8-48E3-993E-F26EA6696DF6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
