@@ -37,7 +37,7 @@ module Document =
 
             fun (id:Id) ->
 
-                let write (bytes:byte[]) =
+                let write ({ Data=bytes } : Event<byte[]>) =
                     let documentResponse =
                         use stream = new MemoryStream(bytes)
                         let document = Resource.LoadFrom<Document>(stream)
@@ -48,23 +48,25 @@ module Document =
                     ()
 
                 let uri = UriFactory.CreateDocumentUri(collection.Database, collection.Name, id)
-                let rec read () =
+                let rec read() =
                     seq {
-                        let documentResponse =
+                        let response =
                             client.ReadDocumentAsync(uri)
                             |> Async.AwaitTask
                             |> Async.RunSynchronously
-                        let bytes =
-                            use stream = new MemoryStream()
-                            documentResponse.ResponseStream.CopyTo(stream)
-                            stream.ToArray()
-                        yield bytes
+                        let document = response.Resource
+                        yield
+                            document.ToByteArray()
+                            |> Event.create
+                            |> Event.withCreatedAt document.Timestamp
+                            |> Event.withName document.Id
+                            |> Event.withTag document.ETag
                         yield! read()
                     }
 
 
                 [
-                    Nata.IO.Writer <| (Event.data >> write)
+                    Nata.IO.Writer <| write
 
-                    Nata.IO.Reader <| (read >> Seq.map Event.create)
+                    Nata.IO.Reader <| read
                 ]
