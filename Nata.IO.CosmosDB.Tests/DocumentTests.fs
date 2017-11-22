@@ -57,7 +57,7 @@ type DocumentTests() =
             |> Event.create
             |> Channel.writerTo channel position
 
-        Assert.Throws<AggregateException>(fun _ ->
+        Assert.Throws<Position.Invalid<string>>(fun _ ->
             writeTo (Position.At "\"00001700-0000-0000-0000-5a15e0b90000\"")
             |> ignore)
         |> ignore
@@ -73,7 +73,7 @@ type DocumentTests() =
         let updated =
             writeTo (Position.At created)
 
-        Assert.Throws<AggregateException>(fun _ ->
+        Assert.Throws<Position.Invalid<string>>(fun _ ->
             writeTo (Position.At created)
             |> ignore)
         |> ignore
@@ -81,7 +81,7 @@ type DocumentTests() =
         let overwritten =
             writeTo (Position.End)
 
-        Assert.Throws<AggregateException>(fun _ ->
+        Assert.Throws<Position.Invalid<string>>(fun _ ->
             writeTo (Position.At updated)
             |> ignore)
         |> ignore

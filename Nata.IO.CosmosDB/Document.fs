@@ -30,6 +30,13 @@ module Document =
             when e.StatusCode = Nullable(HttpStatusCode.Conflict) -> Some()
         | _ -> None
 
+    let (|PreconditionNotMet|_|) : exn -> unit option=
+        function
+        | :? DocumentClientException as e
+        | AggregateException (:? DocumentClientException as e)
+            when e.StatusCode = Nullable(HttpStatusCode.PreconditionFailed) -> Some()
+        | _ -> None
+
     let connect : Collection -> Source<Id,Bytes,Version> =
         fun collection ->
 
@@ -60,14 +67,19 @@ module Document =
                         | Position.At etag ->
                             let condition = new AccessCondition(Condition=etag, Type=AccessConditionType.IfMatch)
                             let options = new RequestOptions(AccessCondition=condition)
-                            let documentResponse =
-                                use stream = new MemoryStream(bytes)
-                                let document = Resource.LoadFrom<Document>(stream)
-                                document.Id <- id
-                                client.ReplaceDocumentAsync(documentUri, document, options)
-                                |> Async.AwaitTask
-                                |> Async.RunSynchronously
-                            documentResponse.Resource.ETag
+                            use stream = new MemoryStream(bytes)
+                            let document = Resource.LoadFrom<Document>(stream)
+                            document.Id <- id
+                            client.ReplaceDocumentAsync(documentUri, document, options)
+                            |> Async.AwaitTask
+                            |> Async.Catch
+                            |> Async.RunSynchronously
+                            |>
+                            function
+                            | Choice1Of2 response -> response.Resource.ETag
+                            | Choice2Of2 ResourceNotFound
+                            | Choice2Of2 PreconditionNotMet -> raise (new Position.Invalid<_>(position))
+                            | Choice2Of2 e -> Async.reraise(e)
                         | Position.End ->
                             let documentResponse =
                                 use stream = new MemoryStream(bytes)
