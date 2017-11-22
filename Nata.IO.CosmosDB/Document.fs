@@ -9,11 +9,26 @@ open Microsoft.Azure.Documents
 open Microsoft.Azure.Documents.Client
 open Newtonsoft.Json
 
+open Nata.Core
 open Nata.IO
 
 module Document =
 
     type Version = string
+
+    let (|ResourceNotFound|_|) : exn -> unit option=
+        function
+        | :? DocumentClientException as e
+        | AggregateException (:? DocumentClientException as e)
+            when e.StatusCode = Nullable(HttpStatusCode.NotFound) -> Some()
+        | _ -> None
+
+    let (|ResourceAlreadyExists|_|) : exn -> unit option=
+        function
+        | :? DocumentClientException as e
+        | AggregateException (:? DocumentClientException as e)
+            when e.StatusCode = Nullable(HttpStatusCode.Conflict) -> Some()
+        | _ -> None
 
     let connect : Collection -> Source<Id,Bytes,Version> =
         fun collection ->
@@ -24,22 +39,27 @@ module Document =
                 let documentUri = UriFactory.CreateDocumentUri(collection.Database, collection.Name, id)
 
                 let writeTo : WriterTo<Bytes,Version> =
-                    function
-                    | Position.At null
-                    | Position.Start ->
-                        fun { Data=bytes } ->
-                            let documentResponse =
-                                use stream = new MemoryStream(bytes)
-                                let document = Resource.LoadFrom<Document>(stream)
-                                document.Id <- id
-                                client.CreateDocumentAsync(uri, document, disableAutomaticIdGeneration=true)
-                                |> Async.AwaitTask
-                                |> Async.RunSynchronously
-                            documentResponse.Resource.ETag
-                    | Position.At etag ->
-                        let condition = new AccessCondition(Condition=etag, Type=AccessConditionType.IfMatch)
-                        let options = new RequestOptions(AccessCondition=condition)
-                        fun { Data=bytes } ->
+                    fun position { Data=bytes } ->
+                        match position with
+                        | Position.After (Position.At null)
+                        | Position.At null
+                        | Position.Start ->
+                            use stream = new MemoryStream(bytes)
+                            let document = Resource.LoadFrom<Document>(stream)
+                            document.Id <- id
+                            client.CreateDocumentAsync(uri, document, disableAutomaticIdGeneration=true)
+                            |> Async.AwaitTask
+                            |> Async.Catch
+                            |> Async.RunSynchronously
+                            |>
+                            function
+                            | Choice1Of2 response -> response.Resource.ETag
+                            | Choice2Of2 ResourceAlreadyExists -> raise (new Position.Invalid<_>(position))
+                            | Choice2Of2 e -> Async.reraise(e)
+                        | Position.After (Position.At etag)
+                        | Position.At etag ->
+                            let condition = new AccessCondition(Condition=etag, Type=AccessConditionType.IfMatch)
+                            let options = new RequestOptions(AccessCondition=condition)
                             let documentResponse =
                                 use stream = new MemoryStream(bytes)
                                 let document = Resource.LoadFrom<Document>(stream)
@@ -48,8 +68,7 @@ module Document =
                                 |> Async.AwaitTask
                                 |> Async.RunSynchronously
                             documentResponse.Resource.ETag
-                    | Position.End ->
-                        fun ({ Data=bytes } : Event<Bytes>) ->
+                        | Position.End ->
                             let documentResponse =
                                 use stream = new MemoryStream(bytes)
                                 let document = Resource.LoadFrom<Document>(stream)
@@ -58,10 +77,10 @@ module Document =
                                 |> Async.AwaitTask
                                 |> Async.RunSynchronously
                             documentResponse.Resource.ETag
-                    | Position.Before _ ->
-                        raise (new NotSupportedException("Position.Before is not supported."))
-                    | Position.After _ ->
-                        raise (new NotSupportedException("Position.After is not supported."))
+                        | Position.Before _ ->
+                            raise (new NotSupportedException("Position.Before is not supported."))
+                        | Position.After _ ->
+                            raise (new NotSupportedException("Position.After is not supported."))
 
                 let write =
                     writeTo Position.End
@@ -69,19 +88,27 @@ module Document =
 
                 let rec readFrom position =
                     seq {
-                        let response =
+                        yield!
                             client.ReadDocumentAsync(documentUri)
                             |> Async.AwaitTask
+                            |> Async.Catch
                             |> Async.RunSynchronously
-                        let document = response.Resource
-                        yield
-                            document.ToByteArray()
-                            |> Event.create
-                            |> Event.withCreatedAt document.Timestamp
-                            |> Event.withName document.Id
-                            |> Event.withTag document.ETag,
-                            document.ETag
-                        yield! readFrom position
+                            |>
+                            function
+                            | Choice1Of2 response ->
+                                let document = response.Resource
+                                seq {
+                                    yield
+                                        document.ToByteArray()
+                                        |> Event.create
+                                        |> Event.withCreatedAt document.Timestamp
+                                        |> Event.withName document.Id
+                                        |> Event.withTag document.ETag,
+                                        document.ETag
+                                    yield! readFrom position
+                                }
+                            | Choice2Of2 ResourceNotFound -> Seq.empty
+                            | Choice2Of2 e -> Async.reraise(e)
                     }
 
                 let read() =

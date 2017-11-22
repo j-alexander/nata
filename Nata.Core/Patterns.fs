@@ -11,3 +11,8 @@ module Patterns =
     let (|Integer32|_|) = Int32.ofString
     let (|DateTime|_|) = DateTime.ofString
     let (|JsonValue|_|) = JsonValue.tryParse
+
+    let (|AggregateException|_|) : exn -> exn option =
+        function
+        | :? AggregateException as e -> Some e.InnerException
+        | _ -> None

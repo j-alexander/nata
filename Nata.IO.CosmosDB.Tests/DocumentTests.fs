@@ -1,6 +1,7 @@
 ﻿namespace Nata.IO.CosmosDB.Tests
 
 open System
+open System.Threading
 open NUnit.Framework
 open FSharp.Data
 open Nata.Core
@@ -9,6 +10,9 @@ open Nata.IO.CosmosDB
 
 type TestDocument = {
     Value : string
+}
+type TestNumber = {
+    Value : int
 }
 
 [<TestFixture>]
@@ -84,3 +88,43 @@ type DocumentTests() =
 
         writeTo (Position.At overwritten)
         |> ignore
+
+    [<Test>]
+    member x.TestTwoCompetitors() =
+        let compete, readFrom, write =
+            let channel = channel()
+            Channel.competitor channel,
+            Channel.readerFrom channel,
+            Channel.writer channel
+
+        let generation (delay:int->int) : int seq =
+            compete (Option.defaultValue (Event.create { TestNumber.Value=2 }) >> fun e ->
+                let input = Event.data e
+                let output = { TestNumber.Value = input.Value * 2 }
+                Thread.Sleep(delay input.Value)
+                Event.create output)
+            |> Seq.take 11
+            |> Seq.map (Event.data >> fun { TestNumber.Value=x } -> x)
+
+        let results =
+            let getsSlower, getsFaster =
+                (fun i -> 2 * i),
+                (fun i -> Math.Max(1, 2048/i))
+            Seq.consume
+                [
+                    generation getsSlower
+                    //|> Seq.log (printfn "The early bird gets the worm:%d")
+                    generation getsFaster
+                    //|> Seq.log (printfn "The second mouse gets the cheese:%d")
+                ]
+            |> Seq.take 11
+            |> Seq.toList
+
+        let expectation : int list =
+            [ 4; 8; 16; 32; 64; 128; 256; 512; 1024; 2048; 4096 ]
+        Assert.AreEqual(expectation, results)
+        Assert.AreEqual(
+            8192,
+            readFrom Position.End
+            |> Seq.map (fst >> Event.data >> fun { TestNumber.Value=x } -> x)
+            |> Seq.head)

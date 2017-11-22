@@ -2,6 +2,7 @@
 
 open System
 open System.Collections.Generic
+open System.Runtime
 open System.Threading.Tasks
 
 [<AutoOpen>]
@@ -250,3 +251,9 @@ module Core =
             | x when (index > x.Length ||
                       index < 0) -> None
             | x -> Some(x.Substring(index))
+
+    module Async =
+
+        let reraise e =
+            ExceptionServices.ExceptionDispatchInfo.Capture(e).Throw()
+            failwithf "Async.reraise %A failed." e
