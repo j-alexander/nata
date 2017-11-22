@@ -9,7 +9,7 @@ open Nata.IO
 open Nata.IO.CosmosDB
 
 type TestDocument = {
-    Value : string
+    Text : string
 }
 type TestNumber = {
     Value : int
@@ -35,7 +35,7 @@ type DocumentTests() =
             Channel.reader channel,
             Channel.writer channel
 
-        let expect = { TestDocument.Value = guid() }
+        let expect = { Text = guid() }
 
         expect
         |> Event.create
@@ -46,14 +46,14 @@ type DocumentTests() =
             |> Seq.map Event.data
             |> Seq.head
 
-        Assert.AreEqual(expect.Value, result.Value)
+        Assert.AreEqual(expect.Text, result.Text)
 
     [<Test>]
     member x.TestOptimisticConcurrency() =
         let channel = channel()
         let readFrom = Channel.readerFrom channel
         let writeTo (position) =
-            { TestDocument.Value = guid() }
+            { Text = guid() }
             |> Event.create
             |> Channel.writerTo channel position
 
@@ -98,13 +98,13 @@ type DocumentTests() =
             Channel.writer channel
 
         let generation (delay:int->int) : int seq =
-            compete (Option.defaultValue (Event.create { TestNumber.Value=2 }) >> fun e ->
+            compete (Option.defaultValue (Event.create { Value=2 }) >> fun e ->
                 let input = Event.data e
-                let output = { TestNumber.Value = input.Value * 2 }
+                let output = { Value = input.Value * 2 }
                 Thread.Sleep(delay input.Value)
                 Event.create output)
             |> Seq.take 11
-            |> Seq.map (Event.data >> fun { TestNumber.Value=x } -> x)
+            |> Seq.map (Event.data >> fun { Value=x } -> x)
 
         let results =
             let getsSlower, getsFaster =
@@ -123,8 +123,8 @@ type DocumentTests() =
         let expectation : int list =
             [ 4; 8; 16; 32; 64; 128; 256; 512; 1024; 2048; 4096 ]
         Assert.AreEqual(expectation, results)
-        Assert.AreEqual(
-            8192,
+        Assert.LessOrEqual(
+            4096,
             readFrom Position.End
-            |> Seq.map (fst >> Event.data >> fun { TestNumber.Value=x } -> x)
+            |> Seq.map (fst >> Event.data >> fun { Value=x } -> x)
             |> Seq.head)

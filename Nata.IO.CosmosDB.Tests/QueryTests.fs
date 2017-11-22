@@ -24,7 +24,7 @@ type QueryTests() =
     member x.TestQueryAll() =
         let documentFor, queryFor = connect()
         let documentWithId =
-            [ for i in 1..10 -> { TestDocument.Value=guid() }, sprintf "%d" i ]
+            [ for i in 1..10 -> { Text=guid() }, sprintf "%d" i ]
 
         for document, id in documentWithId do
             document
@@ -34,12 +34,12 @@ type QueryTests() =
         let expect =
             documentWithId
             |> List.map fst
-            |> List.sortBy (fun { Value=x } -> x)
+            |> List.sortBy (fun { Text=x } -> x)
 
         let result =
             Channel.reader (queryFor "select * from c") ()
             |> Seq.map (Event.data)
-            |> Seq.sortBy (fun { Value=x } -> x)
+            |> Seq.sortBy (fun { Text=x } -> x)
             |> Seq.toList
 
         Assert.AreEqual(expect, result)
@@ -48,7 +48,7 @@ type QueryTests() =
     member x.TestQueryAllFromStart() =
         let documentFor, queryFor = connect()
         let documentWithId =
-            [ for i in 1..10 -> { TestDocument.Value=guid() }, sprintf "%d" i ]
+            [ for i in 1..10 -> { Text=guid() }, sprintf "%d" i ]
 
         for document, id in documentWithId do
             document
@@ -58,13 +58,13 @@ type QueryTests() =
         let expect =
             documentWithId
             |> List.map fst
-            |> List.sortBy (fun { Value=x } -> x)
+            |> List.sortBy (fun { Text=x } -> x)
 
         let result =
             Position.Start
             |> Channel.readerFrom (queryFor "select * from c")
             |> Seq.map (fst >> Event.data)
-            |> Seq.sortBy (fun { Value=x } -> x)
+            |> Seq.sortBy (fun { Text=x } -> x)
             |> Seq.toList
 
         Assert.AreEqual(expect, result)
@@ -73,7 +73,7 @@ type QueryTests() =
     member x.TestQueryEachFromPositionInAll() =
         let documentFor, queryFor = connect()
         let documentWithId =
-            [ for i in 1..10 -> { TestDocument.Value=guid() }, sprintf "%d" i ]
+            [ for i in 1..10 -> { Text=guid() }, sprintf "%d" i ]
 
         for document, id in documentWithId do
             document
@@ -83,7 +83,7 @@ type QueryTests() =
         let query = queryFor "select * from c"
         let expected =
             Channel.readerFrom query Position.Start
-            |> Seq.map (fun ({ Event.Data={ TestDocument.Value=value } }, token) -> value, token)
+            |> Seq.map (fun ({ Event.Data={ Text=text } }, token) -> text, token)
             |> Seq.toList
 
         Assert.AreEqual(10, expected.Length)
@@ -92,7 +92,7 @@ type QueryTests() =
             let result, _ =
                 Position.At token
                 |> Channel.readerFrom query
-                |> Seq.mapFst (Event.data >> fun { Value=x } -> x)
+                |> Seq.mapFst (Event.data >> fun { Text=x } -> x)
                 |> Seq.head
             Assert.AreEqual(expected, result)
 
@@ -100,13 +100,13 @@ type QueryTests() =
             fst expected.[8],
             Position.After(Position.After(Position.After(Position.After(Position.At(snd expected.[4])))))
             |> Channel.readerFrom query
-            |> Seq.map (fst >> Event.data >> fun { Value=x } -> x)
+            |> Seq.map (fst >> Event.data >> fun { Text=x } -> x)
             |> Seq.head)
         Assert.AreEqual(
             fst expected.[4],
             Position.After(Position.After(Position.After(Position.After(Position.Start))))
             |> Channel.readerFrom query
-            |> Seq.map (fst >> Event.data >> fun { Value=x } -> x)
+            |> Seq.map (fst >> Event.data >> fun { Text=x } -> x)
             |> Seq.head)
         Assert.True(
             Position.End
