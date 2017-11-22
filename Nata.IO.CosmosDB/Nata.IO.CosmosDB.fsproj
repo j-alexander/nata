@@ -71,6 +71,7 @@
     <Compile Include="Endpoint.fs" />
     <Compile Include="Collection.fs" />
     <Compile Include="Document.fs" />
+    <Compile Include="Query.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
