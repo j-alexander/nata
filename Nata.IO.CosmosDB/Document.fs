@@ -26,7 +26,7 @@ module Document =
                         use stream = new MemoryStream(bytes)
                         let document = Resource.LoadFrom<Document>(stream)
                         document.Id <- id
-                        client.UpsertDocumentAsync(uri, document)
+                        client.UpsertDocumentAsync(uri, document, disableAutomaticIdGeneration=true)
                         |> Async.AwaitTask
                         |> Async.RunSynchronously
                     ()
