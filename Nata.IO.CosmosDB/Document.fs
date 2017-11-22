@@ -44,7 +44,7 @@ module Document =
                                 use stream = new MemoryStream(bytes)
                                 let document = Resource.LoadFrom<Document>(stream)
                                 document.Id <- id
-                                client.ReplaceDocumentAsync(uri, document, options)
+                                client.ReplaceDocumentAsync(documentUri, document, options)
                                 |> Async.AwaitTask
                                 |> Async.RunSynchronously
                             documentResponse.Resource.ETag
