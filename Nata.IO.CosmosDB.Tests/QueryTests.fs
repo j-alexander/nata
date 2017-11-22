@@ -68,3 +68,55 @@ type QueryTests() =
             |> Seq.toList
 
         Assert.AreEqual(expect, result)
+
+    [<Test>]
+    member x.TestQueryEachFromPositionInAll() =
+        let documentFor, queryFor = connect()
+        let documentWithId =
+            [ for i in 1..10 -> { TestDocument.Value=guid() }, sprintf "%d" i ]
+
+        for document, id in documentWithId do
+            document
+            |> Event.create
+            |> Channel.writer (documentFor id)
+
+        let query = queryFor "select * from c"
+        let expected =
+            Channel.readerFrom query Position.Start
+            |> Seq.map (fun ({ Event.Data={ TestDocument.Value=value } }, token) -> value, token)
+            |> Seq.toList
+
+        Assert.AreEqual(10, expected.Length)
+
+        for expected, token in expected do
+            let result, _ =
+                Position.At token
+                |> Channel.readerFrom query
+                |> Seq.mapFst (Event.data >> fun { Value=x } -> x)
+                |> Seq.head
+            Assert.AreEqual(expected, result)
+
+        Assert.AreEqual(
+            fst expected.[8],
+            Position.After(Position.After(Position.After(Position.After(Position.At(snd expected.[4])))))
+            |> Channel.readerFrom query
+            |> Seq.map (fst >> Event.data >> fun { Value=x } -> x)
+            |> Seq.head)
+        Assert.AreEqual(
+            fst expected.[4],
+            Position.After(Position.After(Position.After(Position.After(Position.Start))))
+            |> Channel.readerFrom query
+            |> Seq.map (fst >> Event.data >> fun { Value=x } -> x)
+            |> Seq.head)
+        Assert.True(
+            Position.End
+            |> Channel.readerFrom query
+            |> Seq.isEmpty)
+        Assert.True(
+            Position.After(Position.End)
+            |> Channel.readerFrom query
+            |> Seq.isEmpty)
+        Assert.True(
+            Position.After(Position.After(Position.End))
+            |> Channel.readerFrom query
+            |> Seq.isEmpty)

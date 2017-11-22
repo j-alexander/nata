@@ -10,6 +10,7 @@ open Microsoft.Azure.Documents.Client
 open Microsoft.Azure.Documents.Linq
 open Newtonsoft.Json
 
+open Nata.Core
 open Nata.IO
 
 type Query = string
@@ -34,43 +35,56 @@ module Query =
                         |> Event.withName document.Id
                         |> Event.withTag document.ETag)
 
-                let rec readFrom(token) =
-                    seq {
-                        let options =
-                            match token with
-                            | Position.At token when not (String.IsNullOrEmpty token) ->
-                                new FeedOptions(
-                                    MaxItemCount = Nullable(1),
-                                    RequestContinuation = token)
-                            | Position.At _
-                            | Position.Start ->
-                                new FeedOptions(
-                                    MaxItemCount = Nullable(1))
-                            | position ->
-                                raise (new NotSupportedException(sprintf "Position %A is not supported by a Query." position))
-                        let query =
-                            client.CreateDocumentQuery<Document>(uri, query, options).AsDocumentQuery()
+                let readFrom =
+                    let rec iterate (query:IDocumentQuery<Document>) token =
+                        seq {
+                            if query.HasMoreResults then
+                                let response =
+                                    query.ExecuteNextAsync<Document>()
+                                    |> Async.AwaitTask
+                                    |> Async.RunSynchronously
+                                yield!
+                                    response
+                                    |> Seq.map (fun document ->
+                                        document.ToByteArray()
+                                        |> Event.create
+                                        |> Event.withCreatedAt document.Timestamp
+                                        |> Event.withName document.Id
+                                        |> Event.withTag document.ETag,
+                                        token)
+                                yield! iterate query response.ResponseContinuation
+                        }
 
-                        let rec iterate token =
-                            seq {
-                                if query.HasMoreResults then
-                                    let response =
-                                        query.ExecuteNextAsync<Document>()
-                                        |> Async.AwaitTask
-                                        |> Async.RunSynchronously
-                                    yield!
-                                        response
-                                        |> Seq.map (fun document ->
-                                            document.ToByteArray()
-                                            |> Event.create
-                                            |> Event.withCreatedAt document.Timestamp
-                                            |> Event.withName document.Id
-                                            |> Event.withTag document.ETag,
-                                            token)
-                                    yield! iterate response.ResponseContinuation
-                            }
-                        yield! iterate null
-                    }
+                    let execute token options =
+                        seq {
+                            let query = client.CreateDocumentQuery<Document>(uri, query, options).AsDocumentQuery()
+                            yield! iterate query token
+                        }
+
+                    let rec start skip =
+                        function
+                        | Position.After x -> start (skip+1) x
+                        | Position.Before x -> start (skip-1) x
+                        | Position.At null
+                        | Position.Start ->
+                            if skip <= 0 then
+                                execute null (new FeedOptions(MaxItemCount = Nullable(1)))
+                            else
+                                execute null (new FeedOptions(MaxItemCount = Nullable(1)))
+                                |> Seq.trySkip skip
+                        | Position.At token when not (String.IsNullOrEmpty token) ->
+                            if skip < 0 then
+                                raise (new NotSupportedException(sprintf "Position cannot rewind by %d" (Math.Abs skip)))
+                            elif skip = 0 then
+                                execute null (new FeedOptions(MaxItemCount = Nullable(1), RequestContinuation = token))
+                            else
+                                execute null (new FeedOptions(MaxItemCount = Nullable(1), RequestContinuation = token))
+                                |> Seq.trySkip skip
+                        | Position.End when skip >= 0 -> Seq.empty
+                        | position ->
+                            raise (new NotSupportedException(sprintf "Position %A is not supported." position))
+
+                    start 0
 
                 [
                     Nata.IO.Reader <| read

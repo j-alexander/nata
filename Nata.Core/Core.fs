@@ -36,6 +36,11 @@ module Core =
         let log fn = Seq.map (fun x -> fn x; x)
         let logi fn = Seq.mapi (fun i x -> fn i x; x)
 
+        let trySkip n =
+            Seq.mapi (fun i x -> i,x)
+            >> Seq.filter (fun (i,x) -> i >= n)
+            >> Seq.map snd
+
         let consume (sequences:#seq<'T> list) : seq<'T> =
             seq { 
                 let n = sequences.Length

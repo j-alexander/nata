@@ -9,6 +9,21 @@ type ExpectedEnumerationException() = inherit Exception()
 
 [<TestFixture>]
 type CoreTests() =
+
+    [<Test>]
+    member x.TestSeqTrySkip() =
+        Assert.True([] |> Seq.trySkip 3 |> Seq.isEmpty)
+        Assert.True([1] |> Seq.trySkip 3 |> Seq.isEmpty)
+        Assert.True([1..2] |> Seq.trySkip 3 |> Seq.isEmpty)
+        Assert.True([1..3] |> Seq.trySkip 3 |> Seq.isEmpty)
+        Assert.True([1..4] |> Seq.trySkip 3 |> Seq.toList = [4])
+        Assert.True([1..5] |> Seq.trySkip 3 |> Seq.toList = [4..5])
+        Assert.True([1..6] |> Seq.trySkip 3 |> Seq.toList = [4..6])
+        Assert.True([1..7] |> Seq.trySkip 3 |> Seq.toList = [4..7])
+        Assert.True([1..8] |> Seq.trySkip 3 |> Seq.toList = [4..8])
+        Assert.True([1..8] |> Seq.trySkip 2 |> Seq.toList = [3..8])
+        Assert.True([1..8] |> Seq.trySkip 1 |> Seq.toList = [2..8])
+        Assert.True([1..8] |> Seq.trySkip 0 |> Seq.toList = [1..8])
     
     [<Test>]
     member x.TestEmptySeqConsume() =
