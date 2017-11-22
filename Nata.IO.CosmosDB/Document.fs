@@ -67,7 +67,7 @@ module Document =
                     writeTo Position.End
                     >> ignore
 
-                let rec read() =
+                let rec readFrom position =
                     seq {
                         let response =
                             client.ReadDocumentAsync(documentUri)
@@ -79,9 +79,14 @@ module Document =
                             |> Event.create
                             |> Event.withCreatedAt document.Timestamp
                             |> Event.withName document.Id
-                            |> Event.withTag document.ETag
-                        yield! read()
+                            |> Event.withTag document.ETag,
+                            document.ETag
+                        yield! readFrom position
                     }
+
+                let read() =
+                    readFrom Position.End
+                    |> Seq.map fst
 
                 [
                     Nata.IO.Writer <| write
@@ -89,4 +94,6 @@ module Document =
                     Nata.IO.WriterTo <| writeTo
 
                     Nata.IO.Reader <| read
+
+                    Nata.IO.ReaderFrom <| readFrom
                 ]
