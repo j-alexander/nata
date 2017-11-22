@@ -25,6 +25,15 @@ module Query =
 
             fun query ->
 
+                let read() =
+                    client.CreateDocumentQuery<Document>(uri, query)
+                    |> Seq.map (fun document ->
+                        document.ToByteArray()
+                        |> Event.create
+                        |> Event.withCreatedAt document.Timestamp
+                        |> Event.withName document.Id
+                        |> Event.withTag document.ETag)
+
                 let rec readFrom(token) =
                     seq {
                         let options =
@@ -64,5 +73,6 @@ module Query =
                     }
 
                 [
+                    Nata.IO.Reader <| read
                     Nata.IO.ReaderFrom <| readFrom
                 ]

@@ -37,6 +37,30 @@ type QueryTests() =
             |> List.sortBy (fun { Value=x } -> x)
 
         let result =
+            Channel.reader (queryFor "select * from c") ()
+            |> Seq.map (Event.data)
+            |> Seq.sortBy (fun { Value=x } -> x)
+            |> Seq.toList
+
+        Assert.AreEqual(expect, result)
+
+    [<Test>]
+    member x.TestQueryAllFromStart() =
+        let documentFor, queryFor = connect()
+        let documentWithId =
+            [ for i in 1..10 -> { TestDocument.Value=guid() }, sprintf "%d" i ]
+
+        for document, id in documentWithId do
+            document
+            |> Event.create
+            |> Channel.writer (documentFor id)
+
+        let expect =
+            documentWithId
+            |> List.map fst
+            |> List.sortBy (fun { Value=x } -> x)
+
+        let result =
             Position.Start
             |> Channel.readerFrom (queryFor "select * from c")
             |> Seq.map (fst >> Event.data)
