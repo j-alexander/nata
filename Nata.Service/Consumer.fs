@@ -207,11 +207,12 @@ module Consumer =
         |> Seq.map Event.data
 
     // produce only if the value being written is newer (by input index) than the existing data
-    let produce ((readFrom, writeTo):(ReaderFrom<Consumer<'Input,'InputIndex>,'OutputIndex>
-                                      * WriterTo<Consumer<'Input,'InputIndex>,'OutputIndex>))
+    let produce (fn:'Output option->'Input->'Output)
+                ((readFrom, writeTo):(ReaderFrom<Consumer<'Output,'InputIndex>,'OutputIndex>
+                                      * WriterTo<Consumer<'Output,'InputIndex>,'OutputIndex>))
                 ((input, index):('Input*'InputIndex)) =
-        let writeTo position =
-            try { Consumer.State=input
+        let writeTo current position =
+            try { Consumer.State=fn current input
                   Consumer.Index=index }
                 |> Event.create
                 |> writeTo position
@@ -219,34 +220,37 @@ module Consumer =
             with :? Position.Invalid<'OutputIndex> -> ()
 
         try readFrom (Position.Before Position.End)
-            |> Seq.mapFst (Event.data >> inputIndex)
+            |> Seq.mapFst (function { Event.Data={ Consumer.State=current
+                                                   Consumer.Index=index } } -> current, index)
             |> Seq.tryHead
         with :? ArgumentOutOfRangeException -> None
         |>
         function
-        | Some (i, _) when (i >= index) -> ()
-        | Some (i, o) ->
+        | Some ((current, i), _) when (i >= index) -> ()
+        | Some ((current, i), o) ->
             Position.At o
             |> Position.After
-            |> writeTo
+            |> writeTo (Some current)
         | _ ->
             Position.Start
-            |> writeTo
+            |> writeTo None
 
     // produce only if the value being written is newer (by input index) than the existing data
-    let produceEvent ((readFrom, writeTo):(ReaderFrom<Consumer<'Input,'InputIndex>,'OutputIndex>
-                                           * WriterTo<Consumer<'Input,'InputIndex>,'OutputIndex>))
+    let produceEvent (fn:'Output option->'Input->'Output)
+                     ((readFrom, writeTo):(ReaderFrom<Consumer<'Output,'InputIndex>,'OutputIndex>
+                                           * WriterTo<Consumer<'Output,'InputIndex>,'OutputIndex>))
                      ((input, index):(Event<'Input>*'InputIndex)) =
-        produce (readFrom, writeTo) (Event.data input, index)
+        produce fn (readFrom, writeTo) (Event.data input, index)
 
     // produce only if the value being written is newer (by input index) than the existing data
     // for the source id supplied
-    let multiproduce ((readFrom, writeTo):(ReaderFrom<Consumer<'Input,Map<'SourceId,'InputIndex>>,'OutputIndex>
-                                          * WriterTo<Consumer<'Input,Map<'SourceId,'InputIndex>>,'OutputIndex>))
+    let multiproduce (fn:'Output option->'Input->'Output)
+                     ((readFrom, writeTo):(ReaderFrom<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>
+                                          * WriterTo<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>))
                      (id:'SourceId)
                      ((input, index):('Input*'InputIndex)) =
-        let writeTo map position =
-            try { Consumer.State=input
+        let writeTo current map position =
+            try { Consumer.State=fn current input
                   Consumer.Index=Map.add id index map }
                 |> Event.create
                 |> writeTo position
@@ -254,28 +258,30 @@ module Consumer =
             with :? Position.Invalid<'OutputIndex> -> ()
 
         try readFrom (Position.Before Position.End)
-            |> Seq.mapFst (Event.data >> inputIndex)
+            |> Seq.mapFst (function { Event.Data={ Consumer.State=current
+                                                   Consumer.Index=map } } -> current, map)
             |> Seq.tryHead
         with :? ArgumentOutOfRangeException -> None
         |>
         function
-        | Some (map, _) when (Map.containsKey id map &&
-                              Map.find id map >= index) -> ()
-        | Some (map, o) ->
+        | Some ((current, map), _) when (Map.containsKey id map &&
+                                         Map.find id map >= index) -> ()
+        | Some ((current, map), o) ->
             Position.At o
             |> Position.After
-            |> writeTo map
+            |> writeTo (Some current) map
         | _ ->
             Position.Start
-            |> writeTo Map.empty
+            |> writeTo None Map.empty
 
     // produce only if the value being written is newer (by input index) than the existing data
     // for the source id supplied
-    let multiproduceEvent ((readFrom, writeTo):(ReaderFrom<Consumer<'Input,Map<'SourceId,'InputIndex>>,'OutputIndex>
-                                                * WriterTo<Consumer<'Input,Map<'SourceId,'InputIndex>>,'OutputIndex>))
+    let multiproduceEvent (fn:'Output option->'Input->'Output)
+                          ((readFrom, writeTo):(ReaderFrom<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>
+                                                * WriterTo<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>))
                           (id:'SourceId)
                           ((input, index):(Event<'Input>*'InputIndex)) =
-        multiproduce (readFrom, writeTo) id (Event.data input, index)
+        multiproduce fn (readFrom, writeTo) id (Event.data input, index)
 
     // compete to distribute input events
     //
@@ -291,7 +297,7 @@ module Consumer =
                                                         * Event<'Output>>) =
         consumeEvent subscribeFrom checkpoint <| fun (input, index) ->
             for (readerFrom, writerTo, output) in distribute input do
-                produceEvent (readerFrom, writerTo) (output, index)
+                produceEvent (fun _ input -> input) (readerFrom, writerTo) (output, index)
 
     // compete to distribute inputs
     //
@@ -353,7 +359,7 @@ module Consumer =
                                                              * Event<'Output>>) =
         consumeEvent subscribeFrom checkpoint <| fun (input, index) ->
             for (readerFrom, writerTo, output) in distribute input do
-                multiproduceEvent (readerFrom, writerTo) id (output, index)
+                multiproduceEvent (fun _ input -> input) (readerFrom, writerTo) id (output, index)
 
     // compete to distribute inputs
     //
