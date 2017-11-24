@@ -242,7 +242,7 @@ type BindingTests() =
               if i % 3 = 1 then yield one
               if i % 3 = 2 then yield two
             ]
-            |> List.map (fun x -> i, x)
+            |> List.map (fun x -> Merge.usingInput, x)
         [0..5]
         |> List.iter (Event.create >> Channel.writer input)
         let states =
@@ -314,7 +314,7 @@ type BindingTests() =
               if i % 3 = 1 then yield one
               if i % 3 = 2 then yield two
             ]
-            |> List.map (fun x -> i, x)
+            |> List.map (fun x -> Merge.usingInput, x)
         let publish =
             let publisher _ =
                 let id = guid()

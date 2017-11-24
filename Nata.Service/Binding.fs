@@ -97,8 +97,8 @@ module Binding =
         let partition = outputFor >> (fun channel -> readerFrom channel, writerTo channel)
         Consumer.partition (subscriberFrom input) (competitor checkpoint) partition
         
-    // compete to distribute an input channel across multiple dynamic outputs
-    let distribute (outputFor:'Input->List<'Output*Channel<Consumer<'Output,'InputIndex>,'OutputIndex>>)
+    // compete to distribute an input channel across multiple dynamic outputs using optimistic concurrency
+    let distribute (outputFor:'Input->List<Merge<'Input,'Output>*Channel<Consumer<'Output,'InputIndex>,'OutputIndex>>)
                    (checkpoint:Channel<Consumer<unit,'InputIndex>,'OutputIndex>)
                    (input:Channel<'Input,'InputIndex>) =
         let distribution = outputFor >> List.map (fun (output,channel) -> readerFrom channel, writerTo channel, output)
@@ -112,9 +112,9 @@ module Binding =
         let partition = outputFor >> (fun channel -> readerFrom channel, writerTo channel)
         Consumer.multipartition (subscriberFrom input) (competitor checkpoint) id partition
 
-    // compete to distribute an input channel across multiple dynamic outputs
+    // compete to distribute an input channel across multiple dynamic outputs using optimistic concurrency
     let multidistribute (id:'SourceId)
-                        (outputFor:'Input->List<'Output*Channel<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>>)
+                        (outputFor:'Input->List<Merge<'Input,'Output>*Channel<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>>)
                         (checkpoint:Channel<Consumer<unit,'InputIndex>,'OutputIndex>)
                         (input:Channel<'Input,'InputIndex>) =
         let distribution = outputFor >> List.map (fun (output,channel) -> readerFrom channel, writerTo channel, output)

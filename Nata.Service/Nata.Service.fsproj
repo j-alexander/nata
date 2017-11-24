@@ -68,6 +68,7 @@
     <None Include="paket.references" />
     <None Include="paket.template" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="Merge.fs" />
     <Compile Include="Consumer.fs" />
     <Compile Include="Binding.fs" />
   </ItemGroup>

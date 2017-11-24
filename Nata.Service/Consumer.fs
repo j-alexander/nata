@@ -207,12 +207,12 @@ module Consumer =
         |> Seq.map Event.data
 
     // produce only if the value being written is newer (by input index) than the existing data
-    let produce (fn:'Output option->'Input->'Output)
+    let produce (merge:Merge<'Input,'Output>)
                 ((readFrom, writeTo):(ReaderFrom<Consumer<'Output,'InputIndex>,'OutputIndex>
                                       * WriterTo<Consumer<'Output,'InputIndex>,'OutputIndex>))
                 ((input, index):('Input*'InputIndex)) =
         let writeTo current position =
-            try { Consumer.State=fn current input
+            try { Consumer.State=merge current input
                   Consumer.Index=index }
                 |> Event.create
                 |> writeTo position
@@ -236,21 +236,47 @@ module Consumer =
             |> writeTo None
 
     // produce only if the value being written is newer (by input index) than the existing data
-    let produceEvent (fn:'Output option->'Input->'Output)
+    let produceEvent (merge:MergeEvent<'Input,'Output>)
                      ((readFrom, writeTo):(ReaderFrom<Consumer<'Output,'InputIndex>,'OutputIndex>
                                            * WriterTo<Consumer<'Output,'InputIndex>,'OutputIndex>))
                      ((input, index):(Event<'Input>*'InputIndex)) =
-        produce fn (readFrom, writeTo) (Event.data input, index)
+        let writeTo current position =
+            try { Consumer.State=merge current input
+                  Consumer.Index=index }
+                |> Event.create
+                |> writeTo position
+                |> ignore
+            with :? Position.Invalid<'OutputIndex> -> ()
+
+        try readFrom (Position.Before Position.End)
+            |> Seq.mapFst (fun event ->
+                event
+                |> Event.mapData state,
+                event
+                |> Event.data
+                |> inputIndex)
+            |> Seq.tryHead
+        with :? ArgumentOutOfRangeException -> None
+        |>
+        function
+        | Some ((current, i), _) when (i >= index) -> ()
+        | Some ((current, i), o) ->
+            Position.At o
+            |> Position.After
+            |> writeTo (Some current)
+        | _ ->
+            Position.Start
+            |> writeTo None
 
     // produce only if the value being written is newer (by input index) than the existing data
     // for the source id supplied
-    let multiproduce (fn:'Output option->'Input->'Output)
+    let multiproduce (merge:Merge<'Input,'Output>)
                      ((readFrom, writeTo):(ReaderFrom<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>
                                           * WriterTo<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>))
                      (id:'SourceId)
                      ((input, index):('Input*'InputIndex)) =
         let writeTo current map position =
-            try { Consumer.State=fn current input
+            try { Consumer.State=merge current input
                   Consumer.Index=Map.add id index map }
                 |> Event.create
                 |> writeTo position
@@ -276,12 +302,39 @@ module Consumer =
 
     // produce only if the value being written is newer (by input index) than the existing data
     // for the source id supplied
-    let multiproduceEvent (fn:'Output option->'Input->'Output)
+    let multiproduceEvent (merge:MergeEvent<'Input,'Output>)
                           ((readFrom, writeTo):(ReaderFrom<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>
                                                 * WriterTo<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>))
                           (id:'SourceId)
                           ((input, index):(Event<'Input>*'InputIndex)) =
-        multiproduce fn (readFrom, writeTo) id (Event.data input, index)
+        let writeTo current map position =
+            try { Consumer.State=merge current input
+                  Consumer.Index=Map.add id index map }
+                |> Event.create
+                |> writeTo position
+                |> ignore
+            with :? Position.Invalid<'OutputIndex> -> ()
+
+        try readFrom (Position.Before Position.End)
+            |> Seq.mapFst (fun event ->
+                event
+                |> Event.mapData state,
+                event
+                |> Event.data
+                |> inputIndex)
+            |> Seq.tryHead
+        with :? ArgumentOutOfRangeException -> None
+        |>
+        function
+        | Some ((current, map), _) when (Map.containsKey id map &&
+                                         Map.find id map >= index) -> ()
+        | Some ((current, map), o) ->
+            Position.At o
+            |> Position.After
+            |> writeTo (Some current) map
+        | _ ->
+            Position.Start
+            |> writeTo None Map.empty
 
     // compete to distribute input events
     //
@@ -294,10 +347,10 @@ module Consumer =
                         (checkpoint:Competitor<Consumer<unit,'InputIndex>>)
                         (distribute:Event<'Input>->List<ReaderFrom<Consumer<'Output,'InputIndex>,'OutputIndex>
                                                         * WriterTo<Consumer<'Output,'InputIndex>,'OutputIndex>
-                                                        * Event<'Output>>) =
+                                                        * MergeEvent<'Input,'Output>>) =
         consumeEvent subscribeFrom checkpoint <| fun (input, index) ->
-            for (readerFrom, writerTo, output) in distribute input do
-                produceEvent (fun _ input -> input) (readerFrom, writerTo) (output, index)
+            for (readerFrom, writerTo, merge) in distribute input do
+                produceEvent merge (readerFrom, writerTo) (input, index)
 
     // compete to distribute inputs
     //
@@ -310,11 +363,10 @@ module Consumer =
                    (checkpoint:Competitor<Consumer<unit,'InputIndex>>)
                    (distribute:'Input->List<ReaderFrom<Consumer<'Output,'InputIndex>,'OutputIndex>
                                             * WriterTo<Consumer<'Output,'InputIndex>,'OutputIndex>
-                                            * 'Output>) =
-        distributeEvent subscribeFrom checkpoint <| fun input ->
-            distribute (Event.data input)
-            |> List.map (fun (r,w,o) -> r,w,Event.create o)
-        |> Seq.map Event.data
+                                            * Merge<'Input,'Output>>) =
+        consume subscribeFrom checkpoint <| fun (input, index) ->
+            for (readerFrom, writerTo, merge) in distribute input do
+                produce merge (readerFrom, writerTo) (input, index)
 
     // compete to partition input events
     //
@@ -329,7 +381,7 @@ module Consumer =
                                                   * WriterTo<Consumer<'Input,'InputIndex>,'OutputIndex>)) =
         distributeEvent subscribeFrom checkpoint <| fun input ->
             let readerFrom, writerTo = partition input
-            [ readerFrom, writerTo, input ]
+            [ readerFrom, writerTo, MergeEvent.usingInput ]
 
     // compete to partition inputs
     //
@@ -344,7 +396,7 @@ module Consumer =
                                       * WriterTo<Consumer<'Input,'InputIndex>,'OutputIndex>)) =
         distribute subscribeFrom checkpoint <| fun input ->
             let readerFrom, writerTo = partition input
-            [ readerFrom, writerTo, input ]
+            [ readerFrom, writerTo, Merge.usingInput ]
 
     // compete to distribute input events
     //
@@ -356,10 +408,10 @@ module Consumer =
                              (id:'SourceId)
                              (distribute:Event<'Input>->List<ReaderFrom<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>
                                                              * WriterTo<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>
-                                                             * Event<'Output>>) =
+                                                             * MergeEvent<'Input,'Output>>) =
         consumeEvent subscribeFrom checkpoint <| fun (input, index) ->
-            for (readerFrom, writerTo, output) in distribute input do
-                multiproduceEvent (fun _ input -> input) (readerFrom, writerTo) id (output, index)
+            for (readerFrom, writerTo, merge) in distribute input do
+                multiproduceEvent merge (readerFrom, writerTo) id (input, index)
 
     // compete to distribute inputs
     //
@@ -373,11 +425,10 @@ module Consumer =
                         (id:'SourceId)
                         (distribute:'Input->List<ReaderFrom<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>
                                                  * WriterTo<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>
-                                                 * 'Output>) =
-        multidistributeEvent subscribeFrom checkpoint id <| fun input ->
-            distribute (Event.data input)
-            |> List.map (fun (r,w,o) -> r,w,Event.create o)
-        |> Seq.map Event.data
+                                                 * Merge<'Input,'Output>>) =
+        consume subscribeFrom checkpoint <| fun (input, index) ->
+            for (readerFrom, writerTo, merge) in distribute input do
+                multiproduce merge (readerFrom, writerTo) id (input, index)
 
     // compete to partition input events
     //
@@ -393,7 +444,7 @@ module Consumer =
                                                        * WriterTo<Consumer<'Input,Map<'SourceId,'InputIndex>>,'OutputIndex>)) =
         multidistributeEvent subscribeFrom checkpoint id <| fun input ->
             let readerFrom, writerTo = partition input
-            [ readerFrom, writerTo, input ]
+            [ readerFrom, writerTo, MergeEvent.usingInput ]
 
     // compete to partition inputs
     //
@@ -409,4 +460,4 @@ module Consumer =
                                            * WriterTo<Consumer<'Input,Map<'SourceId,'InputIndex>>,'OutputIndex>)) =
         multidistribute subscribeFrom checkpoint id <| fun input ->
             let readerFrom, writerTo = partition input
-            [ readerFrom, writerTo, input ]
+            [ readerFrom, writerTo, Merge.usingInput ]
