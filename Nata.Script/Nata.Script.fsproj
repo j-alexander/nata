@@ -97,6 +97,11 @@
       <Project>{c986164e-eb5e-477d-9465-23c4acc88430}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\Nata.IO.CosmosDB\Nata.IO.CosmosDB.fsproj">
+      <Name>Nata.IO.CosmosDB</Name>
+      <Project>{adda18fe-93a5-48bf-bc90-6c36e595626f}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Nata.IO.EventHub\Nata.IO.EventHub.fsproj">
       <Name>Nata.IO.EventHub</Name>
       <Project>{3844ea6a-47fb-4828-8d25-7ecff02caa27}</Project>
@@ -270,6 +275,17 @@
       <ItemGroup>
         <Reference Include="Kafunk">
           <HintPath>..\packages\Kafunk\lib\net45\Kafunk.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
+      </ItemGroup>
+    </When>
+  </Choose>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7' Or $(TargetFrameworkVersion) == 'v4.7.1')">
+      <ItemGroup>
+        <Reference Include="Microsoft.Azure.Documents.Client">
+          <HintPath>..\packages\Microsoft.Azure.DocumentDB\lib\net45\Microsoft.Azure.Documents.Client.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
@@ -3000,6 +3016,7 @@
       </ItemGroup>
     </When>
   </Choose>
+  <Import Project="..\packages\Microsoft.Azure.DocumentDB\build\Microsoft.Azure.DocumentDB.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB\build\Microsoft.Azure.DocumentDB.targets')" Label="Paket" />
   <Import Project="..\packages\NETStandard.Library\build\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library\build\NETStandard.Library.targets')" Label="Paket" />
   <Import Project="..\packages\NETStandard.Library\build\$(__paket__NETStandard_Library_targets).targets" Condition="Exists('..\packages\NETStandard.Library\build\$(__paket__NETStandard_Library_targets).targets')" Label="Paket" />
 </Project>

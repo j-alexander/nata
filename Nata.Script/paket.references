@@ -9,3 +9,4 @@ WindowsAzure.ServiceBus
 WindowsAzure.Storage
 kafunk
 Consul
+Microsoft.Azure.DocumentDB

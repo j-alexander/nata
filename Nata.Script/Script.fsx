@@ -62,3 +62,7 @@ open Nata.IO.WebSocket
 #r @"bin/Debug/Nata.IO.Consul.dll"
 open Nata.IO.Consul
 
+// CosmosDB:
+#r @"bin/Debug/Microsoft.Azure.Documents.Client.dll"
+#r @"bin/Debug/Nata.IO.CosmosDB.dll"
+open Nata.IO.CosmosDB
