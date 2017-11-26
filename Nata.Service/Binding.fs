@@ -91,14 +91,14 @@ module Binding =
         Consumer.multimap subscribersByCheckpoint (competitor output) fn
 
     // compete to partition an input channel across multiple dynamic outputs
-    let partition (outputFor:'Input->Channel<Consumer<'Input,'InputIndex>,'OutputIndex>)
+    let partition (outputFor:'Input->Channel<Consumer<'Input,'InputIndex>,'OutputForIndex>)
                   (checkpoint:Channel<Consumer<unit,'InputIndex>,'OutputIndex>)
                   (input:Channel<'Input,'InputIndex>) =
         let partition = outputFor >> (fun channel -> readerFrom channel, writerTo channel)
         Consumer.partition (subscriberFrom input) (competitor checkpoint) partition
         
     // compete to distribute an input channel across multiple dynamic outputs using optimistic concurrency
-    let distribute (outputFor:'Input->List<Merge<'Input,'Output>*Channel<Consumer<'Output,'InputIndex>,'OutputIndex>>)
+    let distribute (outputFor:'Input->List<Merge<'Input,'Output>*Channel<Consumer<'Output,'InputIndex>,'OutputForIndex>>)
                    (checkpoint:Channel<Consumer<unit,'InputIndex>,'OutputIndex>)
                    (input:Channel<'Input,'InputIndex>) =
         let distribution = outputFor >> List.map (fun (output,channel) -> readerFrom channel, writerTo channel, output)
@@ -106,7 +106,7 @@ module Binding =
 
     // compete to partition an input channel across multiple dynamic outputs
     let multipartition (id:'SourceId)
-                       (outputFor:'Input->Channel<Consumer<'Input,Map<'SourceId,'InputIndex>>,'OutputIndex>)
+                       (outputFor:'Input->Channel<Consumer<'Input,Map<'SourceId,'InputIndex>>,'OutputForIndex>)
                        (checkpoint:Channel<Consumer<unit,'InputIndex>,'OutputIndex>)
                        (input:Channel<'Input,'InputIndex>) =
         let partition = outputFor >> (fun channel -> readerFrom channel, writerTo channel)
@@ -114,7 +114,7 @@ module Binding =
 
     // compete to distribute an input channel across multiple dynamic outputs using optimistic concurrency
     let multidistribute (id:'SourceId)
-                        (outputFor:'Input->List<Merge<'Input,'Output>*Channel<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>>)
+                        (outputFor:'Input->List<Merge<'Input,'Output>*Channel<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputForIndex>>)
                         (checkpoint:Channel<Consumer<unit,'InputIndex>,'OutputIndex>)
                         (input:Channel<'Input,'InputIndex>) =
         let distribution = outputFor >> List.map (fun (output,channel) -> readerFrom channel, writerTo channel, output)
