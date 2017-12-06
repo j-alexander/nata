@@ -14,20 +14,31 @@ open Nata.Core
 open Nata.IO
 
 type Query = string
+and Parameters = Map<Key,Value>
+and Key = string
+and Value = obj
+
 type ContinuationToken = string
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Query =
 
-    let connect : Collection -> Source<Query,Bytes,ContinuationToken> =
+    let connectWithParameters : Collection -> Source<Query*Parameters,Bytes,ContinuationToken> =
         fun collection ->
 
             let client, uri = Collection.connect collection
 
-            fun query ->
+            fun (query, parameters) ->
+                let sqlQuerySpec =
+                    let parameters =
+                        parameters
+                        |> Map.toSeq
+                        |> Seq.map (fun (k,v) -> new SqlParameter(k,v))
+                    new SqlQuerySpec(QueryText=query,
+                                     Parameters=new SqlParameterCollection(parameters))
 
                 let read() =
-                    client.CreateDocumentQuery<Document>(uri, query)
+                    client.CreateDocumentQuery<Document>(uri, sqlQuerySpec)
                     |> Seq.map (fun document ->
                         document.ToByteArray()
                         |> Event.create
@@ -57,7 +68,7 @@ module Query =
 
                     let execute token options =
                         seq {
-                            let query = client.CreateDocumentQuery<Document>(uri, query, options).AsDocumentQuery()
+                            let query = client.CreateDocumentQuery<Document>(uri, sqlQuerySpec, options).AsDocumentQuery()
                             yield! iterate query token
                         }
 
@@ -90,3 +101,10 @@ module Query =
                     Nata.IO.Reader <| read
                     Nata.IO.ReaderFrom <| readFrom
                 ]
+
+    let connect : Collection -> Source<Query,Bytes,ContinuationToken> =
+        let queryWithoutParameters =
+            (fun (q,p) -> q),
+            (fun (q) -> q, Map.empty)
+        connectWithParameters
+        >> Source.mapChannel queryWithoutParameters

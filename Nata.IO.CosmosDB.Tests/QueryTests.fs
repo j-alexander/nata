@@ -19,10 +19,13 @@ type QueryTests() =
         ,
         Query.connect collection
         |> Source.mapData (JsonValue.Codec.createBytesToType())
+        ,
+        Query.connectWithParameters collection
+        |> Source.mapData (JsonValue.Codec.createBytesToType())
 
     [<Test>]
     member x.TestQueryAll() =
-        let documentFor, queryFor = connect()
+        let documentFor, queryFor, _ = connect()
         let documentWithId =
             [ for i in 1..10 -> { Text=guid() }, sprintf "%d" i ]
 
@@ -45,8 +48,36 @@ type QueryTests() =
         Assert.AreEqual(expect, result)
 
     [<Test>]
+    member x.TestQueryWithParameterRange() =
+        let documentFor, _, queryFor = connect()
+        let documentWithId =
+            [ for i in 1..10 -> { Value=i }, sprintf "%d" i ]
+
+        for document, id in documentWithId do
+            document
+            |> Event.create
+            |> Channel.writer (documentFor id)
+
+        let expect =
+            documentWithId
+            |> List.map fst
+            |> List.filter (fun { Value=x } -> x > 7)
+            |> List.sortBy (fun { Value=x } -> x)
+
+        let result =
+            let queryWithParameters  : Query*Parameters =
+                """select * from c where c["Value"] > @v""",
+                Map [ "@v", 7 :> obj ]
+            Channel.reader (queryFor queryWithParameters) ()
+            |> Seq.map (Event.data)
+            |> Seq.sortBy (fun { Value=x } -> x)
+            |> Seq.toList
+
+        Assert.AreEqual(expect, result)
+
+    [<Test>]
     member x.TestQueryAllFromStart() =
-        let documentFor, queryFor = connect()
+        let documentFor, queryFor, _ = connect()
         let documentWithId =
             [ for i in 1..10 -> { Text=guid() }, sprintf "%d" i ]
 
@@ -71,7 +102,7 @@ type QueryTests() =
 
     [<Test>]
     member x.TestQueryEachFromPositionInAll() =
-        let documentFor, queryFor = connect()
+        let documentFor, queryFor, _ = connect()
         let documentWithId =
             [ for i in 1..10 -> { Text=guid() }, sprintf "%d" i ]
 
