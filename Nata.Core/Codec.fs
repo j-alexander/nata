@@ -46,6 +46,11 @@ module Codec =
         Decimal.toString, Decimal.ofString >> Option.defaultValue 0m
     let StringToDecimal : Codec<string,decimal> =
         reverse DecimalToString
-        
+
+    let BooleanToString : Codec<bool,string> =
+        Boolean.toString, Boolean.ofString >> Option.defaultValue false
+    let StringToBoolean : Codec<string,bool> =
+        reverse BooleanToString
+
     let inline NotImplemented x =
         raise(new NotImplementedException(sprintf "Codec From:%A" x))

@@ -186,6 +186,11 @@ module Core =
         let ofOption =
             function Some x -> Nullable(x) | _ -> Nullable()
 
+    module Boolean =
+
+        let ofString = Boolean.TryParse >> function true, x -> Some x | _ -> None
+        let toString (x:bool) = x.ToString()
+
     module Decimal =
 
         let between (left_inclusive:decimal, right_inclusive:decimal) (x:decimal) =
