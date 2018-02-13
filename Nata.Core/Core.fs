@@ -220,7 +220,14 @@ module Core =
         let toString (x:int32) = x.ToString()
 
     module String =
-        
+
+        let replace (before:string) (after:string) (x:string) =
+          match x with
+          | null -> null
+          | x -> x.Replace(before, after)
+
+        let remove (remove:string) = replace remove ""
+
         let contains (substring:string) (x:string) =
             match x, substring with
             | null, null -> true
