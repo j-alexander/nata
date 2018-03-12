@@ -10,6 +10,9 @@ type BloomFilter =
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module BloomFilter =
 
+    type SizeMismatchException(l, r) =
+        inherit Exception(sprintf "BloomFilter sizes do not match: %d <> %d" l r)
+
     type Size =
         /// ~ 2 million bits
         | S
@@ -29,11 +32,14 @@ module BloomFilter =
             Range=range
             Divisors=divisors |> List.map bigint }
 
+    /// a small size BloomFilter of ~ 2 million bits
     let small = emptyOfSize S
+    /// a medium size BloomFilter of ~ 20 million bits
     let medium = emptyOfSize M
+    /// a large size BloomFilter of ~ 200 million bits
     let large = emptyOfSize L
 
-    /// a medium size BloomFilter of ~ 20 million bits
+    /// a default BloomFilter of medium size (~ 20 million bits)
     let empty = medium
 
     let private check range index =
@@ -64,10 +70,43 @@ module BloomFilter =
         divisors
         |> List.map (fun d -> Math.Abs((int (hash % d)) % range))
 
+    /// expose the bloom filter to the specified value
     let add value f =
         hash value f
         |> List.fold setBit f
 
+    /// expose the bloom filter to the specified sequence of values
+    let addSeq (values:#seq<string>) f =
+        values
+        |> Seq.fold (fun f v -> add v f) f
+
+    /// check wither the bloom filter has (probably) seen the specified value
     let contains value f =
         hash value f
         |> List.forall (getBit f)
+
+    /// check whether the bloom filter has (probably) seen the specified sequence of values
+    let containsAll (values:#seq<string>) f =
+        values
+        |> Seq.forall (fun v -> contains v f)
+
+    /// check whether the bloom filter has (probably) seen any of the specified sequence of values
+    let containsAny (values:#seq<string>) f =
+        values
+        |> Seq.exists (fun v -> contains v f)
+
+    /// merge two bloom filters of the same size
+    let union (l:BloomFilter) (r:BloomFilter) =
+        if l.Range <> r.Range then
+            raise (new SizeMismatchException(l.Range, r.Range))
+        else
+            let bits =
+                seq {
+                    for i in 0..(l.Range / 8) do
+                        match Map.tryFind i l.Bits, Map.tryFind i r.Bits with
+                        | None, None -> ()
+                        | Some l, None -> yield i, l
+                        | None, Some r -> yield i, r
+                        | Some l, Some r -> yield i, (l ||| r)
+                }
+            { l with Bits=Map.ofSeq bits }
