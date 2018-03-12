@@ -74,6 +74,7 @@
     <Compile Include="DateTime.fs" />
     <Compile Include="Patterns.fs" />
     <Compile Include="GZip.fs" />
+    <Compile Include="BloomFilter.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
