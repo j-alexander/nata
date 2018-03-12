@@ -4,51 +4,70 @@ open System
 open System.Text
 open System.Security.Cryptography
 
+type BloomFilter =
+    private { Bits:Map<int,byte>; Range:int; Divisors:bigint list }
+
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module BloomFilter =
 
-    type Mutable private (bitMap:byte[]) =
+    type Size =
+        /// ~ 2 million bits
+        | S
+        /// ~ 20 million bits
+        | M
+        /// ~ 200 million bits
+        | L
 
-        static let range = 19999999
+    let emptyOfSize =
+        function // use prime numbers here:
+        | S -> 1999993, [ 2000003; 2000029; 2000039; 2000081 ]
+        | M -> 19999999, [ 20000003; 20000023; 20000033; 20000047 ]
+        | L -> 199999991, [ 200000033; 200000039; 200000051; 200000069 ]
+        >>
+        fun (range, divisors) ->
+          { Bits=Map.empty
+            Range=range
+            Divisors=divisors |> List.map bigint }
 
-        static let createHash =
-            let range = bigint range
-            let divisors =
-                [ bigint 20000003
-                  bigint 20000023
-                  bigint 20000033
-                  bigint 20000047 ]
-            fun (input:string) ->
-                let md5 = MD5.Create()
-                let hash =
-                    Encoding.UTF8.GetBytes(input)
-                    |> md5.ComputeHash
-                    |> bigint
-                divisors
-                |> List.map (fun d -> Math.Abs(int ((hash % d) % range)))
+    let small = emptyOfSize S
+    let medium = emptyOfSize M
+    let large = emptyOfSize L
 
-        let setBit (pos) =
-            bitMap.[pos/8] <- byte (bitMap.[pos/8] ||| (1uy <<< (pos % 8)))
+    /// a medium size BloomFilter of ~ 20 million bits
+    let empty = medium
 
-        let getBit (pos) =
-            byte ((bitMap.[pos/8] &&& (1uy <<< (pos % 8))) >>> (pos % 8))
+    let private check range index =
+        if index < 0 then
+            raise (new IndexOutOfRangeException(sprintf "%d must not be negative" index))
+        elif index > range then
+            raise (new IndexOutOfRangeException(sprintf "%d must not exceed %d" index range))
+        else index
 
-        new() =
-            new Mutable(Array.zeroCreate range)
+    let private getBit { Bits=bits; Range=range } =
+        check range >> fun index ->
+            let value = Map.tryFind (index/8) bits |> Option.defaultValue 0uy
+            byte ((value &&& (1uy <<< (index % 8))) >>> (index % 8))
+            |> (=) 1uy
 
-        new(f:Mutable) =
-            new Mutable(Array.copy f.BitMap)
+    let private setBit ({ Bits=bits; Range=range } as f) =
+        check range >> fun index ->
+            let value = Map.tryFind (index/8) bits |> Option.defaultValue 0uy
+            let bits = Map.add (index/8) (byte (value ||| (1uy <<< (index % 8)))) bits
+            { f with Bits=bits }
 
-        member x.Clone() =
-            new Mutable(x)
+    let private hash (value:string) { Range=range; Divisors=divisors } =
+        use md5 = MD5.Create()
+        let hash =
+            Encoding.UTF8.GetBytes(value)
+            |> md5.ComputeHash
+            |> bigint
+        divisors
+        |> List.map (fun d -> Math.Abs((int (hash % d)) % range))
 
-        member private x.BitMap
-            with get() = bitMap
+    let add value f =
+        hash value f
+        |> List.fold setBit f
 
-        member x.Add(key:string) =
-            createHash(key)
-            |> List.iter setBit
-
-        member x.Contains(key:string) =
-            createHash(key)
-            |> List.map getBit
-            |> List.forall ((=) 1uy)
+    let contains value f =
+        hash value f
+        |> List.forall (getBit f)
