@@ -91,31 +91,20 @@ module SHA256 =
         |> Seq.collect (BitConverter.GetBytes >> Array.rev)
         |> Seq.toArray
 
-    let hash =
-        hashBytes
-        >> Array.map (sprintf "%02x")
-        >> String.Concat
-
-    let hashUTF8Bytes (text:string) =
-        Encoding.UTF8.GetBytes(text)
-        |> hashBytes
-
-    let hashUTF8 (text:string) =
-        Encoding.UTF8.GetBytes(text)
-        |> hash
-
     let referenceBytes (data:byte[]) =
         (new SHA256Managed()).ComputeHash(data)
 
-    let reference =
-        referenceBytes
-        >> Seq.map (sprintf "%02x")
+    let private hex =
+        Array.map (sprintf "%02x")
         >> String.Concat
 
-    let referenceUTF8Bytes (text:string) =
-        Encoding.UTF8.GetBytes(text)
-        |> referenceBytes
+    let private utf8 : string->byte[] =
+        Encoding.UTF8.GetBytes
 
-    let referenceUTF8 (text:string) =
-        Encoding.UTF8.GetBytes(text)
-        |> reference
+    let hash = hashBytes >> hex
+    let hashUTF8Bytes = utf8 >> hashBytes
+    let hashUTF8 = utf8 >> hash
+
+    let reference = referenceBytes >> hex
+    let referenceUTF8Bytes = utf8 >> referenceBytes
+    let referenceUTF8 = utf8 >> reference
