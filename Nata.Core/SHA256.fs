@@ -26,8 +26,8 @@ let maj(x:uint32, y:uint32, z:uint32) =
 let Σ0 x = rotr(x,2) ^^^ rotr(x,13) ^^^ rotr(x,22)
 let Σ1 x = rotr(x,6) ^^^ rotr(x,11) ^^^ rotr(x,25)
 
-let σ0 x = rotr(x,7) ^^^ rotr(x,18) ^^^ rotr(x,3)
-let σ1 x = rotr(x,17) ^^^ rotr(x,19) ^^^ rotr(x,10)
+let σ0 x = rotr(x,7) ^^^ rotr(x,18) ^^^ (x >>> 3)
+let σ1 x = rotr(x,17) ^^^ rotr(x,19) ^^^ (x >>> 10)
 
 let compress (a,b,c,d,e,f,g,h) (k,w) =
     let t1 = h + Σ1(e) + ch(e,f,g) + k + w
@@ -52,8 +52,7 @@ let processChunk (h0,h1,h2,h3,h4,h5,h6,h7) (chunk:uint32[]) =
 
 open System
 
-let hash (data:byte[]) (ra,rb,rc) =
-    let rev x = if x then Array.rev else id
+let hash (data:byte[]) =
 
     let data_bits = 8 * data.Length
     let pad_bits = 512 - ((data_bits + 1 + 64) % 512)
@@ -62,7 +61,6 @@ let hash (data:byte[]) (ra,rb,rc) =
         Array.init ((1+pad_bits)/8) (function 0 -> 0x80uy | _ -> 0uy)
     let length =
         BitConverter.GetBytes(int64 data_bits)
-        |> rev ra
 
     let batch n =
         Seq.windowed n
@@ -76,7 +74,7 @@ let hash (data:byte[]) (ra,rb,rc) =
             yield! length
         }
         |> batch 4
-        |> Seq.map (fun x -> BitConverter.ToUInt32(rev rb x,0))
+        |> Seq.map (fun x -> BitConverter.ToUInt32(Array.rev x,0))
         |> batch 16
 
     let (h0,h1,h2,h3,h4,h5,h6,h7) =
@@ -84,7 +82,7 @@ let hash (data:byte[]) (ra,rb,rc) =
         |> Seq.fold processChunk h
 
     [| h0; h1; h2; h3; h4; h5; h6; h7 |]
-    |> Seq.collect (BitConverter.GetBytes >> rev rc)
+    |> Seq.collect (BitConverter.GetBytes >> Array.rev)
     |> Seq.map (sprintf "%02x")
     |> String.Concat
 
@@ -93,15 +91,8 @@ let reference (data:byte[]) =
     |> Seq.map (sprintf "%02x")
     |> String.Concat
 
-let compare (data:byte[]) (ra,rb,rc) =
-    sprintf "expect %s, and got %s" (reference data) (hash data (ra,rb,rc))
-
-let compareAll (data:byte[]) =
-  for a in [true; false] do
-    for b in [true; false] do
-      for c in [true; false] do
-        printfn "%s" (compare data (a,b,c))
-
+let compare (data:byte[]) =
+    sprintf "expect %s, and got %s" (reference data) (hash data)
 
 let testCompress() =
     let a = 0x87564c0cu
