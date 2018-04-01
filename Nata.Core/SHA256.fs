@@ -42,16 +42,15 @@ module SHA256 =
     let processChunk (h0,h1,h2,h3,h4,h5,h6,h7) (chunk:uint32[]) =
         assert(chunk.Length = 16)
 
-        let rec init acc =
-            seq {
-                let w0 =
-                    match acc with
-                    | _::w2::_::_::_::_::w7::_::_::_::_::_::_::_::w15::w16::_ ->
-                        σ1(w2) + w7 + σ0(w15) + w16
-                    | init -> chunk.[init.Length]
-                yield w0
-                yield! init(w0 :: acc)
-            }
+        let rec init acc = seq {
+            let w0 =
+                match acc with
+                | _::w2::_::_::_::_::w7::_::_::_::_::_::_::_::w15::w16::_ ->
+                    σ1(w2) + w7 + σ0(w15) + w16
+                | init -> chunk.[init.Length]
+            yield w0
+            yield! init(w0 :: acc)
+        }
 
         let (a,b,c,d,e,f,g,h) =
             Seq.zip k (init [])
