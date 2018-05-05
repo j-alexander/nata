@@ -29,10 +29,3 @@ module Settings =
           FetchMinBytes = 65536
           FetchMaxBytes = 4194304 
           PreallocateProducer = false }
-
-    let connect (settings:Settings) =
-        settings.Hosts
-        |> List.map KafkaUri.parse
-        |> KafkaConfig.create
-        |> Kafka.conn,
-        settings

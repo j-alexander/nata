@@ -20,5 +20,5 @@ module Connection =
             let hosts =
               settings.Hosts
               |> List.map KafkaUri.parse
-            KafkaConfig.create(hosts,version=Versions.V_0_8_2)//,autoApiVersions=true)
+            KafkaConfig.create(hosts,version=Versions.V_0_9_0)
             |> Kafka.conn }
