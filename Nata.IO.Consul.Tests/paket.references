@@ -5,3 +5,4 @@ NLog
 Consul
 NUnit
 NUnit.Runners
+FSharp.Core

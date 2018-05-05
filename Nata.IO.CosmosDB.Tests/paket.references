@@ -5,3 +5,4 @@ NLog.FSharp
 NUnit
 NUnit.Runners
 Microsoft.Azure.DocumentDB
+FSharp.Core

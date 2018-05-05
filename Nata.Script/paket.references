@@ -10,3 +10,4 @@ WindowsAzure.Storage
 kafunk
 Consul
 Microsoft.Azure.DocumentDB
+FSharp.Core

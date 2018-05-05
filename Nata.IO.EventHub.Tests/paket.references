@@ -5,3 +5,4 @@ NLog.FSharp
 WindowsAzure.ServiceBus
 NUnit
 NUnit.Runners
+FSharp.Core

@@ -5,3 +5,4 @@ NLog.FSharp
 RabbitMQ.Client
 NUnit
 NUnit.Runners
+FSharp.Core

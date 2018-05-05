@@ -8,3 +8,4 @@ NLog
 NLog.FSharp
 System.Spatial
 WindowsAzure.Storage
+FSharp.Core

@@ -10,3 +10,4 @@ System.Spatial
 WindowsAzure.Storage
 NUnit
 NUnit.Runners
+FSharp.Core

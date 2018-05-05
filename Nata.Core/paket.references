@@ -2,3 +2,4 @@ FSharp.Data
 Newtonsoft.Json
 NLog
 NLog.FSharp
+FSharp.Core

@@ -3,3 +3,4 @@ NLog
 NLog.FSharp
 Newtonsoft.Json
 Consul
+FSharp.Core
