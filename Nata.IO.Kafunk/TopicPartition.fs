@@ -31,7 +31,7 @@ module TopicPartition =
                         settings.FetchMaxBytes
                     |]
                 |],
-                0,
+                settings.FetchMaxBytes,
                 0y)
 
         let response =
