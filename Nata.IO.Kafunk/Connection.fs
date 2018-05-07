@@ -17,7 +17,8 @@ module Connection =
     let create (settings:Settings) =
         { Connection.Settings = settings
           Connection.Cluster =
-            settings.Hosts
-            |> List.map KafkaUri.parse
-            |> KafkaConfig.create
+            let hosts =
+              settings.Hosts
+              |> List.map KafkaUri.parse
+            KafkaConfig.create(hosts,version=Versions.V_0_9_0)
             |> Kafka.conn }

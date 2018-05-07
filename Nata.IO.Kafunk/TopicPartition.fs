@@ -27,16 +27,19 @@ module TopicPartition =
                     [|
                         partition,
                         offset,
+                        0L,
                         settings.FetchMaxBytes
                     |]
-                |])
+                |],
+                settings.FetchMaxBytes,
+                0y)
 
         let response =
             Kafka.fetch cluster request
             |> Async.RunSynchronously
 
         match response.topics with
-        | [| t, [| p, ec, hwmo, mss, ms |] |] ->
+        | [| t, [| { partition=p; errorCode=ec; highWatermarkOffset=hwmo; messageSetSize=mss; messageSet=ms } |] |] ->
             match ec with
             | ErrorCode.NoError ->          Some(ConsumerMessageSet(t, p, ms, hwmo))
             | ErrorCode.OffsetOutOfRange -> None

@@ -4,3 +4,4 @@ Newtonsoft.Json
 WebSocket4Net
 NUnit
 NUnit.Runners
+FSharp.Core

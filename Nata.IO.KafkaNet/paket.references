@@ -3,3 +3,4 @@ kafka-net
 Newtonsoft.Json
 NLog
 NLog.FSharp
+FSharp.Core

@@ -5,6 +5,7 @@ open Kafunk
 
 type Settings = {
     Hosts : string list
+    ClientId : string
     FetchMaxWaitTime : TimeSpan
     FetchMinBytes : MinBytes
     FetchMaxBytes : MaxBytes
@@ -15,6 +16,7 @@ type Settings = {
 module Settings =
 
     let hosts { Hosts=x } = x
+    let clientId { ClientId=x } = x
     let fetchMaxWaitTime { FetchMaxWaitTime=x } = x
     let fetchMinBytes { FetchMinBytes=x } = x
     let fetchMaxBytes { FetchMaxBytes=x } = x
@@ -22,14 +24,8 @@ module Settings =
 
     let defaultSettings =
         { Hosts = [ "localhost" ]
+          ClientId = String.Empty
           FetchMaxWaitTime = TimeSpan.FromMilliseconds 500.
           FetchMinBytes = 65536
           FetchMaxBytes = 4194304 
           PreallocateProducer = false }
-
-    let connect (settings:Settings) =
-        settings.Hosts
-        |> List.map KafkaUri.parse
-        |> KafkaConfig.create
-        |> Kafka.conn,
-        settings

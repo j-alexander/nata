@@ -4,3 +4,4 @@ NLog.Fsharp
 NLog
 NUnit
 NUnit.Runners
+FSharp.Core
