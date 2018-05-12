@@ -17,3 +17,13 @@ module Patterns =
         function
         | :? AggregateException as e -> Some e.InnerException
         | _ -> None
+
+    let (|AbsoluteUri|_|), (|RelativeUri|_|), (|Uri|_|) =
+
+        let ofKind (kind:UriKind) (x:string) =
+            match Uri.TryCreate(x, kind) with
+            | true, value -> Some value | false, _ -> None
+
+        ofKind UriKind.Absolute,
+        ofKind UriKind.Relative,
+        ofKind UriKind.RelativeOrAbsolute
