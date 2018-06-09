@@ -15,8 +15,6 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.EventStore.Tests", 
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Tests", "Nata.IO.Tests\Nata.IO.Tests.fsproj", "{B58419F9-0387-4780-99D7-70CA2938DA00}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Memory", "Nata.IO.Memory\Nata.IO.Memory.fsproj", "{5BAA20B5-A18B-4BEE-AED1-19F393E02096}"
-EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Memory.Tests", "Nata.IO.Memory.Tests\Nata.IO.Memory.Tests.fsproj", "{B48AC22E-D39F-4F69-9824-028D7D3064CD}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.File", "Nata.IO.File\Nata.IO.File.fsproj", "{093513EB-1C6C-40C6-A0AF-F71BAA6A827E}"
@@ -73,7 +71,9 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.CosmosDB.Tests", "N
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.Core", "Nata.Core\Nata.Core.fsproj", "{2BC3CF88-626B-4782-9C39-87346853F7BB}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO", "Nata.IO\Nata.IO.fsproj", "{309D74FC-A98C-4940-8216-F1C617181702}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO", "Nata.IO\Nata.IO.fsproj", "{309D74FC-A98C-4940-8216-F1C617181702}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Memory", "Nata.IO.Memory\Nata.IO.Memory.fsproj", "{CE2DD5E4-E10C-4D62-A859-5C325971D7BA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -93,10 +93,6 @@ Global
 		{B58419F9-0387-4780-99D7-70CA2938DA00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B58419F9-0387-4780-99D7-70CA2938DA00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B58419F9-0387-4780-99D7-70CA2938DA00}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5BAA20B5-A18B-4BEE-AED1-19F393E02096}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5BAA20B5-A18B-4BEE-AED1-19F393E02096}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5BAA20B5-A18B-4BEE-AED1-19F393E02096}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5BAA20B5-A18B-4BEE-AED1-19F393E02096}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B48AC22E-D39F-4F69-9824-028D7D3064CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B48AC22E-D39F-4F69-9824-028D7D3064CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B48AC22E-D39F-4F69-9824-028D7D3064CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -213,6 +209,10 @@ Global
 		{309D74FC-A98C-4940-8216-F1C617181702}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{309D74FC-A98C-4940-8216-F1C617181702}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{309D74FC-A98C-4940-8216-F1C617181702}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE2DD5E4-E10C-4D62-A859-5C325971D7BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE2DD5E4-E10C-4D62-A859-5C325971D7BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE2DD5E4-E10C-4D62-A859-5C325971D7BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE2DD5E4-E10C-4D62-A859-5C325971D7BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

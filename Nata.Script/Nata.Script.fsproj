@@ -129,7 +129,7 @@
     </ProjectReference>
     <ProjectReference Include="..\Nata.IO.Memory\Nata.IO.Memory.fsproj">
       <Name>Nata.IO.Memory</Name>
-      <Project>{5baa20b5-a18b-4bee-aed1-19f393e02096}</Project>
+      <Project>{ce2dd5e4-e10c-4d62-a859-5c325971d7ba}</Project>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Nata.IO.RabbitMQ\Nata.IO.RabbitMQ.fsproj">

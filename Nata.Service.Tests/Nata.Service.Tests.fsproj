@@ -73,6 +73,11 @@
     <Compile Include="BindingTests.fs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Nata.IO.Memory\Nata.IO.Memory.fsproj">
+      <Name>Nata.IO.Memory</Name>
+      <Project>{ce2dd5e4-e10c-4d62-a859-5c325971d7ba}</Project>
+      <Private>True</Private>
+    </ProjectReference>
     <ProjectReference Include="..\Nata.Service\Nata.Service.fsproj">
       <Name>Nata.Service</Name>
       <Project>{d2d3cf4b-5dca-4d71-a213-aae2e39eb39f}</Project>
@@ -85,11 +90,6 @@
     <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
       <Name>Nata.Core</Name>
       <Project>{2bc3cf88-626b-4782-9c39-87346853f7bb}</Project>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Nata.IO.Memory\Nata.IO.Memory.fsproj">
-      <Name>Nata.IO.Memory</Name>
-      <Project>{5baa20b5-a18b-4bee-aed1-19f393e02096}</Project>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Nata.IO\Nata.IO.fsproj">
