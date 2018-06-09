@@ -9,8 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{D5F934
 		paket.lock = paket.lock
 	EndProjectSection
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO", "Nata.IO\Nata.IO.fsproj", "{05933D30-393B-4A8E-8418-B6A141D70040}"
-EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.EventStore", "Nata.IO.EventStore\Nata.IO.EventStore.fsproj", "{B5F580E2-3957-41C3-9F14-F9F8CF636B7E}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.EventStore.Tests", "Nata.IO.EventStore.Tests\Nata.IO.EventStore.Tests.fsproj", "{A308B0D1-8460-46BB-B52E-B87E994A0FC6}"
@@ -73,7 +71,9 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.CosmosDB", "Nata.IO
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.CosmosDB.Tests", "Nata.IO.CosmosDB.Tests\Nata.IO.CosmosDB.Tests.fsproj", "{D4142BEA-4EB8-48E3-993E-F26EA6696DF6}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Core", "Nata.Core\Nata.Core.fsproj", "{2BC3CF88-626B-4782-9C39-87346853F7BB}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.Core", "Nata.Core\Nata.Core.fsproj", "{2BC3CF88-626B-4782-9C39-87346853F7BB}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO", "Nata.IO\Nata.IO.fsproj", "{309D74FC-A98C-4940-8216-F1C617181702}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,10 +81,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{05933D30-393B-4A8E-8418-B6A141D70040}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{05933D30-393B-4A8E-8418-B6A141D70040}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{05933D30-393B-4A8E-8418-B6A141D70040}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{05933D30-393B-4A8E-8418-B6A141D70040}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B5F580E2-3957-41C3-9F14-F9F8CF636B7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B5F580E2-3957-41C3-9F14-F9F8CF636B7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B5F580E2-3957-41C3-9F14-F9F8CF636B7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -213,6 +209,10 @@ Global
 		{2BC3CF88-626B-4782-9C39-87346853F7BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2BC3CF88-626B-4782-9C39-87346853F7BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2BC3CF88-626B-4782-9C39-87346853F7BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{309D74FC-A98C-4940-8216-F1C617181702}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{309D74FC-A98C-4940-8216-F1C617181702}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{309D74FC-A98C-4940-8216-F1C617181702}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{309D74FC-A98C-4940-8216-F1C617181702}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
