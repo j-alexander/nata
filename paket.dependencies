@@ -29,6 +29,7 @@ nuget NUnit.Runners
 nuget Owin
 nuget RabbitMQ.Client
 nuget System.Spatial
+nuget System.ValueTuple
 nuget WebSocket4Net
 nuget WindowsAzure.ServiceBus
 nuget WindowsAzure.Storage
