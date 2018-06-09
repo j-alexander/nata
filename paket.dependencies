@@ -4,7 +4,7 @@ nuget Consul
 nuget EventStore.Client
 nuget FSharp.Compiler.Service
 nuget FSharp.Core
-nuget FSharp.Data
+nuget FSharp.Data >= 3.0.0-beta3
 nuget FSharp.Formatting >= 2.10.3
 nuget FSharp.Formatting.CommandTool
 nuget FSharpVSPowerTools.Core

@@ -1,11 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{D5F93442-F280-45E1-9224-5BF707244CC8}"
 	ProjectSection(SolutionItems) = preProject
 		paket.dependencies = paket.dependencies
+		paket.lock = paket.lock
 	EndProjectSection
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO", "Nata.IO\Nata.IO.fsproj", "{05933D30-393B-4A8E-8418-B6A141D70040}"
@@ -58,8 +59,6 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Fun.Schema.Tests", "Na
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Fun.JsonPath.Tests", "Nata.Fun.JsonPath.Tests\Nata.Fun.JsonPath.Tests.fsproj", "{B8747390-219E-4755-97B7-A45659A4821B}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Core", "Nata.Core\Nata.Core.fsproj", "{48B92604-E152-4EC9-8C25-FEF849785944}"
-EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Core.Tests", "Nata.Core.Tests\Nata.Core.Tests.fsproj", "{0A6F3787-611D-43E9-B033-90B906F29AA0}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Kafunk", "Nata.IO.Kafunk\Nata.IO.Kafunk.fsproj", "{D179D85E-10FC-416F-BCE5-1F8EDF51BD0E}"
@@ -73,6 +72,8 @@ EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.CosmosDB", "Nata.IO.CosmosDB\Nata.IO.CosmosDB.fsproj", "{ADDA18FE-93A5-48BF-BC90-6C36E595626F}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.CosmosDB.Tests", "Nata.IO.CosmosDB.Tests\Nata.IO.CosmosDB.Tests.fsproj", "{D4142BEA-4EB8-48E3-993E-F26EA6696DF6}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Core", "Nata.Core\Nata.Core.fsproj", "{2BC3CF88-626B-4782-9C39-87346853F7BB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -180,10 +181,6 @@ Global
 		{B8747390-219E-4755-97B7-A45659A4821B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B8747390-219E-4755-97B7-A45659A4821B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B8747390-219E-4755-97B7-A45659A4821B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{48B92604-E152-4EC9-8C25-FEF849785944}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{48B92604-E152-4EC9-8C25-FEF849785944}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{48B92604-E152-4EC9-8C25-FEF849785944}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{48B92604-E152-4EC9-8C25-FEF849785944}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0A6F3787-611D-43E9-B033-90B906F29AA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0A6F3787-611D-43E9-B033-90B906F29AA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A6F3787-611D-43E9-B033-90B906F29AA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -212,8 +209,15 @@ Global
 		{D4142BEA-4EB8-48E3-993E-F26EA6696DF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4142BEA-4EB8-48E3-993E-F26EA6696DF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4142BEA-4EB8-48E3-993E-F26EA6696DF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BC3CF88-626B-4782-9C39-87346853F7BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BC3CF88-626B-4782-9C39-87346853F7BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BC3CF88-626B-4782-9C39-87346853F7BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BC3CF88-626B-4782-9C39-87346853F7BB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ED0CE750-4AFB-41C9-BCBC-97C5DA8295C7}
 	EndGlobalSection
 EndGlobal
