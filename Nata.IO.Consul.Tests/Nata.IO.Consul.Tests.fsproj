@@ -78,7 +78,7 @@
     <Reference Include="System.Numerics" />
     <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
       <Name>Nata.Core</Name>
-      <Project>{48b92604-e152-4ec9-8c25-fef849785944}</Project>
+      <Project>{2bc3cf88-626b-4782-9c39-87346853f7bb}</Project>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Nata.IO.Consul\Nata.IO.Consul.fsproj">
@@ -93,7 +93,7 @@
     </ProjectReference>
     <ProjectReference Include="..\Nata.IO\Nata.IO.fsproj">
       <Name>Nata.IO</Name>
-      <Project>{05933d30-393b-4a8e-8418-b6a141d70040}</Project>
+      <Project>{309d74fc-a98c-4940-8216-f1c617181702}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>

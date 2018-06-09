@@ -80,7 +80,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj">
       <Name>Nata.Core</Name>
-      <Project>{48b92604-e152-4ec9-8c25-fef849785944}</Project>
+      <Project>{2bc3cf88-626b-4782-9c39-87346853f7bb}</Project>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Nata.Fun.Schema\Nata.Fun.Schema.fsproj">
