@@ -1,7 +1,6 @@
 Kafunk
 FSharp.Data
 Newtonsoft.Json
-NLog
-NLog.FSharp
 NUnit
 FSharp.Core
+System.ValueTuple

@@ -3,7 +3,6 @@
 open System
 open System.Net
 open System.Text
-open NLog.FSharp
 open Kafunk
 
 type Received =
