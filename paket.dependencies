@@ -13,10 +13,6 @@ nuget Kafunk
 nuget Microsoft.AspNet.WebApi.Core
 nuget Microsoft.AspNet.WebApi.Owin
 nuget Microsoft.Azure.DocumentDB
-nuget Microsoft.Azure.KeyVault.Core
-nuget Microsoft.Data.Edm
-nuget Microsoft.Data.OData
-nuget Microsoft.Data.Services.Client
 nuget Microsoft.Owin
 nuget Microsoft.Owin.Diagnostics
 nuget Microsoft.Owin.Host.HttpListener
@@ -28,7 +24,6 @@ nuget NUnit
 nuget NUnit.Console
 nuget Owin
 nuget RabbitMQ.Client
-nuget System.Spatial
 nuget System.ValueTuple
 nuget WebSocket4Net
 nuget WindowsAzure.ServiceBus
