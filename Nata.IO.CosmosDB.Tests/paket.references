@@ -1,6 +1,6 @@
 FSharp.Data
 Newtonsoft.Json
 NUnit
-Microsoft.Azure.DocumentDB
 FSharp.Core
 System.ValueTuple
+Microsoft.Azure.DocumentDB.Core

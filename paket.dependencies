@@ -12,7 +12,7 @@ nuget kafka-net
 nuget Kafunk
 nuget Microsoft.AspNet.WebApi.Core
 nuget Microsoft.AspNet.WebApi.Owin
-nuget Microsoft.Azure.DocumentDB
+nuget Microsoft.Azure.DocumentDB.Core
 nuget Microsoft.Owin
 nuget Microsoft.Owin.Diagnostics
 nuget Microsoft.Owin.Host.HttpListener

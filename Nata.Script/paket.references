@@ -8,6 +8,6 @@ WindowsAzure.ServiceBus
 WindowsAzure.Storage
 kafunk
 Consul
-Microsoft.Azure.DocumentDB
 FSharp.Core
 EventStore.ClientAPI.NetCore
+Microsoft.Azure.DocumentDB.Core
