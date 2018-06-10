@@ -1,6 +1,6 @@
-NLog.FSharp
 FSharp.Data
 Newtonsoft.Json
 WebSocket4Net
 NUnit
 FSharp.Core
+System.ValueTuple
