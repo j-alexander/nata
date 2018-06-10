@@ -3,3 +3,4 @@ FSharp.Data
 Newtonsoft.Json
 System.ValueTuple
 NUnit
+NUnit.Console

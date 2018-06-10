@@ -23,7 +23,8 @@ module Queue =
             queue
 
     let write (queue:Queue) (event:Event<byte[]>) =
-        let message = new CloudQueueMessage(null)
+        let content:string = null
+        let message = new CloudQueueMessage(content)
         message.SetMessageContent(event.Data)
         queue.AddMessageAsync(message)
         |> Task.wait

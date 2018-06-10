@@ -25,6 +25,7 @@ nuget Newtonsoft.Json
 nuget NLog
 nuget NLog.FSharp
 nuget NUnit
+nuget NUnit.Console
 nuget NUnit.Runners
 nuget Owin
 nuget RabbitMQ.Client
