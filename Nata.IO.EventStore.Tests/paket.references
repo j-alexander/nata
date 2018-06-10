@@ -1,7 +1,7 @@
 FSharp.Data
 Newtonsoft.Json
 NLog
-NLog.FSharp
 NUnit
 FSharp.Core
 EventStore.ClientAPI.NetCore
+System.ValueTuple
