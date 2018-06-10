@@ -1,13 +1,13 @@
 ﻿namespace Nata.IO.EventStore
 
 open System
-open System.Diagnostics
 open System.Net
 open System.Net.Sockets
 open System.Threading.Tasks
-open NLog.FSharp
+open NLog
 open EventStore.ClientAPI
 open EventStore.ClientAPI.SystemData
+open Nata.Core
 
 module Client =
 
@@ -15,7 +15,7 @@ module Client =
         | Catchup of EventStoreStreamCatchUpSubscription
         | Live of EventStoreSubscription
 
-    let log = new Logger()
+    let log = LogManager.GetLogger("Nata.IO.EventStore.Client")
     
     let connect(settings:Settings) : IEventStoreConnection =
         let connectionSettings =
@@ -35,9 +35,11 @@ module Client =
         let completed = new Lazy<unit>((fun _ -> connected.SetResult()), true)
         connection.Connected.Add(fun _ -> completed.Force())
 
-        log.Info "%s:%d Connecting" settings.Server.Host settings.Server.Port
-        connection.ConnectAsync().Wait()
-        connected.Task.Wait()
+        log.Info(sprintf "%s:%d Connecting" settings.Server.Host settings.Server.Port)
+        connection.ConnectAsync()
+        |> Task.wait
+        connected.Task
+        |> Task.wait
 
-        log.Info "%s:%d Connected" settings.Server.Host settings.Server.Port
+        log.Info(sprintf "%s:%d Connected" settings.Server.Host settings.Server.Port)
         connection

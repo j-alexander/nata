@@ -4,10 +4,10 @@ Newtonsoft.Json
 WebSocket4Net
 RabbitMQ.Client
 kafka-net
-EventStore.Client
 WindowsAzure.ServiceBus
 WindowsAzure.Storage
 kafunk
 Consul
 Microsoft.Azure.DocumentDB
 FSharp.Core
+EventStore.ClientAPI.NetCore

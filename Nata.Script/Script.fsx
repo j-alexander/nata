@@ -27,7 +27,7 @@ open Nata.IO.Memory
 open Nata.IO.File
 
 // EventStore:
-#r @"bin/Debug/EventStore.ClientAPI.dll"
+#r @"bin/Debug/EventStore.ClientAPI.NetCore.dll"
 #r @"bin/Debug/Nata.IO.EventStore.dll"
 open Nata.IO.EventStore
 

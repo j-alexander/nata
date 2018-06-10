@@ -6,7 +6,7 @@ open System.Diagnostics
 open System.Net
 open System.Net.Sockets
 open System.Threading
-open NLog.FSharp
+open NLog
 open Nata.Core
 open Nata.IO
 open EventStore.ClientAPI
@@ -24,7 +24,7 @@ module Stream =
 
     module Traversal =
 
-        let log = new Logger()
+        let log = LogManager.GetLogger("Nata.IO.EventStore.Stream")
 
         let decode (resolvedEvent:ResolvedEvent) =
             Event.create           resolvedEvent.Event.Data
@@ -43,10 +43,10 @@ module Stream =
                 |> Async.RunSynchronously
             match slice.Status with
             | SliceReadStatus.StreamDeleted -> 
-                log.Warn "Stream %s was deleted." stream
+                log.Warn(sprintf "Stream %s was deleted." stream)
                 None
             | SliceReadStatus.StreamNotFound -> 
-                log.Warn "Stream %s was not found." stream
+                log.Warn(sprintf "Stream %s was not found." stream)
                 None
             | SliceReadStatus.Success ->
                 slice.Events
@@ -83,9 +83,9 @@ module Stream =
                     |> Async.RunSynchronously
                 match slice.Status with
                 | SliceReadStatus.StreamDeleted -> 
-                    log.Warn "Stream %s at (%d) was deleted." stream from
+                    log.Warn(sprintf "Stream %s at (%d) was deleted." stream from)
                 | SliceReadStatus.StreamNotFound -> 
-                    log.Warn "Stream %s at (%d) was not found." stream from
+                    log.Warn(sprintf "Stream %s at (%d) was not found." stream from)
                 | SliceReadStatus.Success ->
                     if slice.Events.Length > 0 then
                         for resolvedEvent in slice.Events ->
