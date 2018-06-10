@@ -269,3 +269,37 @@ module Core =
         let reraise e =
             ExceptionServices.ExceptionDispatchInfo.Capture(e).Throw()
             failwithf "Async.reraise %A failed." e
+
+    module Task =
+
+        let waitAsync (task:Task) : Async<unit> =
+            Async.FromContinuations(fun (success,error,_) ->
+                task.ContinueWith(fun (task:Task) ->
+                    if task.IsFaulted then
+                        let e = task.Exception
+                        if e.InnerExceptions.Count = 1 then error e.InnerExceptions.[0]
+                        else error e
+                    elif task.IsCanceled then
+                        error(new TaskCanceledException())
+                    else
+                        success())
+                |> ignore)
+
+        let waitForResultAsync (task:Task<'T>) : Async<'T> =
+            Async.FromContinuations(fun (success,error,_) ->
+                task.ContinueWith(fun (task:Task<'T>) ->
+                    if task.IsFaulted then
+                        let e = task.Exception
+                        if e.InnerExceptions.Count = 1 then error e.InnerExceptions.[0]
+                        else error e
+                    elif task.IsCanceled then
+                        error(new TaskCanceledException())
+                    else
+                        success task.Result)
+                |> ignore)
+
+        let wait t =
+            t |> waitAsync |> Async.RunSynchronously
+
+        let waitForResult t =
+            t |> waitForResultAsync |> Async.RunSynchronously

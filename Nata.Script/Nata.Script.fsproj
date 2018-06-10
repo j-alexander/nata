@@ -89,7 +89,7 @@
     </ProjectReference>
     <ProjectReference Include="..\Nata.IO.AzureStorage\Nata.IO.AzureStorage.fsproj">
       <Name>Nata.IO.AzureStorage</Name>
-      <Project>{b193db82-958b-403a-b4d4-6369adb1e6ef}</Project>
+      <Project>{b861e7d2-281a-4771-9522-5520ab492849}</Project>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Nata.IO.Consul\Nata.IO.Consul.fsproj">
