@@ -1,7 +1,5 @@
 FSharp.Data
 Newtonsoft.Json
-NLog
-NLog.FSharp
 NUnit
-NUnit.Runners
 FSharp.Core
+System.ValueTuple

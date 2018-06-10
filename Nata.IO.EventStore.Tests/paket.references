@@ -3,6 +3,5 @@ Newtonsoft.Json
 NLog
 NLog.FSharp
 NUnit
-NUnit.Runners
 FSharp.Core
 EventStore.ClientAPI.NetCore

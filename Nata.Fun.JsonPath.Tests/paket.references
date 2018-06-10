@@ -3,5 +3,4 @@ Newtonsoft.Json
 NLog.FSharp
 NLog
 NUnit
-NUnit.Runners
 FSharp.Core
