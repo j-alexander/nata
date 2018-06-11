@@ -3,7 +3,6 @@ open System.IO
 
 // Framework (Logging & Json)
 #r @"bin/Debug/NLog.dll"
-#r @"bin/Debug/NLog.FSharp.dll"
 #r @"bin/Debug/Newtonsoft.Json.dll"
 #r @"bin/Debug/FSharp.Data.dll"
 open FSharp.Data
@@ -27,6 +26,7 @@ open Nata.IO.Memory
 open Nata.IO.File
 
 // EventStore:
+#r @"bin/Debug/protobuf-net.dll"
 #r @"bin/Debug/EventStore.ClientAPI.NetCore.dll"
 #r @"bin/Debug/Nata.IO.EventStore.dll"
 open Nata.IO.EventStore
@@ -63,6 +63,6 @@ open Nata.IO.WebSocket
 open Nata.IO.Consul
 
 // CosmosDB:
-#r @"bin/Debug/Microsoft.Azure.Documents.Client.dll"
+#r @"bin/Debug/Microsoft.Azure.DocumentDB.Core.dll"
 #r @"bin/Debug/Nata.IO.CosmosDB.dll"
 open Nata.IO.CosmosDB
