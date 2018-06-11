@@ -1,7 +1,6 @@
 Newtonsoft.Json
 FSharp.Data
-NLog.FSharp
-NLog
 Consul
 NUnit
 FSharp.Core
+System.ValueTuple
