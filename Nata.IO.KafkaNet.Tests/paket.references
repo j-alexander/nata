@@ -1,7 +1,6 @@
 FSharp.Data
 kafka-net
 Newtonsoft.Json
-NLog
-NLog.FSharp
 NUnit
 FSharp.Core
+System.ValueTuple

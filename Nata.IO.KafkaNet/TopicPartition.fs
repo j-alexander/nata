@@ -4,7 +4,6 @@ open System
 open System.Collections.Generic
 open System.Net
 open System.Text
-open NLog.FSharp
 open KafkaNet
 open KafkaNet.Model
 
