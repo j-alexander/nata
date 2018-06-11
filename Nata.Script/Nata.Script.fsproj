@@ -4,9 +4,6 @@
     <TargetFramework>net461</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
-  <PropertyGroup>
-    <PreBuildEvent>xcopy /y /d /f "$(ProjectDir)..\packages\FSharp.Data\lib\net45\*.*" "$(TargetDir)"</PreBuildEvent>
-  </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
     <Compile Include="AssemblyInfo.fs" />
