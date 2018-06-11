@@ -19,6 +19,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj" />
+    <ProjectReference Include="..\Nata.IO.Memory\Nata.IO.Memory.fsproj" />
     <ProjectReference Include="..\Nata.IO\Nata.IO.fsproj" />
     <ProjectReference Include="..\Nata.Service\Nata.Service.fsproj" />
   </ItemGroup>
