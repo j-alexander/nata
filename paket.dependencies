@@ -19,7 +19,6 @@ nuget Microsoft.Owin.Host.HttpListener
 nuget Microsoft.Owin.Hosting
 nuget Newtonsoft.Json
 nuget NLog
-nuget NLog.FSharp
 nuget NUnit
 nuget NUnit.Console
 nuget Owin
