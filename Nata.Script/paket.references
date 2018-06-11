@@ -10,3 +10,4 @@ Consul
 FSharp.Core
 EventStore.ClientAPI.NetCore
 Microsoft.Azure.DocumentDB.Core
+System.ValueTuple
