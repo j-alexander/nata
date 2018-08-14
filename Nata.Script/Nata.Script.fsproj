@@ -6,8 +6,8 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Script.fsx" />
+    <None Include="AssemblyInfo.fs" />
+    <None Include="Script.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
