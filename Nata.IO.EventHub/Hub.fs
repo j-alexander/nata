@@ -1,7 +1,7 @@
 ﻿namespace Nata.IO.EventHub
 
 open System
-open Microsoft.ServiceBus.Messaging
+open Microsoft.Azure.EventHubs
 open Nata.Core
 open Nata.IO
 
@@ -18,7 +18,8 @@ module Hub =
             let information =
                 partition
                 |> Partition.toString
-                |> hub.GetPartitionRuntimeInformation
+                |> hub.GetPartitionRuntimeInformationAsync
+                |> Task.waitForResult
             information.LastEnqueuedOffset
             |> Index.ofString
             |> Option.defaultValue Index.start
@@ -36,8 +37,11 @@ module Hub =
     let positionsOf (hub:Hub) : Position<Offsets> -> Offsets =
 
         let positionOf = positionOf hub |> swap
+        let information =
+            hub.GetRuntimeInformationAsync()
+            |> Task.waitForResult
         let partitions =
-            hub.GetRuntimeInformation().PartitionIds
+            information.PartitionIds
             |> Seq.choose Partition.ofString
             |> Seq.toList
         
@@ -65,60 +69,66 @@ module Hub =
         EventHubClient.CreateFromConnectionString(settings.Connection)
 
     let partitions (hub:Hub) : Partition[] =
-        hub.GetRuntimeInformation().PartitionIds
+        let information =
+            hub.GetRuntimeInformationAsync()
+            |> Task.waitForResult
+        information.PartitionIds
         |> Array.map Int32.Parse
 
     let write (hub:Hub) (event:Event<byte[]>) =
         let data = new EventData(event.Data)
         match Event.partition event with
         | None ->
-            data.PartitionKey <- 
+            let partitionKey =
                 event
                 |> Event.key
                 |> Option.defaultValue (guid())
-            data
-            |> hub.Send
+            hub.SendAsync(data, partitionKey)
+            |> Task.wait
         | Some partition ->
-            let sender = hub.CreatePartitionedSender(Partition.toString partition)
+            let sender = hub.CreatePartitionSender(Partition.toString partition)
             data
-            |> sender.Send
+            |> sender.SendAsync
+            |> Task.wait
+
+    let private partitionsFor (hub:Hub) =
+        let information =
+            hub.GetRuntimeInformationAsync()
+            |> Task.waitForResult
+        information.PartitionIds
 
     let subscribe (hub:Hub) =
-        let group = hub.GetDefaultConsumerGroup()
-        hub.GetRuntimeInformation().PartitionIds
-        |> Seq.map (Receiver.toSeq None group None)
+        partitionsFor hub
+        |> Seq.map (Receiver.toSeq None hub None)
         |> Seq.toList
         |> Seq.consume
 
     let subscribeFrom (hub:Hub) (offsets:Offsets) =
-        let group = hub.GetDefaultConsumerGroup()
-        hub.GetRuntimeInformation().PartitionIds
+        partitionsFor hub
         |> Seq.map(fun partition ->
             let start =
                 offsets
                 |> List.tryFind (Offset.partition >> Partition.toString >> (=) partition)
                 |> Option.map (Offset.index)
-            Receiver.toSeqWithOffset None group start partition)
+            Receiver.toSeqWithOffset None hub start partition)
         |> Seq.toList
         |> Seq.consume
         |> Offsets.merge offsets
 
     let read (wait:TimeSpan) (hub:Hub) =
-        let group = hub.GetDefaultConsumerGroup()
-        hub.GetRuntimeInformation().PartitionIds
-        |> Seq.map (Receiver.toSeq (Some wait) group None)
+        partitionsFor hub
+        |> Seq.map (Receiver.toSeq (Some wait) hub None)
         |> Seq.toList
         |> Seq.consume
 
     let readFrom (wait:TimeSpan) (hub:Hub) (offsets:Offsets) =
-        let group = hub.GetDefaultConsumerGroup()
-        hub.GetRuntimeInformation().PartitionIds
+        partitionsFor hub
         |> Seq.map(fun partition ->
             let start =
                 offsets
                 |> List.tryFind (Offset.partition >> Partition.toString >> (=) partition)
                 |> Option.map (Offset.index)
-            Receiver.toSeqWithOffset (Some wait) group start partition)
+            Receiver.toSeqWithOffset (Some wait) hub start partition)
         |> Seq.toList
         |> Seq.consume
         |> Offsets.merge offsets

@@ -13,6 +13,7 @@ nuget Kafunk
 nuget Microsoft.AspNet.WebApi.Core
 nuget Microsoft.AspNet.WebApi.Owin
 nuget Microsoft.Azure.DocumentDB.Core
+nuget Microsoft.Azure.EventHubs
 nuget Microsoft.NET.Test.Sdk
 nuget Microsoft.Owin
 nuget Microsoft.Owin.Diagnostics
@@ -27,5 +28,4 @@ nuget Owin
 nuget RabbitMQ.Client
 nuget System.ValueTuple
 nuget WebSocket4Net
-nuget WindowsAzure.ServiceBus
 nuget WindowsAzure.Storage

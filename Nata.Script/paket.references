@@ -3,7 +3,6 @@ Newtonsoft.Json
 WebSocket4Net
 RabbitMQ.Client
 kafka-net
-WindowsAzure.ServiceBus
 WindowsAzure.Storage
 kafunk
 Consul

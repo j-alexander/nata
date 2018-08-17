@@ -1,5 +1,5 @@
 FSharp.Data
 Newtonsoft.Json
-WindowsAzure.ServiceBus
 FSharp.Core
 System.ValueTuple
+Microsoft.Azure.EventHubs

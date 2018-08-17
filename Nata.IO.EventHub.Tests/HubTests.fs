@@ -14,6 +14,7 @@ type HubTests() =
     let channel = ""
     let settings = {
         Connection = @"Endpoint=sb://;SharedAccessKeyName=;SharedAccessKey=;EntityPath="
+        MaximumMessageCountOnRead = 1024
         MaximumWaitTimeOnRead = TimeSpan.FromSeconds(10.0)
     }
 

@@ -1,7 +1,8 @@
 ﻿namespace Nata.IO.EventHub
 
 open System
-open Microsoft.ServiceBus.Messaging
+open Microsoft.Azure.EventHubs
+open Nata.Core
 open Nata.IO
 
 module HubPartition =
@@ -10,29 +11,26 @@ module HubPartition =
 
     let write (hub:Hub) =
         Partition.toString
-        >> hub.CreatePartitionedSender
-        >> fun sender (event:Event<byte[]>) -> sender.Send(new EventData(event.Data))
+        >> hub.CreatePartitionSender
+        >> fun sender (event:Event<byte[]>) -> sender.SendAsync(new EventData(event.Data)) |> Task.wait
             
     let subscribe (hub:Hub) =
-        let group = hub.GetDefaultConsumerGroup()
         Partition.toString
-        >> Receiver.toSeq None group None
+        >> Receiver.toSeq None hub None
 
     let subscribeFrom (hub:Hub) =
-        let group = hub.GetDefaultConsumerGroup()
         Partition.toString >> fun partition ->
             Some >> fun index ->
-                Receiver.toSeqWithIndex None group index partition
+                Receiver.toSeqWithIndex None hub index partition
 
     let read (wait:TimeSpan) (hub:Hub) =
         Partition.toString
-        >> Receiver.toSeq (Some wait) (hub.GetDefaultConsumerGroup()) None
+        >> Receiver.toSeq (Some wait) hub None
 
     let readFrom (wait:TimeSpan) (hub:Hub) =
-        let group = hub.GetDefaultConsumerGroup()
         Partition.toString >> fun partition ->
             Some >> fun index ->
-                Receiver.toSeqWithIndex (Some wait) group index partition
+                Receiver.toSeqWithIndex (Some wait) hub index partition
 
     let readFromPosition (wait:TimeSpan) (hub:Hub) =
         let readFrom = readFrom wait hub
