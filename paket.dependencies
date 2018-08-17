@@ -13,6 +13,7 @@ nuget Kafunk
 nuget Microsoft.AspNet.WebApi.Core
 nuget Microsoft.AspNet.WebApi.Owin
 nuget Microsoft.Azure.DocumentDB.Core
+nuget Microsoft.NET.Test.Sdk
 nuget Microsoft.Owin
 nuget Microsoft.Owin.Diagnostics
 nuget Microsoft.Owin.Host.HttpListener
@@ -21,6 +22,7 @@ nuget Newtonsoft.Json
 nuget NLog
 nuget NUnit
 nuget NUnit.Console
+nuget NUnit3TestAdapter
 nuget Owin
 nuget RabbitMQ.Client
 nuget System.ValueTuple
