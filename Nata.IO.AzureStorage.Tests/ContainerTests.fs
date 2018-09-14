@@ -23,4 +23,5 @@ type ContainerTests() =
     [<Test>]
     member x.TestCreateDevelopmentContainer() =
         let container = Blob.Container.create (name()) (account())
-        Assert.True(container.Exists())
+        let exists = container.ExistsAsync() |> Task.waitForResult
+        Assert.IsTrue(exists)

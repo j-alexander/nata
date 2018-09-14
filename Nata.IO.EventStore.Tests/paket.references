@@ -5,3 +5,5 @@ NUnit
 FSharp.Core
 EventStore.ClientAPI.NetCore
 System.ValueTuple
+NUnit3TestAdapter
+Microsoft.NET.Test.Sdk

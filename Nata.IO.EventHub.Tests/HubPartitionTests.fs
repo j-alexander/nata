@@ -24,7 +24,7 @@ type HubPartitionTests() =
         |> Source.mapCapabilities (MaskEnvelope.mapCapability (guid()))
         <| channel
 
-    [<Test; Timeout(30000)>]
+    [<Test; MaxTime(30000)>]
     member x.TestReadNone() =
 
         let connectTo =
@@ -41,7 +41,7 @@ type HubPartitionTests() =
 
         Assert.AreEqual([], results)
 
-    [<Test; Timeout(30000)>]
+    [<Test; MaxTime(30000)>]
     member x.TestWriteRead() =
 
         let connectTo =
@@ -71,7 +71,7 @@ type HubPartitionTests() =
 
         Assert.AreEqual([ event.Data ], results)
 
-    [<Test; Timeout(30000)>]
+    [<Test; MaxTime(30000)>]
     member x.TestWriteSubscribe() =
 
         let connectTo =
@@ -92,7 +92,7 @@ type HubPartitionTests() =
 
         Assert.AreEqual(event.Data, result.Data)
         
-    [<Test; Timeout(60000)>]
+    [<Test; MaxTime(60000)>]
     member x.TestPartitionEventIsolation() =
 
         let partitions =

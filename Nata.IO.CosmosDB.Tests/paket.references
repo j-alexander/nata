@@ -4,3 +4,5 @@ NUnit
 FSharp.Core
 System.ValueTuple
 Microsoft.Azure.DocumentDB.Core
+NUnit3TestAdapter
+Microsoft.NET.Test.Sdk

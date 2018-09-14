@@ -39,7 +39,7 @@ type LogStoreTests() as x =
         let event = event("TestWrite")
         write event
 
-    [<Test; Timeout(45000)>]
+    [<Test; MaxTime(45000)>]
     member x.TestEmptyRead() =
         let read = x.Connect() |> reader
         Assert.AreEqual([], read() |> Seq.toList)
@@ -55,7 +55,7 @@ type LogStoreTests() as x =
         let result = read() |> Seq.head
         Assert.AreEqual(event.Data, result.Data)
 
-    [<Test; Timeout(45000)>]
+    [<Test; MaxTime(45000)>]
     member x.TestEmptyReadFrom() =
         let readFrom = x.Connect() |> readerFrom
         Assert.AreEqual([], readFrom Position.Start |> Seq.toList)
@@ -151,7 +151,7 @@ type LogStoreTests() as x =
         | _ ->
             Assert.Ignore("WriterTo is reported to be unsupported by this source.")
         
-    [<Test; Timeout(120000)>]
+    [<Test; MaxTime(120000)>]
     member x.TestLiveSubscription() =
         let write, subscribe =
             let connection = x.Connect()
@@ -170,7 +170,7 @@ type LogStoreTests() as x =
         |> List.iter(fun (expected, actual) ->
             Assert.AreEqual(expected.Data, actual.Data))
             
-    [<Test; Timeout(120000)>]
+    [<Test; MaxTime(120000)>]
     member x.TestLateSubscription() =
         let write, subscribe =
             let connection = x.Connect()
@@ -188,7 +188,7 @@ type LogStoreTests() as x =
         |> List.iter(fun (expected, actual) ->
             Assert.AreEqual(expected.Data, actual.Data))
             
-    [<Test; Timeout(120000)>]
+    [<Test; MaxTime(120000)>]
     member x.TestSubscriptionFromIndex() =
         let write, subscribeFrom =
             let connection = x.Connect()
@@ -229,7 +229,7 @@ type LogStoreTests() as x =
         |> Array.iter(fun (expected, (actual, index)) ->
             Assert.AreEqual(expected.Data, actual.Data))
             
-    [<Test; Timeout(120000)>]
+    [<Test; MaxTime(120000)>]
     member x.TestSubscriptionContinuation() =
         let write, subscribeFrom =
             let connection = x.Connect()

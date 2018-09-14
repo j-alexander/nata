@@ -30,7 +30,7 @@ type HubTests() =
         |> Source.mapCapabilities (MaskEnvelope.mapCapability (guid()) >> onPartition 0)
         <| channel
 
-    [<Test; Timeout(30000)>]
+    [<Test; MaxTime(30000)>]
     member x.TestWriteSubscribe() =
 
         let write, subscribe =
@@ -51,7 +51,7 @@ type HubTests() =
 
         Assert.AreEqual(event.Data, result.Data)
   
-    [<Test; Timeout(60000)>]
+    [<Test; MaxTime(60000)>]
     member x.TestWriteRead() =
         let connect =
             Hub.connect settings

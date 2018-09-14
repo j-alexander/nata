@@ -28,7 +28,7 @@ type ClusterTests() =
         |> Source.mapData (Codec.BytesToString)
         |> Source.mapData (Codec.StringToInt32)
 
-    [<Test; Timeout(360000)>]
+    [<Test; MaxTime(360000)>]
     member x.TestReadWriteIntegers() =
         let expected = [ 1..100 ]
 

@@ -13,7 +13,7 @@ type SocketTests() =
 
     let settings = { Host="ws://ws.websocketstest.com:80/service"; AutoPingInterval=None }
 
-    [<Test; Timeout(10000)>]
+    [<Test; MaxTime(10000)>]
     member x.TestTimeService() =
         let write, subscribe =
             let socket = Socket.connect settings
