@@ -2,7 +2,7 @@ FSharp.Data
 Newtonsoft.Json
 WebSocket4Net
 RabbitMQ.Client
-kafka-net
+kafka-net-for-dotnet-core
 WindowsAzure.Storage
 kafunk
 Consul

@@ -8,7 +8,7 @@ nuget FSharp.Data >= 3.0.0-beta3
 nuget FSharp.Formatting >= 2.10.3
 nuget FSharp.Formatting.CommandTool
 nuget FSharpVSPowerTools.Core
-nuget kafka-net
+nuget kafka-net-for-dotnet-core
 nuget Kafunk
 nuget Microsoft.AspNet.WebApi.Core
 nuget Microsoft.AspNet.WebApi.Owin
