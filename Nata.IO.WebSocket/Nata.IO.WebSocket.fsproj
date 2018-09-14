@@ -2,11 +2,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Jonathan Leaver</Authors>
+    <Copyright>© 2016 Jonathan Leaver</Copyright>
+    <PackageIconUrl>https://avatars3.githubusercontent.com/u/4975537</PackageIconUrl>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/j-alexander/nata</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/j-alexander/nata.git</RepositoryUrl>
+    <Company>LambdaFun.com</Company>
+    <Description>WebSocket IO Library for the Nata Project</Description>
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-    <None Include="paket.template" />
-    <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Multicast.fs" />
     <Compile Include="Socket.fs" />
   </ItemGroup>

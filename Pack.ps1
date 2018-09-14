@@ -1,1 +1,2 @@
-.\.paket\paket.exe pack nuget --build-platform AnyCPU --minimum-from-lock-file
+param ([parameter(mandatory=$true)][string]$version)
+dotnet pack -c Release -o ../nuget /p:PackageVersion=$version-beta /p:AssemblyVersion=$version /p:AssemblyFileVersion=$version
