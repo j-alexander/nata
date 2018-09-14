@@ -4,11 +4,18 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <IsPackable>false</IsPackable>
+    <Copyright>© 2016 Jonathan Leaver</Copyright>
+    <PackageIconUrl>https://avatars3.githubusercontent.com/u/4975537</PackageIconUrl>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/j-alexander/nata</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/j-alexander/nata.git</RepositoryUrl>
+    <Company>LambdaFun.com</Company>
+    <Description>EventHub IO Test Library for the Nata Project</Description>
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
     <Content Include="App.config" />
-    <Compile Include="AssemblyInfo.fs" />
     <Compile Include="MaskEnvelope.fs" />
     <Compile Include="HubTests.fs" />
     <Compile Include="HubPartitionTests.fs" />
