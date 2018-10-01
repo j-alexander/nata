@@ -32,7 +32,7 @@ open Nata.IO.File
 open Nata.IO.EventStore
 
 // KafkaNet:
-#r @"bin/Debug/net461/kafka-net.dll"
+#r @"bin/Debug/net461/kafka-net-for-dotnet-core.dll"
 #r @"bin/Debug/net461/Nata.IO.KafkaNet.dll"
 open Nata.IO.KafkaNet
 
