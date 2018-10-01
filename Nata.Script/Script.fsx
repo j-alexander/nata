@@ -1,6 +1,8 @@
 ﻿open System
 open System.IO
 
+#r "netstandard"
+
 // Framework (Logging & Json)
 #r @"bin/Debug/net461/NLog.dll"
 #r @"bin/Debug/net461/Newtonsoft.Json.dll"
