@@ -1,8 +1,8 @@
 FSharp.Data
-kafka-net
+kafka-net-for-dotnet-core
 Newtonsoft.Json
-NLog
-NLog.FSharp
 NUnit
-NUnit.Runners
 FSharp.Core
+System.ValueTuple
+NUnit3TestAdapter
+Microsoft.NET.Test.Sdk

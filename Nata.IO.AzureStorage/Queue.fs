@@ -18,25 +18,33 @@ module Queue =
         let client = account.CreateCloudQueueClient()
         fun (name:Name) ->
             let queue = client.GetQueueReference(name)
-            let result = queue.CreateIfNotExists()
+            queue.CreateIfNotExistsAsync()
+            |> Task.wait
             queue
 
     let write (queue:Queue) (event:Event<byte[]>) =
-        let message = new CloudQueueMessage(event.Data)
-        queue.AddMessage(message)
+        let content:string = null
+        let message = new CloudQueueMessage(content)
+        message.SetMessageContent(event.Data)
+        queue.AddMessageAsync(message)
+        |> Task.wait
 
     let subscribe (queue:Queue) =
         Seq.initInfinite <| fun i ->
-            let message = queue.GetMessage()
+            let message =
+                queue.GetMessageAsync()
+                |> Task.waitForResult
             let created =
                 message.InsertionTime
                 |> Nullable.map DateTime.ofOffset
             Event.create message.AsBytes
             |> Event.withStream queue.Name
+            |> Event.withIndex (int64 i)
             |> Event.withCreatedAtNullable created
 
     let length (queue:Queue) =
-        queue.FetchAttributes()
+        queue.FetchAttributesAsync()
+        |> Task.wait
         queue.ApproximateMessageCount
         |> Nullable.toOption
         |> Option.map Convert.ToInt64

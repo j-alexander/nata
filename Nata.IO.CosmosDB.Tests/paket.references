@@ -1,8 +1,8 @@
 FSharp.Data
 Newtonsoft.Json
-NLog
-NLog.FSharp
 NUnit
-NUnit.Runners
-Microsoft.Azure.DocumentDB
 FSharp.Core
+System.ValueTuple
+Microsoft.Azure.DocumentDB.Core
+NUnit3TestAdapter
+Microsoft.NET.Test.Sdk

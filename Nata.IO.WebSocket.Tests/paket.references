@@ -1,7 +1,8 @@
-NLog.FSharp
 FSharp.Data
 Newtonsoft.Json
 WebSocket4Net
 NUnit
-NUnit.Runners
 FSharp.Core
+System.ValueTuple
+NUnit3TestAdapter
+Microsoft.NET.Test.Sdk

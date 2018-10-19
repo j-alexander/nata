@@ -1,7 +1,7 @@
 FSharp.Data
 Newtonsoft.Json
-NLog.FSharp
-NLog
 NUnit
-NUnit.Runners
 FSharp.Core
+System.ValueTuple
+NUnit3TestAdapter
+Microsoft.NET.Test.Sdk

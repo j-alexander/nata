@@ -15,6 +15,7 @@ open Nata.IO
 open Nata.IO.Capability
 open Nata.IO.AzureStorage
 open Nata.IO.AzureStorage.Blob.Block
+open Microsoft.WindowsAzure.Storage
 
 type JsonBlob = {
     text : string
@@ -151,7 +152,10 @@ type BlockBlobTests() =
 
         let falsePosition = guid()
         let reader = readFrom (Position.At falsePosition)
-        Assert.IsEmpty(reader)
+        Assert.Throws<StorageException>((fun _ ->
+            reader
+            |> Seq.isEmpty
+            |> ignore), "a random guid should be an invalid etag") |> ignore
         
     [<Test>]
     member x.TestReadFromABlobWithNoData() =

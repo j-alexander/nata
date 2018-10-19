@@ -1,34 +1,31 @@
 source https://www.nuget.org/api/v2/
 
 nuget Consul
-nuget EventStore.Client
+nuget EventStore.ClientAPI.NetCore
 nuget FSharp.Compiler.Service
 nuget FSharp.Core
 nuget FSharp.Data
-nuget FSharp.Formatting >= 2.10.3
+nuget FSharp.Formatting >= 2.14.4
 nuget FSharp.Formatting.CommandTool
 nuget FSharpVSPowerTools.Core
-nuget kafka-net
+nuget kafka-net-for-dotnet-core
 nuget Kafunk
 nuget Microsoft.AspNet.WebApi.Core
 nuget Microsoft.AspNet.WebApi.Owin
-nuget Microsoft.Azure.DocumentDB
-nuget Microsoft.Azure.KeyVault.Core
-nuget Microsoft.Data.Edm
-nuget Microsoft.Data.OData
-nuget Microsoft.Data.Services.Client
+nuget Microsoft.Azure.DocumentDB.Core
+nuget Microsoft.Azure.EventHubs
+nuget Microsoft.NET.Test.Sdk
 nuget Microsoft.Owin
 nuget Microsoft.Owin.Diagnostics
 nuget Microsoft.Owin.Host.HttpListener
 nuget Microsoft.Owin.Hosting
 nuget Newtonsoft.Json
 nuget NLog
-nuget NLog.FSharp
 nuget NUnit
-nuget NUnit.Runners
+nuget NUnit.Console
+nuget NUnit3TestAdapter
 nuget Owin
 nuget RabbitMQ.Client
-nuget System.Spatial
+nuget System.ValueTuple
 nuget WebSocket4Net
-nuget WindowsAzure.ServiceBus
 nuget WindowsAzure.Storage

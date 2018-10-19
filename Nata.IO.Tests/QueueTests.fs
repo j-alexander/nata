@@ -25,7 +25,7 @@ type QueueTests() =
 
     abstract member ConnectWithName : unit -> (Channel<byte[],int64>*string)
 
-    [<Test; Timeout(15000)>]
+    [<Test; MaxTime(15000)>]
     member x.TestWriteAndSubscribe() =
         let queue, name = x.ConnectWithName()
         let event = event()
@@ -39,7 +39,7 @@ type QueueTests() =
         Assert.AreEqual(name |> Some, result |> Event.stream)
         Assert.True(result |> Event.createdAt |> Option.isSome)
 
-    [<Test; Timeout(15000)>]
+    [<Test; MaxTime(15000)>]
     member x.TestWriteAndSubscribeMany() =
         let queue, name = x.ConnectWithName()
 
@@ -58,7 +58,7 @@ type QueueTests() =
             Assert.AreEqual(name |> Some, after |> Event.stream)
             Assert.True(after |> Event.createdAt |> Option.isSome)
 
-    [<Test;Timeout(25000)>]
+    [<Test; MaxTime(25000)>]
     member x.TestWriteIncreasesIndex() =
         let queue, name = x.ConnectWithName()
 

@@ -28,7 +28,7 @@ type TopicTests() =
         |> Source.mapIndex (Offsets.Codec.OffsetsToInt64 0)
         <| guid()
 
-    [<Test; Timeout(360000)>]
+    [<Test; MaxTime(360000)>]
     member x.TestReadWriteIntegers() =
         let expected = [ 1..100 ]
         let topic =

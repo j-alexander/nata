@@ -1,8 +1,8 @@
 FSharp.Data
 Newtonsoft.Json
-NLog
-NLog.FSharp
-WindowsAzure.ServiceBus
 NUnit
-NUnit.Runners
 FSharp.Core
+System.ValueTuple
+Microsoft.Azure.EventHubs
+NUnit3TestAdapter
+Microsoft.NET.Test.Sdk

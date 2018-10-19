@@ -1,6 +1,5 @@
 FSharp.Data
 Newtonsoft.Json
-NLog
-NLog.FSharp
 RabbitMQ.Client
 FSharp.Core
+System.ValueTuple

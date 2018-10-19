@@ -1,13 +1,8 @@
 FSharp.Data
-Microsoft.Azure.KeyVault.Core
-Microsoft.Data.Edm
-Microsoft.Data.OData
-Microsoft.Data.Services.Client
 Newtonsoft.Json
-NLog
-NLog.FSharp
-System.Spatial
 WindowsAzure.Storage
 NUnit
-NUnit.Runners
 FSharp.Core
+System.ValueTuple
+NUnit3TestAdapter
+Microsoft.NET.Test.Sdk

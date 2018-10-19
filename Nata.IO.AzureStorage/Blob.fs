@@ -16,7 +16,8 @@ module Blob =
         let create (containerName:Name) (account:Account) =
             let client = account.CreateCloudBlobClient()
             let container = client.GetContainerReference(containerName)
-            let result = container.CreateIfNotExists()
+            container.CreateIfNotExistsAsync()
+            |> Task.wait
             container
 
     module Block =
@@ -26,7 +27,8 @@ module Blob =
         let write (container:CloudBlobContainer) (blobName:Name) =
             let reference = container.GetBlockBlobReference(blobName)
             fun (event:Event<byte[]>) ->
-                reference.UploadFromByteArray(event.Data, 0, event.Data.Length)
+                reference.UploadFromByteArrayAsync(event.Data, 0, event.Data.Length)
+                |> Task.wait
 
         let writeTo (container:CloudBlobContainer) (blobName:Name) =
             let reference = container.GetBlockBlobReference(blobName)
@@ -38,7 +40,8 @@ module Blob =
                     | Position.After x -> AccessCondition.GenerateEmptyCondition()
                     | Position.End -> AccessCondition.GenerateEmptyCondition()
                 fun (event:Event<byte[]>) ->
-                    reference.UploadFromByteArray(event.Data, 0, event.Data.Length, condition position)
+                    reference.UploadFromByteArrayAsync(event.Data, 0, event.Data.Length, condition position, null, null)
+                    |> Task.wait
                     reference.Properties.ETag
 
         let readFrom (container:CloudBlobContainer) (blobName:Name) =
@@ -52,8 +55,8 @@ module Blob =
             Seq.unfold <| fun (position:Position<string>) ->
                 try 
                     use memory = new MemoryStream()
-                    reference.DownloadToStream(memory, condition position)
-                    
+                    reference.DownloadToStreamAsync(memory, condition position, null, null)
+                    |> Task.wait
                     let bytes = memory.ToArray()
                     let created =
                         reference.Properties.LastModified
@@ -113,13 +116,18 @@ module Blob =
     
         let write (container:CloudBlobContainer) (blobName:Name) =
             let reference = container.GetAppendBlobReference(blobName)
-            reference.CreateOrReplace(AccessCondition.GenerateIfNotExistsCondition())
-            encode >> reference.AppendText
+            reference.CreateOrReplaceAsync(AccessCondition.GenerateIfNotExistsCondition(), null, null)
+            |> Task.wait
+            fun x ->
+                reference.AppendTextAsync(encode(x))
+                |> Task.wait
 
         let read (container:CloudBlobContainer) (blobName:Name) =
             let reference = container.GetAppendBlobReference(blobName)
             seq {
-                use stream = reference.OpenRead()
+                use stream =
+                    reference.OpenReadAsync()
+                    |> Task.waitForResult
                 use reader = new StreamReader(stream)
                 while reader.EndOfStream |> not do
                     yield
