@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>Jonathan Leaver</Authors>
+    <Copyright>© 2018 Jonathan Leaver</Copyright>
+    <PackageIconUrl>https://avatars3.githubusercontent.com/u/4975537</PackageIconUrl>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/j-alexander/nata</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/j-alexander/nata.git</RepositoryUrl>
+    <Company>LambdaFun.com</Company>
+    <Description>NLog Core Library for the Nata Project</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="paket.references" />
+    <Compile Include="Logger.fs" />
+  </ItemGroup>
+  <Import Project="..\.paket\Paket.Restore.targets" />
+</Project>
