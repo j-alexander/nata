@@ -9,53 +9,53 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{D5F934
 		paket.lock = paket.lock
 	EndProjectSection
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Memory.Tests", "Nata.IO.Memory.Tests\Nata.IO.Memory.Tests.fsproj", "{B48AC22E-D39F-4F69-9824-028D7D3064CD}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.Memory.Tests", "Nata.IO.Memory.Tests\Nata.IO.Memory.Tests.fsproj", "{B48AC22E-D39F-4F69-9824-028D7D3064CD}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.File.Tests", "Nata.IO.File.Tests\Nata.IO.File.Tests.fsproj", "{A94B60A5-2F0F-4460-8F3B-49889CEBB001}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.File.Tests", "Nata.IO.File.Tests\Nata.IO.File.Tests.fsproj", "{A94B60A5-2F0F-4460-8F3B-49889CEBB001}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.KafkaNet", "Nata.IO.KafkaNet\Nata.IO.KafkaNet.fsproj", "{B771E50D-567E-44A7-A8A2-8F6FE159ABF6}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.KafkaNet", "Nata.IO.KafkaNet\Nata.IO.KafkaNet.fsproj", "{B771E50D-567E-44A7-A8A2-8F6FE159ABF6}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.KafkaNet.Tests", "Nata.IO.KafkaNet.Tests\Nata.IO.KafkaNet.Tests.fsproj", "{A48C2A25-F168-4DA7-BAC2-73A9BE02F027}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.KafkaNet.Tests", "Nata.IO.KafkaNet.Tests\Nata.IO.KafkaNet.Tests.fsproj", "{A48C2A25-F168-4DA7-BAC2-73A9BE02F027}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.AzureStorage.Tests", "Nata.IO.AzureStorage.Tests\Nata.IO.AzureStorage.Tests.fsproj", "{79D6ACA1-59E0-4278-AEA0-2CD1E526A4DB}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.AzureStorage.Tests", "Nata.IO.AzureStorage.Tests\Nata.IO.AzureStorage.Tests.fsproj", "{79D6ACA1-59E0-4278-AEA0-2CD1E526A4DB}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.RabbitMQ", "Nata.IO.RabbitMQ\Nata.IO.RabbitMQ.fsproj", "{A60676EE-8E17-4830-BB88-F2D520F5B55F}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.RabbitMQ", "Nata.IO.RabbitMQ\Nata.IO.RabbitMQ.fsproj", "{A60676EE-8E17-4830-BB88-F2D520F5B55F}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.RabbitMQ.Tests", "Nata.IO.RabbitMQ.Tests\Nata.IO.RabbitMQ.Tests.fsproj", "{9D416CA4-09CE-4722-905F-251162BDFDDF}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.RabbitMQ.Tests", "Nata.IO.RabbitMQ.Tests\Nata.IO.RabbitMQ.Tests.fsproj", "{9D416CA4-09CE-4722-905F-251162BDFDDF}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.EventHub", "Nata.IO.EventHub\Nata.IO.EventHub.fsproj", "{3844EA6A-47FB-4828-8D25-7ECFF02CAA27}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.EventHub", "Nata.IO.EventHub\Nata.IO.EventHub.fsproj", "{3844EA6A-47FB-4828-8D25-7ECFF02CAA27}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.EventHub.Tests", "Nata.IO.EventHub.Tests\Nata.IO.EventHub.Tests.fsproj", "{F0D10D96-77ED-4C85-9CF9-D4F2F6B49272}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.EventHub.Tests", "Nata.IO.EventHub.Tests\Nata.IO.EventHub.Tests.fsproj", "{F0D10D96-77ED-4C85-9CF9-D4F2F6B49272}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Fun.JsonPath", "Nata.Fun.JsonPath\Nata.Fun.JsonPath.fsproj", "{714846EF-7B39-40DD-BF6A-AE694CEBA160}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.Fun.JsonPath", "Nata.Fun.JsonPath\Nata.Fun.JsonPath.fsproj", "{714846EF-7B39-40DD-BF6A-AE694CEBA160}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.WebSocket", "Nata.IO.WebSocket\Nata.IO.WebSocket.fsproj", "{D72C8833-920D-4120-980E-96FA27D47505}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.WebSocket", "Nata.IO.WebSocket\Nata.IO.WebSocket.fsproj", "{D72C8833-920D-4120-980E-96FA27D47505}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.WebSocket.Tests", "Nata.IO.WebSocket.Tests\Nata.IO.WebSocket.Tests.fsproj", "{03CCA3DD-60E3-4E9A-9D2D-26D9CB1EEDB5}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.WebSocket.Tests", "Nata.IO.WebSocket.Tests\Nata.IO.WebSocket.Tests.fsproj", "{03CCA3DD-60E3-4E9A-9D2D-26D9CB1EEDB5}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Script", "Nata.Script\Nata.Script.fsproj", "{61FE0825-3FA2-411E-9DB8-DD1515708230}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.Script", "Nata.Script\Nata.Script.fsproj", "{61FE0825-3FA2-411E-9DB8-DD1515708230}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Consul", "Nata.IO.Consul\Nata.IO.Consul.fsproj", "{C986164E-EB5E-477D-9465-23C4ACC88430}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.Consul", "Nata.IO.Consul\Nata.IO.Consul.fsproj", "{C986164E-EB5E-477D-9465-23C4ACC88430}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Consul.Tests", "Nata.IO.Consul.Tests\Nata.IO.Consul.Tests.fsproj", "{DDA34256-5DD9-4F5F-B4DC-7E7650D3DADC}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.Consul.Tests", "Nata.IO.Consul.Tests\Nata.IO.Consul.Tests.fsproj", "{DDA34256-5DD9-4F5F-B4DC-7E7650D3DADC}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Fun.Schema", "Nata.Fun.Schema\Nata.Fun.Schema.fsproj", "{D8210F06-E733-461E-B943-70EF90A5D320}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.Fun.Schema", "Nata.Fun.Schema\Nata.Fun.Schema.fsproj", "{D8210F06-E733-461E-B943-70EF90A5D320}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Fun.Schema.Tests", "Nata.Fun.Schema.Tests\Nata.Fun.Schema.Tests.fsproj", "{69CF4095-C7B4-4CA8-A309-9A1BC163E7E4}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.Fun.Schema.Tests", "Nata.Fun.Schema.Tests\Nata.Fun.Schema.Tests.fsproj", "{69CF4095-C7B4-4CA8-A309-9A1BC163E7E4}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Fun.JsonPath.Tests", "Nata.Fun.JsonPath.Tests\Nata.Fun.JsonPath.Tests.fsproj", "{B8747390-219E-4755-97B7-A45659A4821B}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.Fun.JsonPath.Tests", "Nata.Fun.JsonPath.Tests\Nata.Fun.JsonPath.Tests.fsproj", "{B8747390-219E-4755-97B7-A45659A4821B}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Kafunk", "Nata.IO.Kafunk\Nata.IO.Kafunk.fsproj", "{D179D85E-10FC-416F-BCE5-1F8EDF51BD0E}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.Kafunk", "Nata.IO.Kafunk\Nata.IO.Kafunk.fsproj", "{D179D85E-10FC-416F-BCE5-1F8EDF51BD0E}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Kafunk.Tests", "Nata.IO.Kafunk.Tests\Nata.IO.Kafunk.Tests.fsproj", "{EE771041-5CD0-4185-B1E6-5AF358C44A14}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.Kafunk.Tests", "Nata.IO.Kafunk.Tests\Nata.IO.Kafunk.Tests.fsproj", "{EE771041-5CD0-4185-B1E6-5AF358C44A14}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Service", "Nata.Service\Nata.Service.fsproj", "{D2D3CF4B-5DCA-4D71-A213-AAE2E39EB39F}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.Service", "Nata.Service\Nata.Service.fsproj", "{D2D3CF4B-5DCA-4D71-A213-AAE2E39EB39F}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Service.Tests", "Nata.Service.Tests\Nata.Service.Tests.fsproj", "{947486E6-0AE7-4121-8671-CC201F8CABC2}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.Service.Tests", "Nata.Service.Tests\Nata.Service.Tests.fsproj", "{947486E6-0AE7-4121-8671-CC201F8CABC2}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.CosmosDB", "Nata.IO.CosmosDB\Nata.IO.CosmosDB.fsproj", "{ADDA18FE-93A5-48BF-BC90-6C36E595626F}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.CosmosDB", "Nata.IO.CosmosDB\Nata.IO.CosmosDB.fsproj", "{ADDA18FE-93A5-48BF-BC90-6C36E595626F}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.CosmosDB.Tests", "Nata.IO.CosmosDB.Tests\Nata.IO.CosmosDB.Tests.fsproj", "{D4142BEA-4EB8-48E3-993E-F26EA6696DF6}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.CosmosDB.Tests", "Nata.IO.CosmosDB.Tests\Nata.IO.CosmosDB.Tests.fsproj", "{D4142BEA-4EB8-48E3-993E-F26EA6696DF6}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.Core", "Nata.Core\Nata.Core.fsproj", "{2BC3CF88-626B-4782-9C39-87346853F7BB}"
 EndProject
@@ -69,11 +69,13 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.AzureStorage", "Nat
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.EventStore", "Nata.IO.EventStore\Nata.IO.EventStore.fsproj", "{F1E678C8-5D82-4AD2-9732-2C6DA8BC6947}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.EventStore.Tests", "Nata.IO.EventStore.Tests\Nata.IO.EventStore.Tests.fsproj", "{A308B0D1-8460-46BB-B52E-B87E994A0FC6}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.EventStore.Tests", "Nata.IO.EventStore.Tests\Nata.IO.EventStore.Tests.fsproj", "{A308B0D1-8460-46BB-B52E-B87E994A0FC6}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.Core.Tests", "Nata.Core.Tests\Nata.Core.Tests.fsproj", "{C4D5E27E-DEF5-4EA5-B6C3-BFD744DB03CC}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.Tests", "Nata.IO.Tests\Nata.IO.Tests.fsproj", "{F85D3A47-C0C4-4215-9432-8B3E23794FB6}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.Tests", "Nata.IO.Tests\Nata.IO.Tests.fsproj", "{F85D3A47-C0C4-4215-9432-8B3E23794FB6}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Core.NLog", "Nata.Core.NLog\Nata.Core.NLog.fsproj", "{517BFD31-F1A9-436B-A94B-2A1FAFEA4C99}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -213,6 +215,10 @@ Global
 		{F85D3A47-C0C4-4215-9432-8B3E23794FB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F85D3A47-C0C4-4215-9432-8B3E23794FB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F85D3A47-C0C4-4215-9432-8B3E23794FB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{517BFD31-F1A9-436B-A94B-2A1FAFEA4C99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{517BFD31-F1A9-436B-A94B-2A1FAFEA4C99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{517BFD31-F1A9-436B-A94B-2A1FAFEA4C99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{517BFD31-F1A9-436B-A94B-2A1FAFEA4C99}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
