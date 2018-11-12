@@ -7,6 +7,9 @@
 *.userosscache
 *.sln.docstates
 
+# JetBrains Rider IDE
+.idea/
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/
