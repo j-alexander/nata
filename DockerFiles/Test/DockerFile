@@ -1,0 +1,211 @@
+FROM microsoft/windowsservercore
+
+
+# Configure Powershell as the Default Shell
+# 
+SHELL ["PowerShell", "-NoProfile", "-Command", "$ErrorActionPreference = 'Stop';"]
+CMD PowerShell.exe
+
+
+# 7 ZIP
+# 
+ADD http://www.7-zip.org/a/7z1805-x64.exe /7z-x64.exe
+RUN Start-Process -Wait -FilePath '\7z-x64.exe' -ArgumentList '/S'     ; \
+    SetX /M PATH "\"C:\Program Files\7-zip;$env:PATH\""                ; \
+    Remove-Item -Force /7z-x64.exe
+
+
+# NSSM
+# 
+ADD https://nssm.cc/release/nssm-2.24.zip /nssm-2.24.zip
+RUN Expand-Archive -Path /nssm-2.24.zip -DestinationPath /              ; \
+    Move-Item /nssm-2.24/win64 "\"C:\Program Files\nssm"\"              ; \
+    Remove-Item -Recurse -Force /nssm-2.24                              ; \
+    SetX /M PATH "\"C:\Program Files\nssm;$env:PATH\""                  ; \
+    Remove-Item -Force /nssm-2.24.zip
+
+
+# PS Tools
+# 
+ADD https://live.sysinternals.com/pslist.exe '/windows/system32/pslist.exe'
+ADD https://live.sysinternals.com/psinfo.exe '/windows/system32/psinfo.exe'
+ADD https://live.sysinternals.com/psexec.exe '/windows/system32/psexec.exe'
+ADD https://live.sysinternals.com/pskill.exe '/windows/system32/pskill.exe'
+ADD https://live.sysinternals.com/handle.exe '/windows/system32/handle.exe'
+ADD https://live.sysinternals.com/procdump64.exe '/windows/system32/procdump64.exe'
+
+
+# Install Java 8
+# 
+RUN $jre = \"http://download.oracle.com/otn-pub/java/jdk/8u201-b09/42970487e3af4f5aa5bca3f542482c60/jre-8u201-windows-x64.tar.gz\" ; \
+    $web = New-Object System.Net.WebClient                                                                                         ; \
+    $web.Headers.Add([System.Net.HttpRequestHeader]::Cookie, \"oraclelicense=accept-securebackup-cookie\")                         ; \
+    $web.DownloadFile($jre,\"/jre-8u201-windows-x64.tar.gz\") ; \
+    7z.exe e /jre-8u201-windows-x64.tar.gz -o/                ; \
+    7z.exe x /jre-8u201-windows-x64.tar -o/                   ; \
+    Remove-Item -Force /jre-8u201-windows-x64.tar.gz          ; \
+    Remove-Item -Force /jre-8u201-windows-x64.tar             ; \
+    Move-Item /jre1.8.0_201 /Java                             ; \
+    SetX /M PATH      "\"\Java\bin;$env:PATH\""               ; \
+    SetX /M JAVA_HOME "\"\Java\""
+
+
+# Kafka 0.10.2.2 w/ Zookeeper
+# 
+ADD http://www-us.apache.org/dist/kafka/0.10.2.2/kafka_2.11-0.10.2.2.tgz \kafka_2.11-0.10.2.2.tgz
+RUN powershell -NoProfile -Command \
+    7z.exe e \kafka_2.11-0.10.2.2.tgz -o\                       ; \
+    7z.exe x \kafka_2.11-0.10.2.2.tar -o\                       ; \
+    mv \kafka_2.11-0.10.2.2 \"\Kafka\"                          ; \
+    rm \kafka_2.11-0.10.2.2.tar                                 ; \
+    rm \kafka_2.11-0.10.2.2.tgz                                 ; \
+    New-Item /Kafka/Data -Type Directory                        ; \
+    New-Item /Kafka/Logs -Type Directory                        ; \
+    Write-Host "Replacing Zookeeper Properties"                 ; \
+    $ZKProps = '/kafka/config/zookeeper.properties'             ; \
+    $ZP = Get-Content $ZKProps                                  ; \
+    $ZP = $ZP.Replace('/tmp/zookeeper','/Kafka/Data')           ; \
+    Set-Content $ZKProps $ZP
+ADD Kafka/server.properties /Kafka/config/server.properties
+RUN nssm install Zookeeper                                        \
+         'C:\Kafka\bin\windows\zookeeper-server-start.bat'        \
+         'C:\Kafka\config\zookeeper.properties'                 ; \
+    nssm set Zookeeper AppStdOut                                  \
+         'C:\Kafka\zookeeper.log'                               ; \
+    nssm set Zookeeper AppEnvironmentExtra                        \
+         LOG_DIR=/Kafka/Logs                                    ; \
+    nssm install Kafka                                            \
+         'C:\Kafka\bin\windows\kafka-server-start.bat'            \
+         'C:\Kafka\config\server.properties'                    ; \
+    nssm set Kafka AppStdOut                                      \
+         'C:\Kafka\kafka.log'                                   ; \
+    nssm set Kafka AppEnvironmentExtra                            \
+         LOG_DIR=/Kafka/Logs                                    ; \
+    nssm set Kafka DependOnService Zookeeper
+EXPOSE 2181 9092
+
+
+# Microsoft SQL Server 2017 - 14.0.1000.169 (X64)
+# 
+ADD https://download.microsoft.com/download/E/F/2/EF23C21D-7860-4F05-88CE-39AA114B014B/SQLEXPR_X64_ENU.EXE /Setup.exe
+RUN Write-Host "Installing may take some time..."                  ; \
+    Start-Process -FilePath '\Setup.exe'                             \
+        -ArgumentList '/Q',                                          \
+                      '/ACTION=Install',                             \
+                      '/FEATURES=SQLEngine',                         \
+                      '/INSTANCENAME=MSSQLServer',                   \
+                      '/TCPENABLED=1',                               \
+                      '/SQLSYSADMINACCOUNTS=BUILTIN\Administrators', \
+                      '/IAcceptSQLServerLicenseTerms'                \
+        -Wait                                                      ; \
+    net stop mssqlserver                                           ; \
+    sc.exe config mssqlserver obj=LocalSystem                      ; \
+    Remove-Item -Force /Setup.exe
+
+
+# SqlPackage.exe
+# 
+ADD https://download.microsoft.com/download/5/2/8/528EE32B-A63B-462A-BF86-48EDE3DDF5A6/EN/x64/DacFramework.msi /DacFramework.msi
+RUN Start-Process -FilePath 'msiexec.exe'                         \
+        -ArgumentList '/quiet','/qn','/norestart',                \
+                      '/log','\DacFramework.log',                 \
+                      '/i','\DacFramework.msi'                    \
+        -Wait                                                   ; \
+    Remove-Item -Force /DacFramework.*
+EXPOSE 1433
+
+
+# SQL Tools
+# 
+RUN SetX /M PATH "\"C:\Program Files\Microsoft SQL Server\140\Tools\Binn;$env:PATH\"" ; \
+    SetX /M PATH "\"C:\Program Files\Microsoft SQL Server\140\DAC\bin;$env:PATH\""
+
+
+# Verify Login:
+# 
+RUN osql -E -t 120 -Q \"SELECT @@VERSION\"
+
+
+# AzureStorageEmulator 5.9.0.0
+# Note: the download link points to the latest version
+# 
+ADD https://go.microsoft.com/fwlink/?linkid=717179&clcid=0x409   /MicrosoftAzureStorageEmulator.msi
+RUN Start-Process -FilePath MsiExec -ArgumentList                                       \
+            '/a',                                                                       \
+            'C:\MicrosoftAzureStorageEmulator.msi',                                     \
+            '/qb',                                                                      \
+            'TARGETDIR=C:\Install'                                                      \
+        -Wait                                                                         ; \
+    mv '\Install\root\Microsoft SDKs' '\Program Files (x86)\Microsoft SDKs'           ; \
+    rmdir \Install -recurse                                                           ; \
+    rm /MicrosoftAzureStorageEmulator.msi 
+RUN SetX /M PATH "\"C:\Program Files (x86)\Microsoft SDKs\Azure\Storage Emulator;$env:PATH\""
+
+RUN New-Item /AzureStorage -Type Directory
+ADD AzureStorage/Run-Service.ps1 /AzureStorage/Run-Service.ps1
+RUN Write-Host "Initializing Azure Storage Service"                                                                                        ; \
+    $Password =  \"HGnJZr4smc!\"                                                                                                           ; \
+    $Secure = $Password | ConvertTo-SecureString -Force -AsPlainText                                                                       ; \
+    New-LocalUser -Name \"AzureStorage\" -Description \"Azure Storage\" -Password $Secure -PasswordNeverExpires                            ; \
+    Add-LocalGroupMember -Group \"Administrators\" -Member \"AzureStorage\"                                                                ; \
+    nssm install AzureStorage 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -command /AzureStorage/Run-Service.ps1       ; \
+    nssm set AzureStorage AppStdout 'C:\AzureStorage\Service.log'                                                                      ; \
+    nssm set AzureStorage ObjectName \"$env:computername\AzureStorage\" $Password
+
+
+# EventStore 5.0.0
+# 
+ADD https://eventstore.org/downloads/win/EventStore-OSS-Win-v5.0.0.zip /EventStore.zip
+RUN Expand-Archive -Path /EventStore.zip -DestinationPath /EventStore  ; \
+    Remove-Item -Force /EventStore.zip                                 ; \
+    New-Item -Path /EventStore/Data -ItemType Directory                ; \
+    New-Item -Path /EventStore/Logs -ItemType Directory
+RUN nssm install EventStore                                       \
+         'C:\EventStore\EventStore.ClusterNode.exe'               \
+         --db /EventStore/Data                                    \
+         --log /EventStore/Logs                                   \
+         --ext-ip 0.0.0.0                                         \
+         --ext-http-prefixes http://+:2113/                     ; \
+    nssm set EventStore AppStdOut                                 \
+         'C:\EventStore\eventstore.log'
+EXPOSE 1113 2113
+
+
+# Cosmos DB Emulator (Feb 6, 2019)
+# 
+ADD https://cosmosdbportalstorage.azureedge.net/emulator/2019_02_28_2.2.1-2b4af9b3/azure-cosmosdb-emulator-2.2.1-2b4af9b3.msi /CosmosDB.Emulator.msi
+RUN Start-Process -FilePath 'msiexec.exe'                         \
+        -ArgumentList '/quiet','/qn','/norestart',                \
+                      '/log','\CosmosDB.Emulator.log',            \
+                      '/i','\CosmosDB.Emulator.msi'               \
+        -NoNewWindow                                              \
+        -Wait                                                   ; \
+    Remove-Item -Force /CosmosDB.Emulator.msi                   ; \
+    Remove-Item -Force /CosmosDB.Emulator.log                   ; \
+    New-Item /CosmosDB/Data -Type Directory
+RUN SetX /M PATH "\"C:\Program Files\Azure Cosmos DB Emulator;$env:PATH\""
+RUN nssm install CosmosDB                                             \
+    'C:\Program Files\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe' \
+        /noui                                                         \
+        /disablethrottling                                            \
+        /port=8081                                                    \
+        /datapath=\CosmosDB\Data                                    ; \
+    nssm set CosmosDB start SERVICE_DEMAND_START
+EXPOSE 8081 10250 10251 10252 10253 10254
+
+
+# Consul
+# 
+ADD https://releases.hashicorp.com/consul/1.2.2/consul_1.2.2_windows_amd64.zip /Consul.zip
+RUN Expand-Archive -Path /Consul.zip -DestinationPath /Consul   ; \
+    Remove-Item -Force /Consul.zip                              ; \
+    New-Item -Path /Consul/Data -ItemType Directory             ; \
+    nssm install Consul 'C:\Consul\Consul.exe' agent              \
+        -node localhost                                           \
+        -bootstrap                                                \
+        -server                                                   \
+        -ui                                                       \
+        -disable-host-node-id                                     \
+        -data-dir /Consul/Data                                  ; \
+    nssm set Consul AppStdOut 'C:\Consul\Consul.log'
+EXPOSE 8500
