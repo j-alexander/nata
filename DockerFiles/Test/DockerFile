@@ -35,6 +35,14 @@ ADD https://live.sysinternals.com/handle.exe '/windows/system32/handle.exe'
 ADD https://live.sysinternals.com/procdump64.exe '/windows/system32/procdump64.exe'
 
 
+# Erlang
+#
+ADD http://erlang.org/download/otp_win64_19.2.exe /otp_win64_19.2.exe
+RUN Start-Process -Wait -FilePath '\otp_win64_19.2.exe' -ArgumentList '/S'
+RUN SetX /M PATH "\"C:\Program Files\erl8.2\bin;$env:PATH\""
+RUN SetX /M ERLANG_HOME "\"C:\Program Files\erl8.2\""
+
+
 # Install Java 8
 # 
 RUN $jre = \"http://download.oracle.com/otn-pub/java/jdk/8u201-b09/42970487e3af4f5aa5bca3f542482c60/jre-8u201-windows-x64.tar.gz\" ; \
@@ -153,6 +161,15 @@ RUN Write-Host "Initializing Azure Storage Service"                             
     nssm set AzureStorage ObjectName \"$env:computername\AzureStorage\" $Password
 
 
+# RabbitMQ
+#
+ADD https://www.rabbitmq.com/releases/rabbitmq-server/v3.6.6/rabbitmq-server-windows-3.6.6.zip /rabbitmq-server-3.6.6.zip
+RUN Expand-Archive -Path /rabbitmq-server-3.6.6.zip -DestinationPath / ; \
+    Move-Item /rabbitmq_server-3.6.6 /RabbitMQ                         ; \
+    Remove-Item -Force /rabbitmq-server-3.6.6.zip                      ; \
+    /RabbitMQ/sbin/rabbitmq-service.bat install
+
+
 # EventStore 5.0.0
 # 
 ADD https://eventstore.org/downloads/win/EventStore-OSS-Win-v5.0.0.zip /EventStore.zip
@@ -209,3 +226,10 @@ RUN Expand-Archive -Path /Consul.zip -DestinationPath /Consul   ; \
         -data-dir /Consul/Data                                  ; \
     nssm set Consul AppStdOut 'C:\Consul\Consul.log'
 EXPOSE 8500
+
+# .Net Core SDK
+#
+ADD https://download.visualstudio.microsoft.com/download/pr/e7a3e196-1b15-45d4-8a4a-2f940cf8c3be/975a1ec833505505adf5b867990d441a/dotnet-sdk-2.2.104-win-x64.zip /DotNet.zip
+RUN Expand-Archive -Path /DotNet.zip -DestinationPath /DotNet ; \
+    Remove-Item -Force /DotNet.zip
+RUN SetX /M PATH "\"C:\DotNet;$env:PATH\""

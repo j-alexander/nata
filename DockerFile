@@ -1,0 +1,7 @@
+FROM nata/test
+
+ADD / /Nata
+CMD net start CosmosDB     ; \
+    Set-Location /Nata     ; \
+    dotnet test
+
