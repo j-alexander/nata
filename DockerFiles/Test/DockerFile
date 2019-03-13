@@ -73,7 +73,6 @@ RUN 7z.exe e \kafka_2.12-2.1.1.tgz -o\                          ; \
     $KSProps = '/kafka/config/server.properties'                ; \
     $KS = Get-Content $KSProps                                  ; \
     $KS = $KS.Replace('/tmp/kafka-logs','/Kafka/data/broker')   ; \
-    $KS = $KS.Replace('num.partitions=1','num.partitions=3')    ; \
     Set-Content $KSProps $KS
 RUN nssm install Zookeeper                                        \
          'C:\Kafka\bin\windows\zookeeper-server-start.bat'        \
