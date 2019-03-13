@@ -9,7 +9,7 @@ CMD PowerShell.exe
 
 # 7 ZIP
 # 
-ADD http://www.7-zip.org/a/7z1805-x64.exe /7z-x64.exe
+ADD http://www.7-zip.org/a/7z1900-x64.exe /7z-x64.exe
 RUN Start-Process -Wait -FilePath '\7z-x64.exe' -ArgumentList '/S'     ; \
     SetX /M PATH "\"C:\Program Files\7-zip;$env:PATH\""                ; \
     Remove-Item -Force /7z-x64.exe
@@ -39,56 +39,56 @@ ADD https://live.sysinternals.com/procdump64.exe '/windows/system32/procdump64.e
 #
 ADD http://erlang.org/download/otp_win64_19.2.exe /otp_win64_19.2.exe
 RUN Start-Process -Wait -FilePath '\otp_win64_19.2.exe' -ArgumentList '/S'
-RUN SetX /M PATH "\"C:\Program Files\erl8.2\bin;$env:PATH\""
-RUN SetX /M ERLANG_HOME "\"C:\Program Files\erl8.2\""
+RUN SetX /M PATH "\"C:\Program Files\erl8.2\bin;$env:PATH\""    ; \
+    SetX /M ERLANG_HOME "\"C:\Program Files\erl8.2\""           ; \
+    Remove-Item -Force /otp_win64_19.2.exe
 
 
-# Install Java 8
+# Install Open JDK 11
 # 
-RUN $jre = \"http://download.oracle.com/otn-pub/java/jdk/8u201-b09/42970487e3af4f5aa5bca3f542482c60/jre-8u201-windows-x64.tar.gz\" ; \
-    $web = New-Object System.Net.WebClient                                                                                         ; \
-    $web.Headers.Add([System.Net.HttpRequestHeader]::Cookie, \"oraclelicense=accept-securebackup-cookie\")                         ; \
-    $web.DownloadFile($jre,\"/jre-8u201-windows-x64.tar.gz\") ; \
-    7z.exe e /jre-8u201-windows-x64.tar.gz -o/                ; \
-    7z.exe x /jre-8u201-windows-x64.tar -o/                   ; \
-    Remove-Item -Force /jre-8u201-windows-x64.tar.gz          ; \
-    Remove-Item -Force /jre-8u201-windows-x64.tar             ; \
-    Move-Item /jre1.8.0_201 /Java                             ; \
-    SetX /M PATH      "\"\Java\bin;$env:PATH\""               ; \
-    SetX /M JAVA_HOME "\"\Java\""
+ADD https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_windows-x64_bin.zip /openjdk-11.0.2_windows-x64_bin.zip
+RUN Expand-Archive -Path /openjdk-11.0.2_windows-x64_bin.zip -DestinationPath /  ; \
+    Move-Item C:\jdk-11.0.2 "\"C:\Program Files\Open JDK\""                      ; \
+    Remove-Item -Force /openjdk-11.0.2_windows-x64_bin.zip                       ; \
+    SetX /M PATH      "\"\Program Files\Open JDK\bin;$env:PATH\""                ; \
+    SetX /M JAVA_HOME "\"\Program Files\Open JDK\""
 
-
-# Kafka 0.10.2.2 w/ Zookeeper
+# Install Kafka w/ Zookeeper
 # 
-ADD http://www-us.apache.org/dist/kafka/0.10.2.2/kafka_2.11-0.10.2.2.tgz \kafka_2.11-0.10.2.2.tgz
-RUN powershell -NoProfile -Command \
-    7z.exe e \kafka_2.11-0.10.2.2.tgz -o\                       ; \
-    7z.exe x \kafka_2.11-0.10.2.2.tar -o\                       ; \
-    mv \kafka_2.11-0.10.2.2 \"\Kafka\"                          ; \
-    rm \kafka_2.11-0.10.2.2.tar                                 ; \
-    rm \kafka_2.11-0.10.2.2.tgz                                 ; \
-    New-Item /Kafka/Data -Type Directory                        ; \
-    New-Item /Kafka/Logs -Type Directory                        ; \
-    Write-Host "Replacing Zookeeper Properties"                 ; \
+ADD http://www-us.apache.org/dist/kafka/2.1.1/kafka_2.12-2.1.1.tgz \kafka_2.12-2.1.1.tgz
+RUN 7z.exe e \kafka_2.12-2.1.1.tgz -o\                          ; \
+    7z.exe x \kafka_2.12-2.1.1.tar -o\                          ; \
+    mv \kafka_2.12-2.1.1 \"\Kafka\"                             ; \
+    rm \kafka_2.12-2.1.1.tar                                    ; \
+    rm \kafka_2.12-2.1.1.tgz                                    ; \
+    New-Item /Kafka/data -Type Directory                        ; \
+    New-Item /Kafka/logs -Type Directory                        ; \
+    New-Item /Kafka/logs/service -Type Directory                ; \
+    Write-Host "Setting Zookeeper Properties"                   ; \
     $ZKProps = '/kafka/config/zookeeper.properties'             ; \
     $ZP = Get-Content $ZKProps                                  ; \
-    $ZP = $ZP.Replace('/tmp/zookeeper','/Kafka/Data')           ; \
-    Set-Content $ZKProps $ZP
-ADD Kafka/server.properties /Kafka/config/server.properties
+    $ZP = $ZP.Replace('/tmp/zookeeper','/Kafka/data/zookeeper') ; \
+    Set-Content $ZKProps $ZP                                    ; \
+    Write-Host "Setting Kafka Server Properties"                ; \
+    $KSProps = '/kafka/config/server.properties'                ; \
+    $KS = Get-Content $KSProps                                  ; \
+    $KS = $KS.Replace('/tmp/kafka-logs','/Kafka/data/broker')   ; \
+    $KS = $KS.Replace('num.partitions=1','num.partitions=3')    ; \
+    Set-Content $KSProps $KS
 RUN nssm install Zookeeper                                        \
          'C:\Kafka\bin\windows\zookeeper-server-start.bat'        \
          'C:\Kafka\config\zookeeper.properties'                 ; \
     nssm set Zookeeper AppStdOut                                  \
-         'C:\Kafka\zookeeper.log'                               ; \
+         'C:\Kafka\logs\service\zookeeper.log'                  ; \
     nssm set Zookeeper AppEnvironmentExtra                        \
-         LOG_DIR=/Kafka/Logs                                    ; \
+         LOG_DIR=/Kafka/logs                                    ; \
     nssm install Kafka                                            \
          'C:\Kafka\bin\windows\kafka-server-start.bat'            \
          'C:\Kafka\config\server.properties'                    ; \
     nssm set Kafka AppStdOut                                      \
-         'C:\Kafka\kafka.log'                                   ; \
+         'C:\Kafka\logs\service\kafka.log'                      ; \
     nssm set Kafka AppEnvironmentExtra                            \
-         LOG_DIR=/Kafka/Logs                                    ; \
+         LOG_DIR=/Kafka/logs                                    ; \
     nssm set Kafka DependOnService Zookeeper
 EXPOSE 2181 9092
 
@@ -109,7 +109,7 @@ RUN Write-Host "Installing may take some time..."                  ; \
     net stop mssqlserver                                           ; \
     sc.exe config mssqlserver obj=LocalSystem                      ; \
     Remove-Item -Force /Setup.exe
-
+EXPOSE 1433
 
 # SqlPackage.exe
 # 
@@ -120,7 +120,6 @@ RUN Start-Process -FilePath 'msiexec.exe'                         \
                       '/i','\DacFramework.msi'                    \
         -Wait                                                   ; \
     Remove-Item -Force /DacFramework.*
-EXPOSE 1433
 
 
 # SQL Tools
