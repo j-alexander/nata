@@ -3,5 +3,6 @@ FROM nata/test
 ADD / /Nata
 CMD net start CosmosDB     ; \
     Set-Location /Nata     ; \
-    dotnet test
+    $x = ls *.Tests        ; \
+    foreach ($x in $xs) { Write-Host "Testing $x"; dotnet test $x }
 
