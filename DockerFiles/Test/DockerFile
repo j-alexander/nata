@@ -230,5 +230,6 @@ EXPOSE 8500
 #
 ADD https://download.visualstudio.microsoft.com/download/pr/e7a3e196-1b15-45d4-8a4a-2f940cf8c3be/975a1ec833505505adf5b867990d441a/dotnet-sdk-2.2.104-win-x64.zip /DotNet.zip
 RUN Expand-Archive -Path /DotNet.zip -DestinationPath /DotNet ; \
-    Remove-Item -Force /DotNet.zip
-RUN SetX /M PATH "\"C:\DotNet;$env:PATH\""
+    Remove-Item -Force /DotNet.zip                            ; \
+    SetX /M PATH "\"C:\DotNet;$env:PATH\""                    ; \
+    C:\DotNet\dotnet.exe test /version
