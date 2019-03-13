@@ -11,7 +11,7 @@ open NUnit.Framework
 [<TestFixture>]
 type SocketTests() = 
 
-    let settings = { Host="ws://ws.websocketstest.com:80/service"; AutoPingInterval=None }
+    let settings = { Host="ws://websocketstest.com:80/service"; AutoPingInterval=None }
 
     [<Test; MaxTime(10000)>]
     member x.TestTimeService() =
@@ -19,8 +19,11 @@ type SocketTests() =
             let socket = Socket.connect settings
             writer socket,
             subscriber socket
-        let time =
+        let subscription =
             subscribe()
+        write (Event.create "version,")
+        let time =
+            subscription
             |> Seq.logi (fun i x -> if i = 0 then write (Event.create "timer,"))
             |> Seq.take 3
             |> Seq.last

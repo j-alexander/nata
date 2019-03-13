@@ -56,6 +56,9 @@ module Socket =
                 let events = multicast.Subscribe()
                 initialize.Force()
                 seq {
+                    (* // disposal, if implemented, would also close any write channels:
+                    use _ = { new IDisposable with override x.Dispose() = socket.Close() }
+                    *)
                     for event in events do
                         match event with
                         | Status.Opened
