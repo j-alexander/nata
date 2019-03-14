@@ -1,5 +1,7 @@
 ﻿namespace Nata.IO.EventStore.Tests
 
+open System
+open System.Threading
 open NUnit.Framework
 open Nata.Core
 open Nata.IO
@@ -8,17 +10,22 @@ open Nata.IO.EventStore
 [<TestFixture>]
 type MetadataTests() =
 
-    let maxCountOf n =
+    let withMetadata f =
         let settings, channel =
             Configuration.settings,
             Configuration.channel()
-        let metadata = { Metadata.empty with MaxCount=Some (int64 n) }
+        let metadata = f Metadata.empty
         let channel =
             Stream.connectWithMetadata settings (channel, metadata)
             |> Channel.mapData Codec.BytesToString
             |> Channel.mapData Codec.StringToInt32
         Channel.readerFrom channel >> Seq.map (fst >> Event.data),
         Event.create >> Channel.writer channel
+
+    let maxCountOf n =
+        withMetadata (fun m -> { m with MaxCount=Some (int64 n) })
+    let maxAgeOf age =
+        withMetadata (fun m -> { m with MaxAge=Some age })
 
     [<Test>]
     member x.TestMaxCountOf1() =
@@ -44,3 +51,16 @@ type MetadataTests() =
         for i in 1..100 do
             Assert.AreEqual(i, readFrom Position.Start |> Seq.head)
             write -1
+
+    [<Test>]
+    member x.TestMaxAge() =
+        let readFrom, write = maxAgeOf (TimeSpan.FromSeconds(5.))
+
+        write 314
+        Assert.AreEqual([314], readFrom Position.Start |> Seq.toList)
+
+        Thread.Sleep(7000)
+        Assert.AreEqual([], readFrom Position.Start |> Seq.toList, "Should have expired after 10 seconds.")
+
+        write 315
+        Assert.AreEqual([315], readFrom Position.Start |> Seq.toList)
