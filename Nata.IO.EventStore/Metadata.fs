@@ -42,34 +42,42 @@ module Metadata =
           Custom=Map.empty }
 
     let set (connection:IEventStoreConnection) (stream, metadata:Metadata) =
+
         if not (isEmpty metadata) then
-            let rec applyRoles = function
-                | [] -> id
-                | x :: xs ->
-                    fun (b:StreamMetadataBuilder) ->
-                        match x with
-                        | (Role.Write, AppliesTo.Data), roles -> b.SetWriteRoles(roles)
-                        | (Role.Read, AppliesTo.Data), roles -> b.SetReadRoles(roles)
-                        | (Role.Delete, AppliesTo.Data), roles -> b.SetDeleteRoles(roles)
-                        | (Role.Write, AppliesTo.Metadata), roles -> b.SetMetadataWriteRoles(roles)
-                        | (Role.Read, AppliesTo.Metadata), roles -> b.SetMetadataReadRoles(roles)
-                        | (Role.Delete, AppliesTo.Metadata), roles -> b
-                        |> applyRoles xs
-            let rec applyCustom : List<_*string>->_->_ = function
-                | [] -> id
-                | (k,v) :: xs ->
-                    fun (b:StreamMetadataBuilder) ->
-                        b.SetCustomProperty(k,v)
-                        |> applyCustom xs
-            let streamMetadata =
+
+            let buildOpt select apply (b:StreamMetadataBuilder) =
+                match select metadata with Some x -> apply b x | _ -> b
+            let buildMap select apply =
+                select metadata
+                |> Map.foldBack (fun k v (b:StreamMetadataBuilder) -> apply b (k,v))
+
+            let buildRoles =
+                buildMap roles
+                <|
+                fun b ->
+                    function
+                    | (Role.Write, AppliesTo.Data), roles -> b.SetWriteRoles(roles)
+                    | (Role.Read, AppliesTo.Data), roles -> b.SetReadRoles(roles)
+                    | (Role.Delete, AppliesTo.Data), roles -> b.SetDeleteRoles(roles)
+                    | (Role.Write, AppliesTo.Metadata), roles -> b.SetMetadataWriteRoles(roles)
+                    | (Role.Read, AppliesTo.Metadata), roles -> b.SetMetadataReadRoles(roles)
+                    | (Role.Delete, AppliesTo.Metadata), roles -> b
+            let buildCustom =
+                buildMap custom
+                <|
+                fun b (k:string,v:string) -> b.SetCustomProperty(k, v)
+
+            let streamMetadataBuilder =
                 StreamMetadata.Build()
-                |> match metadata.MaxCount with Some x -> (fun b -> b.SetMaxCount(x)) | _ -> id
-                |> match metadata.MaxAge with Some x -> (fun b -> b.SetMaxAge(x)) | _ -> id
-                |> match metadata.CacheControl with Some x -> (fun b -> b.SetCacheControl(x)) | _ -> id
-                |> match metadata.TruncateBefore with Some x -> (fun b -> b.SetTruncateBefore(x)) | _ -> id
-                |> applyRoles (Map.toList metadata.Roles)
-                |> applyCustom (Map.toList metadata.Custom)
-                |> fun b -> b.Build()
+                |> buildOpt maxCount (fun b x -> b.SetMaxCount(x))
+                |> buildOpt maxAge (fun b x -> b.SetMaxAge(x))
+                |> buildOpt cacheControl (fun b x -> b.SetCacheControl(x))
+                |> buildOpt truncateBefore (fun b x -> b.SetTruncateBefore(x))
+                |> buildRoles
+                |> buildCustom
+            let streamMetadata =
+                streamMetadataBuilder.Build()
             connection.SetStreamMetadataAsync(stream, ExpectedVersion.Any, streamMetadata)
             |> Task.wait
+
         stream
