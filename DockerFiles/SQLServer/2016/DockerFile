@@ -1,0 +1,44 @@
+FROM microsoft/windowsservercore
+
+# Configure Powershell as the Default Shell
+SHELL ["powershell", "-NoProfile", "-Command", "$ErrorActionPreference = 'Stop';"]
+
+# Microsoft SQL Server 2016 (SP1) (KB3182545) - 13.0.4001.0 (X64)
+ADD https://download.microsoft.com/download/9/0/7/907AD35F-9F9C-43A5-9789-52470555DB90/ENU/SQLEXPR_x64_ENU.exe /Setup.exe
+RUN Write-Host "Installing may take some time..."               ; \
+    Start-Process -FilePath '\Setup.exe'                          \
+        -ArgumentList '/Q',                                       \
+                      '/ACTION=Install',                          \
+                      '/FEATURES=SQLEngine',                      \
+                      '/INSTANCENAME=MSSQLServer',                \
+                      '/TCPENABLED=1',                            \
+                      '/SECURITYMODE=SQL',                        \
+                      '/SAPWD=docker_13.0.4001.0',                \
+                      '/IAcceptSQLServerLicenseTerms'             \
+        -Wait                                                   ; \
+    Net Stop MsSqlServer                                        ; \
+    Sc.exe config mssqlserver obj=LocalSystem                   ; \
+    Remove-Item -Force /Setup.exe
+
+# SqlPackage.exe
+ADD https://download.microsoft.com/download/3/9/1/39135819-06B1-4A07-B9B0-02397E2F5D0F/EN/x64/DacFramework.msi /DacFramework.msi
+RUN Start-Process -FilePath 'msiexec.exe'                         \
+        -ArgumentList '/quiet','/qn','/norestart',                \
+                      '/log','\DacFramework.log',                 \
+                      '/i','\DacFramework.msi'                    \
+        -Wait                                                   ; \
+    Remove-Item -Force /DacFramework.msi
+
+# SQL Tools
+RUN SetX /M PATH "\"C:\Program Files\Microsoft SQL Server\130\Tools\Binn;$env:PATH\"" ; \
+    SetX /M PATH "\"C:\Program Files\Microsoft SQL Server\130\DAC\bin;$env:PATH\""
+
+# Verify Logins:
+RUN osql -t 120 -Q \"SELECT @@VERSION\" -E ; \
+    osql -t 120 -Q \"SELECT @@VERSION\" -U sa -P docker_13.0.4001.0
+
+# Connect
+CMD Write-Host \"Starting SQL Server Service:\"                 ; \
+        net start mssqlserver                                   ; \
+    Write-Host \"Starting osql Query Engine:\"                  ; \
+        osql -t 120 -U sa -P docker_13.0.4001.0

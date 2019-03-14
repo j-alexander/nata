@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
     <Authors>Jonathan Leaver</Authors>
     <Copyright>© 2016 Jonathan Leaver</Copyright>
     <PackageIconUrl>https://avatars3.githubusercontent.com/u/4975537</PackageIconUrl>
