@@ -1,0 +1,1 @@
+docker build --tag nata/eventstore:3.9.4 .\

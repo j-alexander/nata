@@ -13,7 +13,6 @@ open EventStore.ClientAPI
 open EventStore.ClientAPI.Exceptions
 open EventStore.ClientAPI.SystemData
 
-
 module Stream =
 
     type Data = byte[]
@@ -194,10 +193,12 @@ module Stream =
                 }
             apply(None)
 
-    let connect : Connector<Settings,Name,Data,Index> =
+    let connectWithMetadata : Connector<Settings,Name*Metadata,Data,Index> =
         fun settings ->
             let connection = Client.connect settings
             let size = settings.Options.BatchSize
+            Metadata.set connection
+            >>
             fun stream ->
             [   
                 Capability.Indexer <|
@@ -224,3 +225,7 @@ module Stream =
                 Capability.Competitor <| fun fn ->
                     Traversal.compete connection stream fn
             ]
+
+    let connect : Connector<Settings,Name,Data,Index> =
+        connectWithMetadata 
+        >> fun source name -> source(name, Metadata.empty)
