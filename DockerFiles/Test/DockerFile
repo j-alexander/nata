@@ -159,16 +159,6 @@ RUN Write-Host "Initializing Azure Storage Service"                             
     nssm set AzureStorage ObjectName \"$env:computername\AzureStorage\" $Password
 
 
-# RabbitMQ
-#
-ADD https://www.rabbitmq.com/releases/rabbitmq-server/v3.6.6/rabbitmq-server-windows-3.6.6.zip /rabbitmq-server-3.6.6.zip
-RUN Expand-Archive -Path /rabbitmq-server-3.6.6.zip -DestinationPath / ; \
-    Move-Item /rabbitmq_server-3.6.6 /RabbitMQ                         ; \
-    Remove-Item -Force /rabbitmq-server-3.6.6.zip
-RUN Set-Location /RabbitMQ/sbin                                        ; \
-    ./rabbitmq-service.bat install
-
-
 # EventStore 5.0.0
 # 
 ADD https://eventstore.org/downloads/win/EventStore-OSS-Win-v5.0.0.zip /EventStore.zip
@@ -225,6 +215,20 @@ RUN Expand-Archive -Path /Consul.zip -DestinationPath /Consul   ; \
         -data-dir /Consul/Data                                  ; \
     nssm set Consul AppStdOut 'C:\Consul\Consul.log'
 EXPOSE 8500
+
+
+# RabbitMQ
+#
+ADD https://www.rabbitmq.com/releases/rabbitmq-server/v3.6.6/rabbitmq-server-windows-3.6.6.zip /rabbitmq-server-3.6.6.zip
+RUN Expand-Archive -Path /rabbitmq-server-3.6.6.zip -DestinationPath / ; \
+    Move-Item /rabbitmq_server-3.6.6 /RabbitMQ                         ; \
+    Remove-Item -Force /rabbitmq-server-3.6.6.zip
+RUN Set-Location /RabbitMQ/sbin                                        ; \
+    $env:RABBITMQ_NODE_IP_ADDRESS = \"127.0.0.1\"                      ; \
+    $env:RABBITMQ_NODENAME = \"rabbitmq@localhost\"                    ; \
+    $env:COMPUTERNAME = \"localhost\"                                  ; \
+    ./rabbitmq-service.bat install
+
 
 # .Net Core SDK
 #
