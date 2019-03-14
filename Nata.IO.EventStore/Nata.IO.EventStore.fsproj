@@ -20,6 +20,7 @@
     <Compile Include="Options.fs" />
     <Compile Include="Settings.fs" />
     <Compile Include="Client.fs" />
+    <Compile Include="Metadata.fs" />
     <Compile Include="Stream.fs" />
   </ItemGroup>
   <ItemGroup>

@@ -21,6 +21,7 @@
     <Compile Include="Configuration.fs" />
     <Compile Include="LogStoreTests.fs" />
     <Compile Include="SerializationTests.fs" />
+    <Compile Include="MetadataTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj" />
