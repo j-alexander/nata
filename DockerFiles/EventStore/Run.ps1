@@ -1,1 +1,0 @@
-docker run --rm -p 2113:2113 -p 1113:1113 -it nata/eventstore
