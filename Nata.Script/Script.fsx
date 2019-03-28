@@ -29,7 +29,7 @@ open Nata.IO.File
 
 // EventStore:
 #r @"bin/Debug/net461/protobuf-net.dll"
-#r @"bin/Debug/net461/EventStore.ClientAPI.NetCore.dll"
+#r @"bin/Debug/net461/EventStore.ClientAPI.dll"
 #r @"bin/Debug/net461/Nata.IO.EventStore.dll"
 open Nata.IO.EventStore
 
