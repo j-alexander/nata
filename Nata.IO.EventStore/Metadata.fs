@@ -77,7 +77,7 @@ module Metadata =
                 |> buildCustom
             let streamMetadata =
                 streamMetadataBuilder.Build()
-            connection.SetStreamMetadataAsync(stream, ExpectedVersion.Any, streamMetadata)
+            connection.SetStreamMetadataAsync(stream, int64 ExpectedVersion.Any, streamMetadata)
             |> Task.wait
 
         stream

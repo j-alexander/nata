@@ -7,6 +7,6 @@ WindowsAzure.Storage
 kafunk
 Consul
 FSharp.Core
-EventStore.ClientAPI.NetCore
+EventStore.Client
 Microsoft.Azure.DocumentDB.Core
 System.ValueTuple

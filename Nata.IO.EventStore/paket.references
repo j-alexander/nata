@@ -3,4 +3,4 @@ FSharp.Data
 Newtonsoft.Json
 System.ValueTuple
 NLog
-EventStore.ClientAPI.NetCore
+EventStore.Client
