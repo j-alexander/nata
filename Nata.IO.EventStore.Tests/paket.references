@@ -3,7 +3,7 @@ Newtonsoft.Json
 NLog
 NUnit
 FSharp.Core
-EventStore.ClientAPI.NetCore
+EventStore.Client
 System.ValueTuple
 NUnit3TestAdapter
 Microsoft.NET.Test.Sdk

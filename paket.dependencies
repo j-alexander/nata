@@ -1,7 +1,7 @@
 source https://www.nuget.org/api/v2/
 
 nuget Consul
-nuget EventStore.ClientAPI.NetCore
+nuget EventStore.Client
 nuget FSharp.Compiler.Service
 nuget FSharp.Core
 nuget FSharp.Data
