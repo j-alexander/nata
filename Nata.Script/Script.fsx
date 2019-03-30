@@ -19,6 +19,10 @@ open Nata.Fun.JsonPath
 open Nata.IO
 open Nata.IO.Capability
 
+// Service Capabilities
+#r @"bin/Debug/net461/Nata.Service.dll"
+open Nata.Service
+
 // Shared Memory Stream:
 #r @"bin/Debug/net461/Nata.IO.Memory.dll"
 open Nata.IO.Memory

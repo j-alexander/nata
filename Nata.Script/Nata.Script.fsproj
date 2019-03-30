@@ -33,6 +33,7 @@
     <ProjectReference Include="..\Nata.IO.RabbitMQ\Nata.IO.RabbitMQ.fsproj" />
     <ProjectReference Include="..\Nata.IO.WebSocket\Nata.IO.WebSocket.fsproj" />
     <ProjectReference Include="..\Nata.IO\Nata.IO.fsproj" />
+    <ProjectReference Include="..\Nata.Service\Nata.Service.fsproj" />
   </ItemGroup>
   <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>
