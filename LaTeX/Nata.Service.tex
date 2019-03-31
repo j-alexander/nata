@@ -1,0 +1,646 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{minted}
+\usepackage[letterpaper, margin=1in]{geometry}
+\begin{document}
+
+\title{Nata.Service Overview}
+\author{Jonathan Leaver}
+\date{\today}
+
+\maketitle
+\thispagestyle{empty}
+\tableofcontents
+
+\clearpage
+\pagenumbering{arabic}
+
+
+\clearpage
+\section{Finite State Machines}
+
+Think of a finite state machine in the context of many family board games.  Usually, everyone sits around a table, and on the table is a game map of circles and arrows.  Each person in the family has a token that they place inside one of the circles on the map to show where they are.  This position represents the \mintinline{fsharp}{State} that each player is in.  Outbound from that circle are a number of arrows that represent the places the player can go (often only if certain conditions are met).  As events happen during the game, these act as an \mintinline{fsharp}{Input} to allow the player to move to a new position - a different \mintinline{fsharp}{State}.  For example, rolling some dice or drawing a card allows the player to move to a new circle (hopefully one closer to the goal).
+
+\subsection{Functional Definition}
+
+If we wanted to model each player's unique strategy, we might define a function in F\# corresponding to the following signature:
+
+\begin{minted}{fsharp}
+    type Strategy = State -> Input -> State
+\end{minted}
+
+In essence, the player's strategy first depends on what \mintinline{fsharp}{State} they're in.  If they're at the start, they will respond to a roll of the dice differently than if they're in a difficult place on the map. Then, once the state has been established, we match with the possible \mintinline{fsharp}{Input} values to determine a new \mintinline{fsharp}{State}.
+
+Suppose we have a simple game where everyone begins in the start state, let's call it \mintinline{fsharp}{State.Start}.  Then the first person to roll a 6, represented as \mintinline{fsharp}{Input.RolledASix}, is the winner.  It's a simple game, and it's exceedingly easy to model the player's strategy:
+
+\begin{minted}{fsharp}
+    let strategy : Strategy =
+        function
+        | State.Start ->
+            function
+            // if we roll a six at the start, we win
+            | Input.RolledASix -> State.Goal 
+            // otherwise we wait for the next roll to try again
+            | _ -> Start
+        | State.Goal ->
+            function
+            | _ -> Goal // once we've won, we're done
+\end{minted}
+
+At this point, we've modeled our first finite state machine.  It contains a set of defined states and inputs, along with the transitions between them.
+
+%\subsection{Event Sourcing}
+
+%\subsection{Actor Systems}
+%\mintinline{fsharp}{Nata.Service} builds on this idea.
+
+\clearpage
+\section{Consumer}
+
+A consumer service is an entity consisting of some state of its own (e.g. an accumulation), and an index relative to an input channel.  It is defined as:
+
+\begin{minted}{fsharp}
+    type Consumer<'StateOrAccumulator,'InputIndex> = {
+        State:'StateOrAccumulator
+        Index:'InputIndex
+    }
+\end{minted}
+
+\subsection{Optimistic Concurrency}
+
+\mintinline{fsharp}{Nata.Service} aims to provide reliable, event-based micro-services using optimistic concurrency.  Behind the scenes, this is implemented using the \mintinline{fsharp}{Nata.IO.Competitor<'Data>} capability.  At a minimum, the storage technology used for persisting consumer data needs to support either \mintinline{fsharp}{Competitor} directly, or provide both \mintinline{fsharp}{Nata.IO.ReaderFrom<'Data,'Index>} and \mintinline{fsharp}{Nata.IO.WriterTo<'Data,'Index>}.
+
+Since the input stream's \mintinline{fsharp}{'InputIndex} is recorded by the \mintinline{fsharp}{Consumer} along with the current \mintinline{fsharp}{'StateOrAccumulator}, our service can be stopped and started at will, each time resuming from the last position.  In order to maintain high-availability, multiple instances of the \mintinline{fsharp}{Consumer} can also be started, operating on the same data.  This can enable continuous operation during deployments, as well as potentially provide the shortest possible latency in a real-time system.
+
+
+\subsection{Module}
+\subsubsection{consume - \textit{compete to handle input}}
+The simplest primitive related to optimistic concurrency is a consumer that subscribes to some input channel, maintains a checkpoint of where it is in the input stream, and calls a handle function at-least-once for each input.
+
+\begin{minted}{fsharp}
+    let subscribeFrom : SubscriberFrom<'Input,'InputIndex> =
+        Channel.subscriberFrom input
+    let checkpoint : Competitor<Consumer<unit,'InputIndex>> =
+        Channel.competitor checkpoints
+    
+    let handle (input:'Input, index:'InputIndex) : unit =
+        // cause some side-effect at-least-once,
+        // e.g. a sink, an observer, etc.
+    
+    Consumer.consume subscribeFrom checkpoint handle
+    |> Consumer.start
+\end{minted}
+
+As you may observe, this \mintinline{fsharp}{Consumer} uses a \mintinline{fsharp}{unit} value for \mintinline{fsharp}{State}.
+
+\subsubsection{consumeEvent}
+
+An overload is available to \mintinline{fsharp}{consume} that exposes \mintinline{fsharp}{Nata.IO.Event<'Input>} metadata from the underlying channel, which might include: date, time, partition key, correlation identifiers, etc.  It differs only in the signature of its handle function:
+
+\begin{minted}{fsharp}
+    let handle (input:Event<'Input>, index:'InputIndex) : unit =
+        // cause some side-effect at-least-once,
+        // e.g. a sink, an observer, logger, etc.
+    
+    Consumer.consumeEvent subscribeFrom checkpoint handle
+    |> Consumer.start
+\end{minted}
+
+
+\subsubsection{fold - \textit{compete for input using the fold pattern}}
+
+Building upon  \mintinline{fsharp}{consume}, \mintinline{fsharp}{Consumer.fold} provides consistency around the consumer's \mintinline{fsharp}{State}, allowing services to evaluate data with a high degree of correctness and reliability. It is similar in character to \mintinline{fsharp}{Seq.fold} and \mintinline{fsharp}{Seq.scan}.
+
+\begin{minted}{fsharp}
+    let subscribeFrom : SubscriberFrom<'Input,'InputIndex> =
+        Channel.subscriberFrom input
+    let compete : Competitor<Consumer<'State,'InputIndex>> =
+        Channel.competitor output
+    let folder (current:'State option) (input:'Input) : 'State =
+        // given some current state and an input, update the state
+
+    Consumer.fold subscribeFrom compete folder
+    |> Consumer.start
+\end{minted}
+
+For example, suppose you want to maintain the total volume of all shares traded for a stock in real time.  To derive this aggregate volume, you might subscribe to an input stream of trades, and add the size of each trade to the total volume accumulated so far.  Moreover, it is essential that each trade contributes precisely once to the total volume, i.e. it is neither skipped nor counted multiple times, just once.
+
+\begin{minted}{fsharp}
+    let sumVolume (total:Volume option) { StockTrade.Size=size } =
+        match total with
+        | None -> size
+        | Some total -> total+size
+
+    let trades : Channel<StockTrade,SequenceNumber> = tradesFor "ibm"
+    let volume : Channel<Consumer<Volume,SequenceNumber>,_> = tradeVolumeFor "ibm"
+        
+    Consumer.fold (Channel.subscriberFrom trades) (Channel.competitor volume) sumVolume
+    |> Consumer.start
+\end{minted}
+
+An important design benefit, demonstrated above, is the ability to decouple our domain logic, i.e. \mintinline{fsharp}{sumVolume}, from the I/O channels and the execution algorithm.  Often, you will want to define the domain types in an external assembly referenced by your micro-services.  This allows you to do extensive unit testing on the domain models themselves, and it also enables you to easily change \textit{how} you run your micro-services, as well as \textit{where} you store your data.
+
+\subsubsection{foldEvent}
+
+An overload of \mintinline{fsharp}{fold}, called \mintinline{fsharp}{foldEvent} is also provided in order to allow for domain functions that accept the \mintinline{fsharp}{Nata.IO.Event<'Input>} data type instead of just \mintinline{fsharp}{'Input}.  All else being equal, the definition above can be altered as follows:
+
+\begin{minted}{fsharp}
+    let folder (current:'State option) (input:Event<'Input>) : 'State =
+        // given some current state and an input event, update the state
+\end{minted}
+
+This overload can be useful if behavior should change depending on event metadata.  If, for example, we wanted to sum volume only for trade events received during market hours, we could simply alter our \mintinline{fsharp}{sumVolume} function to use \mintinline{fsharp}{foldEvent} instead:
+
+\begin{minted}{fsharp}
+    let sumVolume (total:Volume option) { Event.Data={ StockTrade.Size=size }; At=at } =
+        let size =
+            if at.TimeOfDay < TimeSpan.FromHours(9.5) then
+                0 // pre-market
+            elif at.TimeOfDay > TimeSpan.FromHours(16.) then
+                0 // after market
+            else size
+        match total with
+        | None -> size
+        | Some total -> total+size
+        
+    Consumer.foldEvent (Channel.subscriberFrom trades) (Channel.competitor volume) sumVolume
+    |> Consumer.start
+\end{minted}
+
+\subsubsection{map - \textit{compete for input and apply a projection}}
+
+A projection will map each input into an output value.  When applied to an input stream, it can be used to extract information, derive additional values from it, or even transform and translate that input.  This can be based on established formulas or even rules that are loaded at runtime.
+
+In general, the map function will produce one event on the output channel for each event on the input channel.
+
+\begin{minted}{fsharp}
+    let subscribeFrom : SubscriberFrom<'Input,'InputIndex> =
+        Channel.subscriberFrom input
+    let compete : Competitor<Consumer<'Output,'InputIndex>> =
+        Channel.competitor output
+    let map (input:'Input) : 'Output =
+        // given some input, project it into an output value
+
+    Consumer.map subscribeFrom compete map
+    |> Consumer.start
+\end{minted}
+
+Suppose you're creating a trading strategy that relies on sentiment derived from real-time Twitter posts.  Given that not all posts are in English, it may be useful to apply a projection to the input channel that invokes Google Translate, mapping the results onto a second channel:
+
+\begin{minted}{fsharp}
+    let translate { Tweet.Characters=characters } : TranslatedTweet =
+        let translation, _ = callGoogleTranslateAPI characters
+        { EnglishText=translation }
+
+    let tweets : Channel<Tweet,TweetId> = input
+    let translated : Channel<Consumer<TranslatedTweet,TweetId>,_> = output
+        
+    Consumer.map (Channel.subscriberFrom tweets) (Channel.competitor translated) translate
+    |> Consumer.start
+\end{minted}
+
+\subsubsection{mapEvent}
+
+An overload of \mintinline{fsharp}{map}, called \mintinline{fsharp}{mapEvent} is also provided.  All else being equal, the definition above can be altered as follows:
+
+\begin{minted}{fsharp}
+    let map (input:Event<'Input>) : 'Output =
+        // given some input event, project it into an output value
+        
+    Consumer.mapEvent subscribeFrom compete map
+    |> Consumer.start
+\end{minted}
+
+\subsubsection{bifold - \textit{compete to fold over two inputs of differing type}}
+
+Similar to \mintinline{fsharp}{Consumer.fold}, it can be especially useful for a consumer service to accept input from two different channels.  Below, these are denoted according to $left$ and $right$. As a result, the next input to be processed is represented as a \mintinline{fsharp}{Choice<'L,'R>} with either a \mintinline{fsharp}{left:'L} value or a \mintinline{fsharp}{right:'R} value.
+
+\begin{minted}{fsharp}
+    let l : SubscriberFrom<'L,'IndexL> =
+        Channel.subscriberFrom leftInput
+    let r : SubscriberFrom<'R,'IndexR> =
+        Channel.subscriberFrom rightInput
+    let compete : Competitor<Consumer<'State,'IndexL option*'IndexR option>> =
+        Channel.competitor output
+    let folder (current:'State option) (input:Choice<'L,'R>) : 'State =
+        // given some current state and an input (from the left or right), update the state
+
+    Consumer.bifold l r compete folder
+    |> Consumer.start
+\end{minted}
+
+Note that this is an inherently non-deterministic operation.  Events may arrive on either input channel at any time.  When processing a large backlog of data, the bifold operation may asymmetrically favor the left or right channel.  In real-time operation, generally the first to produce a value is the first to be processed with no requirement that either channel yield an event.  Thus, in practice, it can be safely used to merge events as they happen on either input with no latency.
+
+\subsubsection{bifoldEvent}
+
+As before, a \mintinline{fsharp}{bifoldEvent} overload is available for bifold functions relying on event metadata.  All else being equal, the definition above can be altered as follows:
+
+\begin{minted}{fsharp}
+    let folder (current:'State option) (input:Choice<Event<'L>,Event<'R>>) : 'State =
+        // given some current state and an input (from the left or right), update the state
+
+    Consumer.bifold l r compete folder
+    |> Consumer.start
+\end{minted}
+
+\subsubsection{bimap - \textit{compete to project from two inputs of differing type}}
+
+This variant of \mintinline{fsharp}{Consumer.map} accepts input from two different channels (potentially of different types).  These are denoted below as $left$ and $right$.  Correspondingly, each input to be processed is represented as a \mintinline{fsharp}{Choice<'L,'R>} containing either a \mintinline{fsharp}{left:'L} value or a \mintinline{fsharp}{right:'R} value.
+
+\begin{minted}{fsharp}
+    let l : SubscriberFrom<'L,'IndexL> =
+        Channel.subscriberFrom leftInput
+    let r : SubscriberFrom<'R,'IndexR> =
+        Channel.subscriberFrom rightInput
+    let compete : Competitor<Consumer<'State,'IndexL option*'IndexR option>> =
+        Channel.competitor output
+    let map (input:Choice<'L,'R>) : 'Output =
+        // given an input (from the left or right), project it into an output value
+
+    Consumer.bimap l r compete map
+    |> Consumer.start
+\end{minted}
+
+As with \mintinline{fsharp}{Consumer.bifold}, this is also a potentially non-deterministic function.  Please refer to the notes for that function to understand their behavioral implications.
+
+\subsubsection{bimapEvent}
+
+Similarly, a \mintinline{fsharp}{bimapEvent} overload is available for bimap functions relying on event metadata.  All else being equal, the definition above can be altered as follows:
+
+\begin{minted}{fsharp}
+    let map (input:Choice<Event<'L>,Event<'R>>) : 'Output =
+        // given an input event (from the left or right), project it into an output value
+
+    Consumer.bimapEvent l r compete map
+    |> Consumer.start
+\end{minted}
+
+\subsubsection{multifold - \textit{compete to fold over many inputs of the same type}}
+
+In order to fold over multiple input channels in a reliable way, the \mintinline{fsharp}{'InputIndex} on each channel will need to be recorded.  As a result, it is necessary to be able to identify each of the separate subscriptions.  To accomplish this, we use an arbitrary \mintinline{fsharp}{'SourceId}.  It can be an integer, string, or any other type provided \mintinline{fsharp}{'SourceId} can be used as a key by the \mintinline{fsharp}{FSharp.Collections.Map} datastructure, i.e. it satisfies the  \mintinline{fsharp}{(requires comparison)} constraint.
+
+\begin{minted}{fsharp}
+    let subscribersById : Map<'SourceId, SubscriberFrom<'Input,'InputIndex>> =
+        [
+            for unique_id, input in inputs ->
+                unique_id, Channel.subscriberFrom input
+
+        ] |> Map.ofList
+
+    let compete : Competitor<Consumer<'State,Map<'SourceId,'InputIndex>>> =
+        Channel.competitor output
+    let folder (current:'State option) (input:'Input) : 'State =
+        // given some current state and an input, update the state
+
+    Consumer.multifold subscribersById compete folder
+    |> Consumer.start
+\end{minted}
+
+An additional requirement is that all inputs must have the same type.  If we wanted to fold over three or four channels of differing types using \mintinline{fsharp}{multifold}, a useful strategy is to map each of the inputs into a distinct case of a discriminated union.  For example, suppose that we want to write an algorithmic trading strategy that accepts inputs including market data quotes, trades, orders executions, and user commands:
+
+\begin{minted}{fsharp}
+    let inputs : Map<string, SubscriberFrom<Input,'InputIndex>> =
+        [
+            "quotes",
+            Channel.subscriberFrom quotes
+            |> SubscriberFrom.mapData Input.Quote
+
+            "trades",
+            Channel.subscriberFrom trades
+            |> SubscriberFrom.mapData Input.Trade
+
+            "executions",
+            Channel.subscriberFrom executions
+            |> SubscriberFrom.mapData Input.Execution
+
+            "commands",
+            Channel.subscriberFrom commands
+            |> SubscriberFrom.mapData Input.Command
+
+        ]
+        |> Map.ofList
+
+    let algorithm (current:'State option) = function
+        | Input.Quote { Bid=bid; Ask=ask } ->
+            // update the state based on a new quote
+        | Input.Trade { Price=price; Size=size } ->
+            // update the state based on a trade
+        | Input.Execution { OrderResult=result } ->
+            // update the state based on an order execution
+        | Input.Command Command.WorkHarder ->
+            // update the state when the trader asks us to work harder
+        | Input.Command Command.WorkSmarter ->
+            // update the state when the trader asks us to work smarter
+
+    Consumer.multifold inputs compete algorithm
+    |> Consumer.start
+\end{minted}
+
+In this way, positions on each input channel can be identified using a simple \mintinline{fsharp}{'SourceId} of \mintinline{fsharp}{string}, and the strategy can be written with an easy-to-read finite state machine.
+
+\subsubsection{multifoldEvent}
+
+An overload of \mintinline{fsharp}{multifold} is also available for \mintinline{fsharp}{Nata.IO.Event<'Input>}:
+
+\begin{minted}{fsharp}
+    let folder (current:'State option) (input:Event<'Input>) : 'State =
+        // given some current state and an input event, update the state
+
+    Consumer.multifoldEvent subscribersById compete folder
+    |> Consumer.start
+\end{minted}
+
+Since event metadata can be different depending on the input source, the discriminated union strategy for multiple input channels described above should be used with care.  Metadata will accurately reflect the information available from the input source, including any subtle differences among those sources.  For instance, Apache Kafka may include partition information, whereas EventStore would not.
+
+\subsubsection{multimap - \textit{compete to project from many inputs of the same type}}
+
+\begin{minted}{fsharp}
+    let subscribersById : Map<'SourceId, SubscriberFrom<'Input,'InputIndex>> =
+        [
+            for unique_id, input in inputs ->
+                unique_id, Channel.subscriberFrom input
+
+        ] |> Map.ofList
+
+    let compete : Competitor<Consumer<'Output,Map<'SourceId,'InputIndex>>> =
+        Channel.competitor output
+    let map (input:'Input) : 'Output =
+        // given an input (from any subscriber), project it into an output value
+
+    Consumer.multimap subscribersById compete map
+    |> Consumer.start
+\end{minted}
+
+This can be very helpful when you need to simply merge multiple channels together.  For instance, suppose that order executions are received from four different order adapters.  The data is the same type, but we need to merge them together so they can be sent into our reporting database.  In the following example, we use the identity function, \mintinline{fsharp}{id}, to copy the values across without any additional transformation.
+
+\begin{minted}{fsharp}
+    let subscribersById : Map<string, SubscriberFrom<'Input,'InputIndex>> =
+        [   "gemini", Channel.subscriberFrom geminiExecutions
+            "hitbtc", Channel.subscriberFrom hitbtcExecutions
+            "kraken", Channel.subscriberFrom krakenExecutions
+            "bitfinex", Channel.subscriberFrom bitfinexExecutions
+        ] |> Map.ofList
+
+    let compete : Competitor<Consumer<'Input,Map<string,'InputIndex>>> =
+        Channel.competitor output
+
+    Consumer.multimap subscribersById compete id // use id to simply merge 1-to-1
+    |> Consumer.start
+\end{minted}
+
+\subsubsection{multimapEvent}
+
+A \mintinline{fsharp}{Consumer.multimap} overload is also available for \mintinline{fsharp}{Nata.IO.Event<'Input>}:
+
+\begin{minted}{fsharp}
+    let folder (input:Event<'Input>) : 'Output =
+        // given an input event (from any subscriber), project it into an output value
+
+    Consumer.multifoldEvent subscribersById compete folder
+    |> Consumer.start
+\end{minted}
+
+\subsubsection{partition - \textit{compete to partition input to an output channel}}
+
+Partition "fans-out" events from an input channel onto a specific output channel according to a partitioning function.  All data on the published output channels must originate from this input, since output consumers are \textit{only} written if their last input index is less than the current index of the input subscription.  This helps to guarantee the correct ordering of events within a partition.
+
+\begin{minted}{fsharp}
+    let subscribeFrom : SubscriberFrom<'Input,'InputIndex> =
+        Channel.subscriberFrom input
+    let checkpoint : Competitor<Consumer<unit,'InputIndex>> =
+        Channel.competitor output
+    
+    let partition (input:'Input) :
+        (ReaderFrom<Consumer<'Input,'InputIndex>,'OutputIndex>
+         * WriterTo<Consumer<'Input,'InputIndex>,'OutputIndex>) =
+        
+        // returns the readerFrom and writerTo the output channel
+        // based on any characteristic of the input
+        selectOutputFor input
+        
+    Consumer.partition subscribeFrom checkpoint partition
+    |> Consumer.start
+\end{minted}
+
+Suppose we want to partition even numbers to one stream, and odd numbers to another.  We might use partition as follows:
+
+\begin{minted}{fsharp}
+    let odd = Channel.readerFrom odds, Channel.writerTo odds
+    let even = Channel.readerFrom evens, Channel.writerTo evens
+        
+    let partition (input:int) =
+        if input % 2 = 0 then even else odd
+        
+    Consumer.partition subscribeFrom checkpoint partition
+\end{minted}
+
+\subsubsection{partitionEvent}
+
+Moreover, \mintinline{fsharp}{Consumer.partitionEvent} allows for partitioning based on the underlying \mintinline{fsharp}{Nata.IO.Event<'Input>} metadata:
+
+\begin{minted}{fsharp}
+    // partition events into separate morning(AM) and afternoon(PM) channels:
+    let partition { Event.At=at } =
+        if at.TimeOfDay < TimeSpan.FromHours 12. then AM else PM
+
+    Consumer.partitionEvent subscribeFrom checkpoint partition
+    |> Consumer.start
+\end{minted}
+
+\subsubsection{distribute - \textit{compete to distribute input among output channels}}
+
+\mintinline{fsharp}{Consumer.distribute} elaborates upon \mintinline{fsharp}{partition} by permitting multiple output channels for an input.  Additionally, it also allows for an empty list of output channels to be returned, in which case the input is effectively skipped, although the checkpoint will report it as processed.
+
+As with partition, all data published on the selected outputs must originate from this input channel, since input indexes are used to guarantee that an output is written precisely once.
+
+\begin{minted}{fsharp}
+    let subscribeFrom : SubscriberFrom<'Input,'InputIndex> =
+        Channel.subscriberFrom input
+    let checkpoint : Competitor<Consumer<unit,'InputIndex>> =
+        Channel.competitor output
+    
+    let distribute (input:'Input) :
+        (ReaderFrom<Consumer<'Output,'InputIndex>,'OutputIndex>
+         * WriterTo<Consumer<'Output,'InputIndex>,'OutputIndex>
+         * Merge<'Input,'Output>) list =
+        
+        // returns a list of readerFrom+writerTo+merge for output channels
+        // based on any characteristic of the input
+        selectOutputsFor input
+        
+    Consumer.distribute subscribeFrom checkpoint distribute
+    |> Consumer.start
+\end{minted}
+
+An additional subtlety of \mintinline{fsharp}{distribute} is that it requires a merge function to be returned along with each output channel selected.  \mintinline{fsharp}{Merge<'Input,'Output>} defines how the operation should merge the new input into the selected output channel.  For instance, returning \mintinline{fsharp}{Merge.usingInput} will simply use the new input value.  This can be adjusted during selection by providing a \mintinline{fsharp}{Merge.using x} where $x$ is some determined value of the \mintinline{fsharp}{'Input} type.
+
+\subsubsection{distributeEvent}
+
+Using the \mintinline{fsharp}{Consumer.distributeEvent} overload only requires a slight change to the distribution function:
+
+\begin{minted}{fsharp}
+    let distribute (input:Event<'Input>) = // selection is exactly as before
+        
+    Consumer.distributeEvent subscribeFrom checkpoint distribute
+    |> Consumer.start
+\end{minted}
+
+\subsubsection{multipartition}
+
+\mintinline{fsharp}{Consumer.multipartition}, \mintinline{fsharp}{multipartitionEvent}, \mintinline{fsharp}{multidistribute}, and \mintinline{fsharp}{multidistributeEvent} differ in a very important way from their regular counterparts.  In addition to performing a "fan-out" from one input channel onto many, they can also perform "fan-in" where multiple channels publish to the same output.
+
+The difference is most notable in the representation of the consumer index on the output channels. Instead of using \mintinline{fsharp}{Consumer<'Output,'InputIndex>}, they now use \mintinline{fsharp}{Consumer<'Output,Map<'SourceId,'InputIndex>>}.  This allows us to provide a unique \mintinline{fsharp}{'SourceId} for this input to differentiate it from others. One important caveat, however, is that the input index needs to be the same data type across all channels.  If you need to mix input source technologies (such as EventHub which use a \mintinline{fsharp}{string} index versus EventStore which uses an \mintinline{fsharp}{int64} index versus Kafka which uses a \mintinline{fsharp}{partition, offset} pair), then it will be necessary to first apply a mapIndex operation to each source (converting their respective positions to and from \mintinline{fsharp}{JsonValue}, for instance).
+
+\begin{minted}{fsharp}
+    let subscribeFrom : SubscriberFrom<'Input,'InputIndex> =
+        Channel.subscriberFrom input
+    let checkpoint : Competitor<Consumer<unit,'InputIndex>> =
+        Channel.competitor output
+    
+    let partition (input:'Input) :
+        (ReaderFrom<Consumer<'Input,Map<'SourceId,'InputIndex>>,'OutputIndex>
+         * WriterTo<Consumer<'Input,Map<'SourceId,'InputIndex>>,'OutputIndex>) =
+        
+        // returns the readerFrom and writerTo the output channel
+        // based on any characteristic of the input
+        selectOutputFor input
+        
+    Consumer.multipartition subscribeFrom checkpoint sourceId partition
+    |> Consumer.start
+\end{minted}
+
+\subsubsection{multipartitionEvent}
+
+\begin{minted}{fsharp}
+    let partition (input:Event<'Input>) = // selection is exactly as before
+    
+    Consumer.multipartitionEvent subscribeFrom checkpoint sourceId partition
+    |> Consumer.start
+\end{minted}
+
+\subsubsection{multidistribute}
+
+Although more complicated than the other functions of this module, \mintinline{fsharp}{Consumer.multidistribute} is quite possibly the most powerful in terms of implementing sophisticated topologies.  One factor to keep in mind, however, is that these functions will store a mapping from \mintinline{fsharp}{'SourceId} to \mintinline{fsharp}{'InputIndex} in the output channel. If we have a channel for each order in a trading system getting distributed onto an account, the cost to update the account balance will grow as the number of orders increases.
+
+\begin{minted}{fsharp}
+    let subscribeFrom : SubscriberFrom<'Input,'InputIndex> =
+        Channel.subscriberFrom input
+    let checkpoint : Competitor<Consumer<unit,'InputIndex>> =
+        Channel.competitor output
+    
+    let distribute (input:'Input) :
+        (ReaderFrom<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>
+         * WriterTo<Consumer<'Output,Map<'SourceId,'InputIndex>>,'OutputIndex>
+         * Merge<'Input,'Output>) list =
+        
+        // returns a list of readerFrom+writerTo+merge for output channels
+        // based on any characteristic of the input
+        selectOutputsFor input
+        
+    Consumer.multidistribute subscribeFrom checkpoint sourceId distribute
+    |> Consumer.start
+\end{minted}
+
+\subsubsection{multidistributeEvent}
+
+\begin{minted}{fsharp}
+    let distribute (input:Event<'Input>) = // selection is exactly as before
+    
+    Consumer.multidistributeEvent subscribeFrom checkpoint sourceId distribute
+    |> Consumer.start
+\end{minted}
+
+
+
+
+
+
+% Note: Produce functions are very similar to the partially applied functions used in Nova, such as StagingStore, SkuStore, GroupStore, etc, which result in specialized functions that take an ID and some input event and perform some predetermined behavior (e.g. updating a sku).
+% \subsection{Consumer.produce}
+%A more sophisticated primitive related to optimistic concurrency is the capability to construct a producer that writes values only when they are newer (by input index) than the existing data.  This construct is especially useful when combined with partial application.
+% \subsubsection{Consumer.produceEvent}
+%\subsection{Consumer.multiproduce}
+% This is much more like 
+%\subsubsection{Consumer.multiproduceEvent}
+
+\clearpage
+\section{Binding}
+\subsection{Module}
+\subsubsection{fold}
+\subsubsection{map}
+\subsubsection{bifold}
+\subsubsection{bimap}
+\subsubsection{multifold}
+\subsubsection{multimap}
+\subsubsection{partition}
+\subsubsection{distribute}
+\subsubsection{multipartition}
+\subsubsection{multidistribute}
+\subsubsection{asInput}
+\subsubsection{start}
+\subsubsection{startAsync}
+\subsubsection{reset}
+
+%Two universal strategies are provided out of the box, one for 
+%\subsection{Service.Merge}
+%\subsubsection{Merge.usingInput}
+%\subsubsection{Merge.using}
+%\subsection{Service.MergeEvent}
+%\subsubsection{MergeEvent.usingInput}
+%\subsubsection{MergeEvent.using}
+
+\clearpage
+\section{Hub.Snapshot}
+\subsection{Module}
+\subsubsection{create}
+
+A snapshot hub makes a single subscription to an input channel.  It's useful when subscriptions are expensive, and when consumers lagging under heavy load can be satisfied with the most recent events from the subscription.
+
+\begin{minted}{fsharp}
+    // create a hub and subscribe it to a channel
+    let connectToHubFor (channel:Channel<'Data,'Index>) : unit->seq<Event<'Data>> =
+    
+        let subscribeFrom : SubscriberFrom<'Data,'Index> =
+            Channel.subscriberFrom channel
+    
+        Hub.Snapshot.create subscribeFrom
+\end{minted}
+
+For example, you might use this to provide the latest quote from a streaming ticker of stock prices.  A connection to the market data feed is potentially expensive, and a client will prefer the most recent snapshot if there are several in the stream.  Consider the following example:
+
+\begin{minted}{fsharp}
+    let ibm : StockSymbol = "IBM"
+    let quotes : Channel<StockQuote,LiveFeedIndex> = feedFor ibm
+
+    let connectToHub : unit->seq<Event<StockQuote>> =
+        quotes
+        |> Channel.subscriberFrom
+        |> Hub.Snapshot.create
+
+    [
+      // Consumer #1: processes quotes after some initial lag
+      async {
+        do! Async.Sleep(10)
+        for { Data=quote } in connectToHub() do
+          consume quote 
+      }
+      // Consumer #2: incurs heavy lag while processing each quote
+      async {
+        for { Data=quote } in connectToHub() do
+          do! Async.Sleep(500)
+          consume quote
+      }
+    ]
+    |> Async.Parallel
+    |> Async.RunSynchronously
+\end{minted}
+
+Suppose the underlying quote stream contains the sequence $\{q_1..q_5\}$. In this example, the first consumer might observe the sequence $\{q_2,q_3,q_4,q_5\}$, while the second consumer might see $\{q_1,q_5\}$. Both consumers will always receive the latest snapshot $q_5$ in the stream.  However, the first consumer was late to start and missed $q_1$, whereas the second consumer incurred a sizeable lag processing $q_1$ and next observed $q_5$.
+
+A snapshot hub retains the most recent event, and provides that event (if available) to a new consumer. As a result, memory consumption during high-latency processing or heavy load is minimized.  Additionally, note that event aggregation is not provided by the snapshot hub: if aggregation is required, you should apply that step to the input channel.
+
+
+\clearpage
+\appendix
+% \listoffigures
+\end{document}
