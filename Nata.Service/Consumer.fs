@@ -416,9 +416,7 @@ module Consumer =
     // compete to distribute inputs
     //
     // output consumers are _only_ written if their input index is less than the current
-    // subscription index
-    //
-    // -> therefore all data on the published outputs must originate from this input
+    // subscription index for the source id supplied
     //
     let multidistribute (subscribeFrom:SubscriberFrom<'Input,'InputIndex>)
                         (checkpoint:Competitor<Consumer<unit,'InputIndex>>)
@@ -433,9 +431,7 @@ module Consumer =
     // compete to partition input events
     //
     // output consumers are _only_ written if their input index is less than the current
-    // subscription index
-    //
-    // -> therefore all data on the published outputs must originate from this input
+    // subscription index for the source id supplied
     //
     let multipartitionEvent (subscribeFrom:SubscriberFrom<'Input,'InputIndex>)
                             (checkpoint:Competitor<Consumer<unit,'InputIndex>>)
@@ -449,9 +445,7 @@ module Consumer =
     // compete to partition inputs
     //
     // output consumers are _only_ written if their input index is less than the current
-    // subscription index
-    //
-    // -> therefore all data on the published outputs must originate from this input
+    // subscription index for the source id supplied
     //
     let multipartition (subscribeFrom:SubscriberFrom<'Input,'InputIndex>)
                        (checkpoint:Competitor<Consumer<unit,'InputIndex>>)
