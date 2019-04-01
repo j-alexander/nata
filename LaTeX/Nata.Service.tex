@@ -485,7 +485,7 @@ Using the \mintinline{fsharp}{Consumer.distributeEvent} overload only requires a
     |> Consumer.start
 \end{minted}
 
-\subsubsection{multipartition}
+\subsubsection{multipartition - \textit{compete to partition inputs among output channels}}
 
 \mintinline{fsharp}{Consumer.multipartition}, \mintinline{fsharp}{multipartitionEvent}, \mintinline{fsharp}{multidistribute}, and \mintinline{fsharp}{multidistributeEvent} differ in a very important way from their regular counterparts.  In addition to performing a "fan-out" from one input channel onto many, they can also perform "fan-in" where multiple channels publish to the same output.
 
@@ -518,7 +518,7 @@ The difference is most notable in the representation of the consumer index on th
     |> Consumer.start
 \end{minted}
 
-\subsubsection{multidistribute}
+\subsubsection{multidistribute - \textit{compete to distribute inputs among output channels}}
 
 Although more complicated than the other functions of this module, \mintinline{fsharp}{Consumer.multidistribute} is quite possibly the most powerful in terms of implementing sophisticated topologies.  One factor to keep in mind, however, is that these functions will store a mapping from \mintinline{fsharp}{'SourceId} to \mintinline{fsharp}{'InputIndex} in the output channel. If we have a channel for each order in a trading system getting distributed onto an account, the cost to update the account balance will grow as the number of orders increases.
 
@@ -565,20 +565,120 @@ Although more complicated than the other functions of this module, \mintinline{f
 
 \clearpage
 \section{Binding}
+
 \subsection{Module}
+
+\begin{itemize}
+    \item Prerequisites from \mintinline{fsharp}{Nata.IO}:
+    \begin{itemize}
+        \item We need a mechanism to obtain a channel that supports either one of:
+        \begin{itemize}
+            \item \mintinline{fsharp}{Competitor<'Data>}
+            \item \mintinline{fsharp}{ReaderFrom<'Data,'Index>} and \mintinline{fsharp}{WriterTo<'Data,'Index>}
+        \end{itemize}
+        \item For these examples, consider using any of the following:
+        \begin{itemize}
+            \item \mintinline{fsharp}{Memory.Stream}
+            \item \mintinline{fsharp}{File.Stream}
+            \item \mintinline{fsharp}{EventStore.Stream}
+        \end{itemize}
+    \end{itemize}
+\end{itemize}
+
+Given such a source, let's assume the following type signature.  We mark it inline to allow for different types of  \mintinline{fsharp}{'Data}.  In the case of \mintinline{fsharp}{Memory.Stream}, the index is always \mintinline{fsharp}{int64}, so we will use '\mintinline{fsharp}{_}' to infer this in subsequent examples:
+
+\begin{minted}{fsharp}
+    let inline channelFor (name:ChannelName) : Channel<'Data,_> =
+        Nata.IO.Memory.Stream.create name
+\end{minted}
+
 \subsubsection{fold}
+
+Let's suppose we have an input channel of integers and we want to track the sum of all integers seen so far.  We can bind two channels and the sum function together very easily:
+
+\begin{minted}{fsharp}
+    let input : Channel<int,_> = channelFor "input"
+    let sums : Channel<Consumer<int,_>,_> = channelFor "sums"
+
+    let sum : int option -> int -> int =
+        Option.defaultValue 0 >> fun total x -> total + x
+    
+    let binding : seq<Consumer<int,_>> =
+        input
+        |> Binding.fold sum sums
+\end{minted}
+
+\subsubsection{start}
+
+Having created the binding from input to output, we learn something important about the evaluation of microservices in \mintinline{fsharp}{Nata.Service}: that bindings themselves are sequences.  We can force evaluation of the binding using \mintinline{fsharp}{Seq.iter ignore}.  An alternative is to pipe the binding into \mintinline{fsharp}{Binding.start : seq<'a> -> unit} which will do the same thing. 
+
+\begin{minted}{fsharp}
+    binding
+    |> Binding.start
+\end{minted}
+
+\subsubsection{startAsync}
+
+In a script or service where you'd like to create multiple bindings and start them on the thread pool, you can use \mintinline{fsharp}{Binding.startAsync : seq<'a> -> unit} instead, for example:
+
+\begin{minted}{fsharp}
+    input
+    |> Binding.fold sum sums
+    |> Binding.startAsync
+\end{minted}
+
+This comparatively simple execution mechanism opens the door for a host of powerful capabilities, such as custom supervision and monitoring.
+
+\subsubsection{asInput}
+
+Having created an output \mintinline{fsharp}{Channel<Consumer<int,_>,_>}, we might like to use this channel as an input into a subsequent operation.  This is really very simple:
+
+\begin{minted}{fsharp}
+    let sumsAsInput : Channel<int,_> =
+        sums
+        |> Binding.asInput
+\end{minted}
+
 \subsubsection{map}
+
+So when we want to track the sum divided by two, we can map the \mintinline{fsharp}{sums} channel as follows:
+
+\begin{minted}{fsharp}
+    let halfSums : Channel<Consumer<int,_>, _> = channelFor "half-sums"
+
+    sums
+    |> Binding.asInput
+    |> Binding.map (fun x -> x / 2) halfSums
+    |> Binding.startAsync
+\end{minted}
+
 \subsubsection{bifold}
+
+Next, let's suppose we're watching revenue and expense events in order to determine how much money we've made.  For this example, we start with an initial balance of \mintinline{fsharp}{0m}, and a real-time stream of \mintinline{fsharp}{revenue}, such as cash or checks received from our summer job, and \mintinline{fsharp}{expenses}, such as cash paid for lunch or checks for the rent.
+
+\begin{minted}{fsharp}
+    let updateBalance (balance:decimal) = function
+        | Choice1Of2 x -> balance+x
+        | Choice2Of2 x -> balance-x
+    let updateBalanceStartingAtZero =
+        Option.defaultValue 0m >> updateBalance
+
+    (channelFor "revenue", channelFor "expenses")
+    |> Binding.bifold updateBalanceStartingAtZero (channelFor "balances")
+    |> Binding.startAsync
+\end{minted}
+
+Here we've started a binding that folds over both streams, adding or removing money from our balance depending on the input channel.
+
 \subsubsection{bimap}
+
+
 \subsubsection{multifold}
 \subsubsection{multimap}
 \subsubsection{partition}
 \subsubsection{distribute}
 \subsubsection{multipartition}
 \subsubsection{multidistribute}
-\subsubsection{asInput}
-\subsubsection{start}
-\subsubsection{startAsync}
 \subsubsection{reset}
 
 %Two universal strategies are provided out of the box, one for 
