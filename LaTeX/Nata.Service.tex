@@ -672,11 +672,105 @@ Here we've started a binding that folds over both streams, adding or removing mo
 
 \subsubsection{bimap}
 
+For our next service, we're given channels for \mintinline{fsharp}{purchases} and \mintinline{fsharp}{leases} that contain information we can use to feed a system that estimates demand for products.  As a result, we will extract product name, quantity and price into a \mintinline{fsharp}{transactions} channel that will be used later.
+
+\begin{minted}{fsharp}
+    let toTransaction = function
+        | Choice1Of2 { ProductPurchased=name
+                       PurchasePrice=price
+                       Quantity=quantity } ->
+            { Transaction.Product=name; Price=decimal price; Quantity=quantity }
+        | Choice2Of2 { Name=name
+                       LeaseAmount=price } ->
+            { Transaction.Product=name; Price=price; Quantity=1 }
+
+    (channelFor "purchases", channelFor "leases")
+    |> Binding.bimap toTransaction (channelFor "transactions")
+    |> Binding.startAsync
+\end{minted}
+
+As you can see, the new \mintinline{fsharp}{transactions} channel will contain key elements from the underlying channels for \mintinline{fsharp}{purchases} and \mintinline{fsharp}{leases} merged into a new record type called \mintinline{fsharp}{Transaction}.
 
 \subsubsection{multifold}
+
+Our smart home system manages each of the 100 watt light bulbs on our property.  We want to text our teenage children when the wattage being consumed exceeds a certain threshold.  Since each device publishes an event to its channel when a light is turned on or off, we should be able to track the total wattage in use.
+
+\begin{minted}{fsharp}
+    let updateTotalWattageConsumed (total:int<Watts>) = function
+        | TurnedOn -> total + 100<Watts>
+        | TurnedOff -> total - 100<Watts>
+    let updateTotalWattageConsumedFromZero =
+        Option.defaultValue 0<Watts> >> updateTotalWattageConsumed
+
+    let deviceChannels : Map<DeviceId, Channel<DeviceEvent,_>> =
+        // from our smart home system
+
+    let totalWattageChannel = channelFor "total-wattage"
+
+    Map.toSeq deviceChannels
+    |> Binding.multifold updateTotalWattageConsumedFromZero totalWattageChannel
+    |> Binding.startAsync
+\end{minted}
+
+From here, it's a simple matter to consume the \mintinline{fsharp}{"total-wattage"} channel and text the kids when too many lights are left on:
+
+\begin{minted}{fsharp}
+    let checkpoint =
+        Channel.competitor(channelFor "text-alert-checkpoint")
+    let subscriberFrom =
+        Channel.subscriberFrom(Binding.asInput totalWattageChannel)
+
+    Consumer.consume subscriberFrom checkpoint sendTextMessage
+    |> Consumer.startAsync
+\end{minted}
+
 \subsubsection{multimap}
+
+Suppose we want to create a signal for our trading system based on how much volume is being traded in the market.  Since \mintinline{fsharp}{multimap} accepts many channels of the same type, we can subscribe to trades for multiple stock symbols and compute the value of each transaction.
+
+\begin{minted}{fsharp}
+    let tradeValue = function
+        | { Price=price
+            Quantity=quantity } -> price * decimal quantity
+
+    let tradeValues = channelFor "trade-values"
+    let tradesBySymbol : Map<Symbol, Channel<Trade,_>> =
+        // from our market data
+
+    Map.toSeq tradesBySymbol
+    |> Binding.multimap tradeValue tradeValues
+    |> Binding.startAsync
+\end{minted}
+
 \subsubsection{partition}
+
+Having created a channel of trade values, we can partition it according to the transaction size:
+
+\begin{minted}{fsharp}
+    let partitionByTradeValue =
+
+        let large = channelFor "large-trade-values"
+        let medium = channelFor "medium-trade-values"
+        let small = channelFor "small-trade-values"
+    
+        fun (tradeValue:decimal) ->
+            if tradeValue > 10000000.00m then large
+            elif tradeValue < 1000.00m then small
+            else medium
+
+    let checkpoint =
+        channelFor "partition-trade-value-checkpoint"
+
+    tradeValues
+    |> Binding.asInput
+    |> Binding.partition partitionByTradeValue checkpoint
+    |> Binding.startAsync
+\end{minted}
+
+As a result, trades valued greater than 10 million dollars are partitioned separately from trades less than 1 thousand dollars as well as those trades of only moderate value.
+
 \subsubsection{distribute}
+
 \subsubsection{multipartition}
 \subsubsection{multidistribute}
 \subsubsection{reset}
