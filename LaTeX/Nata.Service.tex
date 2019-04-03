@@ -402,7 +402,7 @@ A \mintinline{fsharp}{Consumer.multimap} overload is also available for \mintinl
 
 \subsubsection{partition - \textit{compete to partition input to an output channel}}
 
-Partition "fans-out" events from an input channel onto a specific output channel according to a partitioning function.  All data on the published output channels must originate from this input, since output consumers are \textit{only} written if their last input index is less than the current index of the input subscription.  This helps to guarantee the correct ordering of events within a partition.
+Partition will "fan-out" events from an input channel onto a specific output channel according to the given partitioning function.  All data on the published output channels must originate from this input, since output consumers are \textit{only} written if their last input index is less than the current index of the input subscription.  This helps to guarantee the correct ordering of events within a partition.
 
 \begin{minted}{fsharp}
     let subscribeFrom : SubscriberFrom<'Input,'InputIndex> =
@@ -487,9 +487,9 @@ Using the \mintinline{fsharp}{Consumer.distributeEvent} overload only requires a
 
 \subsubsection{multipartition - \textit{compete to partition inputs among output channels}}
 
-\mintinline{fsharp}{Consumer.multipartition}, \mintinline{fsharp}{multipartitionEvent}, \mintinline{fsharp}{multidistribute}, and \mintinline{fsharp}{multidistributeEvent} differ in a very important way from their regular counterparts.  In addition to performing a "fan-out" from one input channel onto many, they can also perform "fan-in" where multiple channels publish to the same output.
+\mintinline{fsharp}{Consumer.multipartition}, \mintinline{fsharp}{multipartitionEvent}, \mintinline{fsharp}{multidistribute}, and \mintinline{fsharp}{multidistributeEvent} differ in a very important way from their regular counterparts.  In addition to performing a "fan-out" from one input channel onto many, they can also perform "fan-in" where multiple services publish to the same output.
 
-The difference is most notable in the representation of the consumer index on the output channels. Instead of using \mintinline{fsharp}{Consumer<'Output,'InputIndex>}, they now use \mintinline{fsharp}{Consumer<'Output,Map<'SourceId,'InputIndex>>}.  This allows us to provide a unique \mintinline{fsharp}{'SourceId} for this input to differentiate it from others. One important caveat, however, is that the input index needs to be the same data type across all channels.  If you need to mix input source technologies (such as EventHub which use a \mintinline{fsharp}{string} index versus EventStore which uses an \mintinline{fsharp}{int64} index versus Kafka which uses a \mintinline{fsharp}{partition, offset} pair), then it will be necessary to first apply a mapIndex operation to each source (converting their respective positions to and from \mintinline{fsharp}{JsonValue}, for instance).
+The difference is most notable in the representation of the consumer index on the output channels. Instead of using \mintinline{fsharp}{Consumer<'Output,'InputIndex>}, they now use \mintinline{fsharp}{Consumer<'Output,Map<'SourceId,'InputIndex>>}.  This allows us to provide a unique \mintinline{fsharp}{'SourceId} for this input to differentiate it from others. One important caveat, however, is that the input index needs to be the same data type across all channels.  If you need to mix input source technologies (such as EventHub which uses a \mintinline{fsharp}{string} index versus EventStore which uses an \mintinline{fsharp}{int64} index versus Kafka which uses a \mintinline{fsharp}{partition, offset} pair), then it will be necessary to first apply a mapIndex operation to each source (converting their respective positions to and from \mintinline{fsharp}{JsonValue}, for instance).
 
 \begin{minted}{fsharp}
     let subscribeFrom : SubscriberFrom<'Input,'InputIndex> =
@@ -520,7 +520,7 @@ The difference is most notable in the representation of the consumer index on th
 
 \subsubsection{multidistribute - \textit{compete to distribute inputs among output channels}}
 
-Although more complicated than the other functions of this module, \mintinline{fsharp}{Consumer.multidistribute} is quite possibly the most powerful in terms of implementing sophisticated topologies.  One factor to keep in mind, however, is that these functions will store a mapping from \mintinline{fsharp}{'SourceId} to \mintinline{fsharp}{'InputIndex} in the output channel. If we have a channel for each order in a trading system getting distributed onto an account, the cost to update the account balance will grow as the number of orders increases.
+Although more complicated than the other functions of this module, \mintinline{fsharp}{Consumer.multidistribute} is quite possibly the most powerful in terms of implementing sophisticated topologies.  One factor to keep in mind, however, is that these functions will store a mapping from \mintinline{fsharp}{'SourceId} to \mintinline{fsharp}{'InputIndex} in the output channel. If we have a channel for each order in a trading system getting distributed onto an account, the I/O cost to update the account balance will grow as the number of orders increases.
 
 \begin{minted}{fsharp}
     let subscribeFrom : SubscriberFrom<'Input,'InputIndex> =
@@ -565,6 +565,8 @@ Although more complicated than the other functions of this module, \mintinline{f
 
 \clearpage
 \section{Binding}
+
+In the previous section covering \mintinline{fsharp}{Nata.Service.Consumer}, we introduced some useful ways to construct microservices with very specific semantic guarantees.  When building networks of event-driven microservices on top of that library, it becomes important to streamline the way that channels and domain functions are combined in order to solve problems at real-world scale.  \mintinline{fsharp}{Nata.Service.Binding} makes it possible to snap channels together along with their intermediate domain logic in a way that maximizes inference and type safety while allowing a greater focus on the system topology.
 
 \subsection{Module}
 
@@ -771,24 +773,132 @@ As a result, trades valued greater than 10 million dollars are partitioned separ
 
 \subsubsection{distribute}
 
+In the next example, we accept a stream of integers, and we need to place each integer on streams according to its prime factors.  For instance, $502978$ will need to be placed on channels $\{ 2, 7, 37, 971 \}$.
+
+\begin{minted}{fsharp}
+    // choose any fun F# prime factorization algorithm:
+    let primeFactorsOf : int -> int Set =
+        let rec loop acc x i = 
+            if i = x then Set.add x acc
+            elif i % x = 0 then loop (Set.add x acc) x (i / x)
+            else loop acc (x + 1) i
+        loop Set.empty 2
+
+    // let's also keep the prime-factor channels around
+    let channelForPrime : int -> Channel<_,_> =
+        let lookup = new Dictionary<_,_>()
+        fun id ->
+            if not(lookup.ContainsKey(id)) then
+                lookup.[id] <- channelFor(sprintf "prime-factor-%d" id)
+            lookup.[id]
+
+    // based on the prime factors, merge the integer into each channel
+    let distributePrimeFactors =
+        primeFactorsOf
+        >> Seq.map (fun x -> Merge.using x, channelForPrime x)
+        >> Seq.toList
+    
+    let input = channelFor "input-numbers"
+    let checkpoint = channelFor "prime-factor-checkpoint"
+
+    input
+    |> Binding.distribute distributePrimeFactors checkpoint
+    |> Binding.startAsync
+\end{minted}
+
 \subsubsection{multipartition}
+
+We receive orders from multiple channels, such as online and in-store.  Each product can be manufactured at one of our factories.  Let's route orders, as a \mintinline{fsharp}{WorkUnit}, to one of those factories using a partitioning algorithm.  In this case, the offset for each order channel is tracked according to the service \mintinline{fsharp}{id} that produced it.
+
+\begin{minted}{fsharp}
+    let orderChannels =
+        [ "online", channelFor "online-orders"
+          "in-store", channelFor "in-store-orders" ]
+
+    let factories =
+        [ channelFor "factory-0"
+          channelFor "factory-1"
+          channelFor "factory-2" ]
+
+    let partition { WorkUnit.Id=x } =
+        factories.[ x.GetHashCode() % factories.Length ]
+    
+    let checkpoint =
+        sprintf "%s-order-partition-checkpoint"
+        >> channelFor
+
+    for id, orderChannel in orderChannels do
+        orderChannel
+        |> Binding.multipartition id partition (checkpoint id)
+        |> Binding.startAsync
+\end{minted}
+
+As you see, we can bind multiple input channels to multiple output channels according to a partitioning algorithm - in this case, a very simple one. 
+
 \subsubsection{multidistribute}
+
+When we upload photos to social media, we might want to distribute those to the news feed for each of our friends.  In the following example, we accept a photo (consisting of a \mintinline{fsharp}{Photographer} and \mintinline{fsharp}{Link} among other fields.  For each photo, we obtain list of channels for this photographer and share the link.
+
+\begin{minted}{fsharp}
+    let friendsOf (name:Name) : Channel<_,_> list =
+        // return channels for this person's friend list
+
+    let postPhotoFor { Photographer=name
+                       Link=link } =
+        [   let sharedPhoto = SharedContent.Photo link
+            for friendChannel in friendsOf name ->
+                Merge.using sharedPhoto, friendChannel ]
+
+    let photoUploadChannel = channelFor "photo-uploads"
+    let id, checkpoint =
+        "shared-photos", channelFor "photo-share-checkpoint"
+    
+    photoUploadChannel
+    |> Binding.multidistribute id postPhotoFor checkpoint
+    |> Binding.startAsync
+\end{minted}
+
+First, each friend's feed can accept \mintinline{fsharp}{SharedContent} from a variety of different sources in addition to our \mintinline{fsharp}{"shared-photos"} service.  Additionally, the \mintinline{fsharp}{Merge.using} operation allows us to transform our input data for our output channels.  We'll cover the \mintinline{fsharp}{Merge} and \mintinline{fsharp}{MergeEvent} modules next.
+
 \subsubsection{reset}
 
+Finally, it may be necessary to reset a service to an alternate position or state.  For the previous example, let's obtain the index of \mintinline{fsharp}{Position.Start} in the input channel, and reset the checkpoint.  Remember, the state of a checkpoint channel is unit.
+
+\begin{minted}{fsharp}
+    Channel.indexer photoUploadChannel Position.Start
+    |> Binding.reset () checkpoint  
+\end{minted}
+
 %Two universal strategies are provided out of the box, one for 
-%\subsection{Service.Merge}
-%\subsubsection{Merge.usingInput}
-%\subsubsection{Merge.using}
-%\subsection{Service.MergeEvent}
-%\subsubsection{MergeEvent.usingInput}
-%\subsubsection{MergeEvent.using}
+\subsection{Service.Merge}
+
+When using \mintinline{fsharp}{distribute} and \mintinline{fsharp}{multidistribute} from either \mintinline{fsharp}{Service.Consumer} or \mintinline{fsharp}{Service.Binding}, merge strategies can be provided.  As a result, two convenience functions are available:
+
+\begin{description}
+    \item[usingInput] places the input value directly on the target channel.
+    \item[using] accepts an alternative value corresponding to the channel.
+\end{description}
+
+You can also supply a custom implementation that accepts the current value, the incoming value, and a strategy for resolving them, of type \mintinline{fsharp}{'State option->'Input->'State}.  In both cases, the type of the merge value will need to match the \mintinline{fsharp}{'State} of the channel receiving it.
+
+\subsection{Service.MergeEvent}
+
+For \mintinline{fsharp}{Consumer.distributeEvent} and \mintinline{fsharp}{Consumer.multidistributeEvent}, merge functions are also provided that use \mintinline{fsharp}{Nata.IO.Event<'Input>}:
+
+\begin{description}
+    \item[usingInput] places the input event value directly on the target channel
+    \item[using] accepts an alternate event value corresponding to the channel.
+\end{description}
+
+As before, a custom merge strategy of \mintinline{fsharp}{'State option->Event<'Input>->'State} can be also provided, where \mintinline{fsharp}{'State} matches the receiving channel.
 
 \clearpage
 \section{Hub.Snapshot}
 \subsection{Module}
-\subsubsection{create}
 
 A snapshot hub makes a single subscription to an input channel.  It's useful when subscriptions are expensive, and when consumers lagging under heavy load can be satisfied with the most recent events from the subscription.
+
+\subsubsection{create}
 
 \begin{minted}{fsharp}
     // create a hub and subscribe it to a channel
@@ -831,7 +941,7 @@ For example, you might use this to provide the latest quote from a streaming tic
 
 Suppose the underlying quote stream contains the sequence $\{q_1..q_5\}$. In this example, the first consumer might observe the sequence $\{q_2,q_3,q_4,q_5\}$, while the second consumer might see $\{q_1,q_5\}$. Both consumers will always receive the latest snapshot $q_5$ in the stream.  However, the first consumer was late to start and missed $q_1$, whereas the second consumer incurred a sizeable lag processing $q_1$ and next observed $q_5$.
 
-A snapshot hub retains the most recent event, and provides that event (if available) to a new consumer. As a result, memory consumption during high-latency processing or heavy load is minimized.  Additionally, note that event aggregation is not provided by the snapshot hub: if aggregation is required, you should apply that step to the input channel.
+A snapshot hub retains the most recent event, and provides that event (if available) to a new consumer. As a result, memory consumption during high-latency processing or heavy load is minimized.  Additionally, note that event aggregation is not provided by the snapshot hub: if aggregation is required, you should apply that step to the input channel using something like \mintinline{fsharp}{fold}.
 
 
 \clearpage
