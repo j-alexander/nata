@@ -2,9 +2,10 @@
 \usepackage[utf8]{inputenc}
 \usepackage{minted}
 \usepackage[letterpaper, margin=1in]{geometry}
+\usepackage[hyperfootnotes=true]{hyperref}
 \begin{document}
 
-\title{Nata.Service Overview}
+\title{Nata Overview}
 \author{Jonathan Leaver}
 \date{\today}
 
@@ -55,7 +56,7 @@ At this point, we've modeled our first finite state machine.  It contains a set 
 %\mintinline{fsharp}{Nata.Service} builds on this idea.
 
 \clearpage
-\section{Consumer}
+\section{Service.Consumer}
 
 A consumer service is an entity consisting of some state of its own (e.g. an accumulation), and an index relative to an input channel.  It is defined as:
 
@@ -564,7 +565,7 @@ Although more complicated than the other functions of this module, \mintinline{f
 %\subsubsection{Consumer.multiproduceEvent}
 
 \clearpage
-\section{Binding}
+\section{Service.Binding}
 
 In the previous section covering \mintinline{fsharp}{Nata.Service.Consumer}, we introduced some useful ways to construct microservices with very specific semantic guarantees.  When building networks of event-driven microservices on top of that library, it becomes important to streamline the way that channels and domain functions are combined in order to solve problems at real-world scale.  \mintinline{fsharp}{Nata.Service.Binding} makes it possible to snap channels together along with their intermediate domain logic in a way that maximizes inference and type safety while allowing a greater focus on the system topology.
 
@@ -893,7 +894,7 @@ For \mintinline{fsharp}{Consumer.distributeEvent} and \mintinline{fsharp}{Consum
 As before, a custom merge strategy of \mintinline{fsharp}{'State option->Event<'Input>->'State} can be also provided, where \mintinline{fsharp}{'State} matches the receiving channel.
 
 \clearpage
-\section{Hub.Snapshot}
+\section{Service.Hub.Snapshot}
 \subsection{Module}
 
 A snapshot hub makes a single subscription to an input channel.  It's useful when subscriptions are expensive, and when consumers lagging under heavy load can be satisfied with the most recent events from the subscription.
@@ -942,6 +943,219 @@ For example, you might use this to provide the latest quote from a streaming tic
 Suppose the underlying quote stream contains the sequence $\{q_1..q_5\}$. In this example, the first consumer might observe the sequence $\{q_2,q_3,q_4,q_5\}$, while the second consumer might see $\{q_1,q_5\}$. Both consumers will always receive the latest snapshot $q_5$ in the stream.  However, the first consumer was late to start and missed $q_1$, whereas the second consumer incurred a sizeable lag processing $q_1$ and next observed $q_5$.
 
 A snapshot hub retains the most recent event, and provides that event (if available) to a new consumer. As a result, memory consumption during high-latency processing or heavy load is minimized.  Additionally, note that event aggregation is not provided by the snapshot hub: if aggregation is required, you should apply that step to the input channel using something like \mintinline{fsharp}{fold}.
+
+\clearpage
+\section{Nata.Core}
+
+\subsection{Package}
+
+\begin{enumerate}
+    
+    \item\textbf{Nata.Core} from \href{https://www.nuget.org/packages/Nata.Core/}{NuGet}\footnote{https://www.nuget.org/packages/Nata.Core/}, or using \href{https://fsprojects.github.io/Paket/}{Paket}\footnote{https://fsprojects.github.io/Paket/}:
+    \begin{minted}{powershell}
+    ./.paket/paket.exe add nuget Nata.Core project MyProject
+    \end{minted}
+    
+    \item\textbf{Reference} and open the Nata.Core library:
+    \begin{minted}{fsharp}
+    #r "packages/Nata.Core/lib/netstandard2.0/Nata.Core.dll"
+    open Nata.Core
+    \end{minted}
+\end{enumerate}
+
+\subsection{Extensions}
+
+\begin{itemize}
+\item generate a unique id, or the bytes of one
+\begin{minted}{fsharp}
+    guid()
+    // val it : string = "b2bb73b79ad04871a75a20a478fb3c8c"
+
+    guidBytes()
+    // val it : byte [] = [|131uy; 238uy; 246uy; 245uy; 252uy; ...
+
+    // e.g., shuffle a list
+    [1..10] |> List.sortBy guid
+\end{minted}
+
+
+\item \mintinline{fsharp}{swap} the parameters of a function, to make pipelining easier
+\begin{minted}{fsharp}
+    // e.g. look up a long sequence of keys
+    let dataSeq = keySeq |> Seq.choose (map |> swap Map.tryFind)
+\end{minted}
+
+\item compose functions to \mintinline{fsharp}{mapFst} or \mintinline{fsharp}{mapSnd} a tuple
+\begin{minted}{fsharp}
+    let unpack : (Event<DataT>*IndexT) -> (DataT*IndexT) =
+        mapFst Event.data
+\end{minted}
+
+\end{itemize}
+
+\subsubsection{Seq}
+
+\begin{itemize}
+
+\item use \mintinline{fsharp}{Seq.mapFst} or \mintinline{fsharp}{Seq.mapSnd} to transform just the data or index of a seq
+\begin{minted}{fsharp}
+    let data = events |> Seq.mapFst Event.data
+\end{minted}
+
+\item similarly use \mintinline{Seq.filterFst}/\mintinline{Seq.filterSnd} or \mintinline{fsharp}{Seq.chooseFst}/\mintinline{fsharp}{Seq.chooseSnd} to select elements by data or index:
+
+\begin{minted}{fsharp}
+    events |> Seq.filterFst (Event.data >> isGood)
+\end{minted}
+
+\item \mintinline{fsharp}{Seq.consume} from multiple sequences as data becomes available
+\begin{minted}{fsharp}
+    [ blockedSeq; blockedSeq; readySeq; blockedSeq ]
+    |> Seq.consume
+    |> Seq.iter calculate // immediately calculates a value from readySeq
+\end{minted}
+
+\item \mintinline{fsharp}{Seq.merge} pulls from left or right based on whichever value comes first
+\begin{minted}{fsharp}
+    Seq.merge [ 1; 2; 3; 7; 1; ] [ 0; 5; 8; 8 ]
+    // val it : seq<int> = seq [0; 1; 2; 3; 5; 7; 1; 8; 8]
+\end{minted}
+
+\item \mintinline{fsharp}{Seq.mergeBy} can be used to correctly merge streams of time series data
+\begin{minted}{fsharp}
+    let dataByTime =
+        Seq.mergeBy snd leftEvents rightEvents
+        |> Seq.map (fst >> Event.data)
+\end{minted}
+
+\end{itemize}
+
+\subsubsection{Option}
+
+\begin{itemize}
+\item provides equivalent functions to \href{https://github.com/fsharp/fsharp/blob/1de369ca6f4564044ff6adee667a5da54f8b7138/src/fsharp/FSharp.Core/option.fs#L20}{\mintinline{fsharp}{Option.defaultValue}} and \href{https://github.com/fsharp/fsharp/blob/1de369ca6f4564044ff6adee667a5da54f8b7138/src/fsharp/FSharp.Core/option.fs#L23}{\mintinline{fsharp}{Option.defaultWith}} from the newer F\# core library
+
+\item \mintinline{fsharp}{Option.whenTrue} will convert a value into an option type of \mintinline{fsharp}{Some} only if the predicate is satisfied, otherwise yielding \mintinline{fsharp}{None}
+\begin{minted}{fsharp}
+    let big = 3 |> Option.whenTrue (fun x -> x > 10)
+\end{minted}
+
+\item similar to the SQL coalesce operator, \mintinline{fsharp}{Option.coalesce} will take the first non-\mintinline{fsharp}{None} value in the pipeline
+\begin{minted}{fsharp}
+    let maybeThreeOtherwiseFourOtherwiseNone =
+        maybeThree
+        |> Option.coalesce maybeFour
+        |> Option.coalesce maybeNone
+\end{minted}
+
+\item \mintinline{fsharp}{Option.coalesceWith} will attempt to fill in \mintinline{fsharp}{None} using a function (similar to \mintinline{fsharp}{Option.defaultWith})
+\begin{minted}{fsharp}
+    let maybeFourIfNone =
+        maybeNone
+        |> Option.coalesceWith maybeProduceAnExpensiveFour
+\end{minted}
+
+\item \mintinline{fsharp}{Option.tryFunction} will sink any exceptions into \mintinline{fsharp}{None}
+
+\begin{minted}{fsharp}
+    input
+    |> Option.tryFunction (fun x -> failwith "error to sink"; x)
+    //val it : SomeType option = None
+\end{minted}
+
+\item split an optional tuple into two separate options using \mintinline{fsharp}{Option.distribute}
+\begin{minted}{fsharp}
+    let someOne, someTwo =
+        Some (1,2)
+        |> Option.distribute
+    // val someOne : int option = Some 1
+    // val someTwo : int option = Some 2
+\end{minted}
+
+\item collapse an \mintinline{fsharp}{'a option option} field using \mintinline{fsharp}{Option.join}
+\begin{minted}{fsharp}
+    Some (Some 3) |> Option.join
+    // val it : int option = Some 3
+    
+    Some None |> Option.join
+    // val it : int option = None
+    
+    None |> Option.join
+    // val it : int option = None
+\end{minted}
+
+\end{itemize}
+
+\subsubsection{Null}
+
+\begin{itemize}
+
+\item safely convert \mintinline{fsharp}{null} values to \mintinline{fsharp}{option}
+\begin{minted}{fsharp}
+    nullString
+    |> Null.toOption
+    // val it : string option = None
+\end{minted}
+
+\end{itemize}
+
+\subsubsection{Nullable}
+
+Transform \mintinline{fsharp}{Nullable} values, or exchange them for \mintinline{fsharp}{option}.
+
+\begin{itemize}
+
+\item apply \mintinline{fsharp}{Nullable.map} as you would with \mintinline{fsharp}{Option.map}
+\begin{minted}{fsharp}
+    Nullable 3
+    |> Nullable.map ((+) 2)
+    // val it : Nullable<int> = 5
+    
+    Nullable ()
+    |> Nullable.map ((+) 2)
+    // val it : Nullable<int> = null
+\end{minted}
+
+\item convert a \mintinline{fsharp}{Nullable.toOption} and get the \mintinline{fsharp}{Nullable.ofOption} values
+\begin{minted}
+    let threeOption =
+        Nullable 3
+        |> Nullable.toOption
+    // val threeOption : Option<int> = Some 3
+    
+    threeOption
+    |> Nullable.ofOption
+    // val it : Nullable<int> = 3
+\end{minted}
+
+\end{itemize}
+
+\subsubsection{Decimal}
+
+\subsubsection{Int64}
+
+\subsubsection{Int32}
+
+\subsubsection{String}
+
+\subsection{Codec}
+
+\subsection{JsonValue}
+
+\subsection{DateTime}
+
+\subsubsection{DateTime.Resolution}
+
+\subsubsection{DateTime.Codec}
+
+\subsection{Patterns}
+
+\subsection{GZip}
+
+\subsubsection{GZip.Stream}
+
+\subsubsection{GZip.File}
+
 
 
 \clearpage
