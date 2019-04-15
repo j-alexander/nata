@@ -17,7 +17,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-    <Content Include="App.config" />
     <Compile Include="Emulator.fs" />
     <Compile Include="AccountTests.fs" />
     <Compile Include="ContainerTests.fs" />

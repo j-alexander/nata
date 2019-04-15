@@ -17,7 +17,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-    <Content Include="App.config" />
     <Compile Include="Configuration.fs" />
     <Compile Include="LogStoreTests.fs" />
     <Compile Include="SerializationTests.fs" />

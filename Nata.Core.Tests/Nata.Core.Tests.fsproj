@@ -17,7 +17,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-    <None Include="App.config" />
     <Compile Include="CodecTests.fs" />
     <Compile Include="CoreTests.fs" />
     <Compile Include="JsonValueTests.fs" />

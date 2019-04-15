@@ -19,7 +19,6 @@
     <None Include="paket.references" />
     <Compile Include="CodecTests.fs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Nata.Codec.FsPickler\Nata.Codec.FsPickler.fsproj" />
     <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj" />

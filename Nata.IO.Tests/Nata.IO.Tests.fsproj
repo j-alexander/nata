@@ -17,7 +17,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-    <None Include="App.config" />
     <Compile Include="EventTests.fs" />
     <Compile Include="PositionTests.fs" />
     <Compile Include="IndexerTests.fs" />

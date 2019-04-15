@@ -16,7 +16,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-    <Content Include="App.config" />
     <Compile Include="MaskEnvelope.fs" />
     <Compile Include="HubTests.fs" />
     <Compile Include="HubPartitionTests.fs" />
