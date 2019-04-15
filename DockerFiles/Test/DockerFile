@@ -127,9 +127,9 @@ RUN SetX /M PATH "\"C:\Program Files\Microsoft SQL Server\140\Tools\Binn;$env:PA
     SetX /M PATH "\"C:\Program Files\Microsoft SQL Server\140\DAC\bin;$env:PATH\""
 
 
-# Verify Login:
+# Verify Login: (Optional)
 # 
-RUN osql -E -t 120 -Q \"SELECT @@VERSION\"
+# RUN osql -E -t 120 -Q \"SELECT @@VERSION\"
 
 
 # AzureStorageEmulator 5.9.0.0
