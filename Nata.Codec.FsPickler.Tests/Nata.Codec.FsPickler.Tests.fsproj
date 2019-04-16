@@ -6,25 +6,22 @@
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <Authors>Jonathan Leaver</Authors>
-    <Copyright>© 2016 Jonathan Leaver</Copyright>
+    <Copyright>© 2019 Jonathan Leaver</Copyright>
     <PackageIconUrl>https://avatars3.githubusercontent.com/u/4975537</PackageIconUrl>
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/j-alexander/nata</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/j-alexander/nata.git</RepositoryUrl>
     <Company>LambdaFun.com</Company>
-    <Description>Service Test Library for the Nata Project</Description>
+    <Description>FsPickler Codec Test Library for the Nata Project</Description>
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-    <Compile Include="HubTests.fs" />
-    <Compile Include="BindingTests.fs" />
+    <Compile Include="CodecTests.fs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Nata.Codec.FsPickler\Nata.Codec.FsPickler.fsproj" />
     <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj" />
-    <ProjectReference Include="..\Nata.IO.Memory\Nata.IO.Memory.fsproj" />
-    <ProjectReference Include="..\Nata.IO\Nata.IO.fsproj" />
-    <ProjectReference Include="..\Nata.Service\Nata.Service.fsproj" />
   </ItemGroup>
   <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>

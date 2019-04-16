@@ -17,7 +17,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-    <Content Include="App.config" />
     <Compile Include="TopicTests.fs" />
     <Compile Include="TopicPartitionTests.fs" />
     <Compile Include="ClusterTests.fs" />

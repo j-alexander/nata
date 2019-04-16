@@ -17,7 +17,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-    <Content Include="App.config" />
     <Compile Include="DocumentTests.fs" />
     <Compile Include="QueryTests.fs" />
   </ItemGroup>

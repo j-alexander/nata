@@ -1,10 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <IsPackable>false</IsPackable>
-    <IsTestProject>true</IsTestProject>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Authors>Jonathan Leaver</Authors>
     <Copyright>© 2016 Jonathan Leaver</Copyright>
     <PackageIconUrl>https://avatars3.githubusercontent.com/u/4975537</PackageIconUrl>
@@ -13,18 +10,14 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/j-alexander/nata.git</RepositoryUrl>
     <Company>LambdaFun.com</Company>
-    <Description>Service Test Library for the Nata Project</Description>
+    <Description>FsPickler Codec Library for the Nata Project</Description>
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-    <Compile Include="HubTests.fs" />
-    <Compile Include="BindingTests.fs" />
+    <Compile Include="Codec.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj" />
-    <ProjectReference Include="..\Nata.IO.Memory\Nata.IO.Memory.fsproj" />
-    <ProjectReference Include="..\Nata.IO\Nata.IO.fsproj" />
-    <ProjectReference Include="..\Nata.Service\Nata.Service.fsproj" />
   </ItemGroup>
   <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>

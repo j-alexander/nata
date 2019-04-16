@@ -8,6 +8,8 @@ nuget FSharp.Data
 nuget FSharp.Formatting >= 2.14.4
 nuget FSharp.Formatting.CommandTool
 nuget FSharpVSPowerTools.Core
+nuget FsPickler
+nuget FsPickler.Json
 nuget kafka-net-for-dotnet-core
 nuget Kafunk
 nuget Microsoft.AspNet.WebApi.Core
