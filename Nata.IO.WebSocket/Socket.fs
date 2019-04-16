@@ -14,16 +14,16 @@ module Socket =
         AutoPingInterval : int option
     }
 
-    type Status =
+    type Status<'T> =
         | Opened
-        | Received of string
+        | Received of 'T
         | Closed of exn option
 
-    let connect : Source<Settings,string,unit> =
+    let inline private connectUsing (sender, receiver) : Source<Settings,'T,unit> =
         function
         | { Host=host; AutoPingInterval=autoPing } ->
 
-            let multicast = new Multicast<Status>()
+            let multicast = new Multicast<Status<'T>>()
             let socket = new WebSocket(host)
 
             match autoPing with
@@ -33,11 +33,10 @@ module Socket =
                 socket.EnableAutoSendPing <- true
                 socket.AutoSendPingInterval <- interval
             
-            socket.Opened.AddHandler(fun s e -> multicast.Publish(Opened))
-            socket.Closed.AddHandler(fun s e -> multicast.Publish(Closed(None)))
-            socket.Error.AddHandler(fun s e -> multicast.Publish(Closed(Some e.Exception)))
-            socket.MessageReceived.AddHandler(fun s e -> multicast.Publish(Received(e.Message)))
-
+            socket.Opened.AddHandler(fun _ _ -> multicast.Publish(Opened))
+            socket.Closed.AddHandler(fun _ _ -> multicast.Publish(Closed(None)))
+            socket.Error.AddHandler(fun _ e -> multicast.Publish(Closed(Some e.Exception)))
+            socket |> receiver multicast
                
             let initialize =
                 new Lazy<unit>((fun () ->
@@ -48,11 +47,11 @@ module Socket =
                     |> Seq.iter ignore),
                     true)
 
-            let write(message:Event<string>) = 
+            let write(message:Event<'T>) =
                 initialize.Force()
-                socket.Send(message |> Event.data)
+                message |> Event.data |> sender socket
 
-            let listen() =
+            let listen() : seq<Event<'T>> =
                 let events = multicast.Subscribe()
                 initialize.Force()
                 seq {
@@ -74,3 +73,29 @@ module Socket =
 
                 Subscriber <| listen
             ]
+
+
+    let connect : Source<Settings,string,unit> =
+
+        let receiver (multicast:Multicast<Status<string>>)
+                     (socket:WebSocket)=
+            socket.MessageReceived.AddHandler(fun _ e ->
+                multicast.Publish(Received(e.Message)))
+
+        let sender (socket:WebSocket) (message:string) =
+            socket.Send(message)
+
+        connectUsing(sender,receiver)
+
+
+    let connectBinary : Source<Settings,byte[],unit> =
+
+        let receiver (multicast:Multicast<Status<byte[]>>)
+                     (socket:WebSocket) =
+            socket.DataReceived.AddHandler(fun _ e ->
+                multicast.Publish(Received(e.Data)))
+
+        let sender (socket:WebSocket) (message:byte[]) =
+            socket.Send(message,0,message.Length)
+
+        connectUsing(sender,receiver)
