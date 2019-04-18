@@ -17,34 +17,38 @@ let countText =
     handShake <| fun ws _ ->
         let rec loop(i) =
             socket {
+                do! Async.Sleep(1000)
+                    |> Async.map Choice1Of2
                 let code = Opcode.Text
                 let data =
                     sprintf "%d" i
                     |> Encoding.UTF8.GetBytes
                     |> ByteSegment
                 do! ws.send code data true
-                do!
-                    Async.Sleep(1000)
-                    |> Async.map Choice1Of2
                 return! loop(i+1)
             }
-        loop(0)
+        socket {
+            let! _ = ws.read()
+            return! loop(0)
+        }
 
 let countBinary =
     handShake <| fun ws _ ->
         let rec loop(i:int32) =
             socket {
+                do! Async.Sleep(1000)
+                    |> Async.map Choice1Of2
                 let code = Opcode.Binary
                 let data =
                     BitConverter.GetBytes(i)
                     |> ByteSegment
                 do! ws.send code data true
-                do!
-                    Async.Sleep(1000)
-                    |> Async.map Choice1Of2
                 return! loop(i+1)
             }
-        loop(0)
+        socket {
+            let! _ = ws.read()
+            return! loop(0)
+        }
 
 let echo =
     handShake <| fun ws _ ->
@@ -89,28 +93,32 @@ type Service(port:uint16) =
                             bindings = [ HttpBinding.create HTTP IPAddress.Loopback port ]
                             cancellationToken = source.Token }
                     let started, service = startWebServerAsync configuration api
-                    let! stopped = Async.StartChild service
+                    Async.Start(service,source.Token)
                     let! status = started
                     sender.Reply()
-                    return! waitForStop(source, stopped)
+                    return! waitForStop(source)
                 | Stop ->
                     sender.Reply()
                     return! waitForStart()
             }
-        and waitForStop(source:CancellationTokenSource, stopped) =
+        and waitForStop(source:CancellationTokenSource) =
             async {
                 let! (message, sender) = inbox.Receive()
                 match message with
                 | Stop ->
                     source.Cancel()
-                    do! stopped
+                    source.Dispose()
                     sender.Reply()
                     return! waitForStart()
                 | Start ->
                     sender.Reply()
-                    return! waitForStop(source, stopped)
+                    return! waitForStop(source)
             }
         waitForStart())
+    do 
+        service.Error.Add(fun ex ->
+            let message = ex.Message
+            ())
 
     member x.Start() = service.PostAndReply(fun x -> Start, x)
     member x.Stop() = service.PostAndReply(fun x -> Stop, x)
