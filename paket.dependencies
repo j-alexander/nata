@@ -28,6 +28,7 @@ nuget NUnit.Console
 nuget NUnit3TestAdapter
 nuget Owin
 nuget RabbitMQ.Client
+nuget Suave
 nuget System.ValueTuple
 nuget WebSocket4Net
 nuget WindowsAzure.Storage
