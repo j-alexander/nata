@@ -13,6 +13,20 @@ type SocketTests() =
 
     let settings = { Host="ws://websocketstest.com:80/service"; AutoPingInterval=None }
 
+    let service = new Host.Service(9998us)
+    let echo, countText, countBinary =
+        { Host="ws://localhost:9998/echo"; AutoPingInterval=None },
+        { Host="ws://localhost:9998/count/text"; AutoPingInterval=None },
+        { Host="ws://localhost:9998/count/binary"; AutoPingInterval=None }
+
+    [<SetUp>]
+    member x.SetUp() =
+        service.Start()
+
+    [<TearDown>]
+    member x.TearDown() =
+        service.Stop()
+
     [<Test; MaxTime(10000)>]
     member x.TestTimeService() =
         let write, subscribe =

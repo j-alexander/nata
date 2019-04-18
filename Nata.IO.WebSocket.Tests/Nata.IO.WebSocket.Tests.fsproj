@@ -17,6 +17,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
+    <Compile Include="Host.fs" />
     <Compile Include="SocketTests.fs" />
   </ItemGroup>
   <ItemGroup>
