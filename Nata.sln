@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28803.156
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.572
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{D5F93442-F280-45E1-9224-5BF707244CC8}"
 	ProjectSection(SolutionItems) = preProject
@@ -77,9 +77,9 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.IO.Tests", "Nata.IO.Te
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.Core.NLog", "Nata.Core.NLog\Nata.Core.NLog.fsproj", "{517BFD31-F1A9-436B-A94B-2A1FAFEA4C99}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Codec.FsPickler", "Nata.Codec.FsPickler\Nata.Codec.FsPickler.fsproj", "{6F589E26-552F-4754-B8B8-0D722866AEBA}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.Codec.FsPickler", "Nata.Codec.FsPickler\Nata.Codec.FsPickler.fsproj", "{6F589E26-552F-4754-B8B8-0D722866AEBA}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.Codec.FsPickler.Tests", "Nata.Codec.FsPickler.Tests\Nata.Codec.FsPickler.Tests.fsproj", "{225D0C16-CB90-4AA0-8B4B-7248D411A876}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.Codec.FsPickler.Tests", "Nata.Codec.FsPickler.Tests\Nata.Codec.FsPickler.Tests.fsproj", "{225D0C16-CB90-4AA0-8B4B-7248D411A876}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
