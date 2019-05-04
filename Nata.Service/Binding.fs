@@ -29,6 +29,10 @@ module Binding =
         Channel.tryWriterTo channel
         |> isRequired "channel needs support for writing to a specific position"
 
+    let private indexer channel =
+        Channel.tryIndexer channel
+        |> isRequired "channel needs indexer support"
+
 
     // starts a consumer on the current thread
     let start = Consumer.start
@@ -41,6 +45,17 @@ module Binding =
               (output:Channel<Consumer<'State,'InputIndex>, 'OutputIndex>)
               (index:'InputIndex) =
         Consumer.reset (writer output) index state
+
+    // reset the input checkpoint index to a specific position, retaining state
+    let moveTo (input:Channel<'Input,'InputIndex>)
+               (position:Position<'InputIndex>)
+               (output:Channel<Consumer<'State,'InputIndex>, 'OutputIndex>) =
+        readerFrom output (Position.Before Position.End)
+        |> Seq.map (fst >> Event.data)
+        |> Seq.tryLast
+        |> Option.iter (fun { State=state } ->
+            let index = indexer input position
+            reset state output index)
 
     // converts the output channel of one binding into an input for another
     let asInput (channel:Channel<Consumer<'Input,_>,'InputIndex>) : Channel<'Input,'InputIndex> =
