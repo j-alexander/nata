@@ -26,7 +26,7 @@ module Queue =
         channel.QueueDeclare(queue, true, false, false, null)
     
     let write (channel:IModel) (exchange:Exchange) (queue:Name) (event:Event<byte[]>) =
-        channel.BasicPublish(exchange, queue, null, event.Data)
+        channel.BasicPublish(exchange, queue, null, new ReadOnlyMemory<byte>(event.Data))
 
     let length (channel:IModel) (queue:Name) =
         let result = declare channel queue
@@ -58,7 +58,7 @@ module Queue =
                     let timestamp =
                         message.BasicProperties.Timestamp.UnixTime
                         |> DateTime.ofUnixSeconds
-                    message.Body
+                    message.Body.ToArray()
                     |> Event.create
                     |> Event.withStream queue
                     |> Event.withCreatedAt timestamp

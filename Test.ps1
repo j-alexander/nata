@@ -6,7 +6,7 @@ $Source = $PSScriptRoot
 dotnet restore
 dotnet build -c Debug --no-restore 
 ForEach ($Test in $(ls *.Tests)) {
-dotnet publish -c Debug --no-restore --no-build --output bin\Debug\netcoreapp2.1 $Test
+dotnet publish -c Debug --no-restore --no-build --output bin\Debug\netcoreapp3.1 $Test
 }
 
 $Target = "C:\Nata"
