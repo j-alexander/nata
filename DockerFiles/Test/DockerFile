@@ -235,5 +235,6 @@ RUN Set-Location /RabbitMQ/sbin                                        ; \
 ADD https://download.visualstudio.microsoft.com/download/pr/adeab8b1-1c44-41b2-b12a-156442f307e9/65ebf805366410c63edeb06e53959383/dotnet-sdk-3.1.201-win-x64.zip /DotNet.zip
 RUN Expand-Archive -Path /DotNet.zip -DestinationPath /DotNet ; \
     Remove-Item -Force /DotNet.zip                            ; \
-    SetX /M PATH "\"C:\DotNet;$env:PATH\""                    ; \
-    C:\DotNet\dotnet.exe test /version
+    Move-Item /DotNet "\"/Program Files\""                    ; \
+    SetX /M PATH "\"C:\Program Files\DotNet;$env:PATH\""      ; \
+    & 'C:\Program Files\DotNet\dotnet.exe' test /version
