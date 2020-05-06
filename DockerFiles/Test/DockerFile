@@ -35,32 +35,23 @@ ADD https://live.sysinternals.com/handle.exe '/windows/system32/handle.exe'
 ADD https://live.sysinternals.com/procdump64.exe '/windows/system32/procdump64.exe'
 
 
-# Erlang
-#
-ADD http://erlang.org/download/otp_win64_19.2.exe /otp_win64_19.2.exe
-RUN Start-Process -Wait -FilePath '\otp_win64_19.2.exe' -ArgumentList '/S'
-RUN SetX /M PATH "\"C:\Program Files\erl8.2\bin;$env:PATH\""    ; \
-    SetX /M ERLANG_HOME "\"C:\Program Files\erl8.2\""           ; \
-    Remove-Item -Force /otp_win64_19.2.exe
-
-
 # Install Open JDK 11
 # 
-ADD https://download.java.net/java/GA/jdk11/9/GPL/openjdk-11.0.2_windows-x64_bin.zip /openjdk-11.0.2_windows-x64_bin.zip
-RUN Expand-Archive -Path /openjdk-11.0.2_windows-x64_bin.zip -DestinationPath /  ; \
-    Move-Item C:\jdk-11.0.2 "\"C:\Program Files\Open JDK\""                      ; \
-    Remove-Item -Force /openjdk-11.0.2_windows-x64_bin.zip                       ; \
+ADD https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1_windows-x64_bin.zip /openjdk-14.0.1_windows-x64_bin.zip
+RUN Expand-Archive -Path /openjdk-14.0.1_windows-x64_bin.zip -DestinationPath /  ; \
+    Move-Item C:\jdk-14.0.1 "\"C:\Program Files\Open JDK\""                      ; \
+    Remove-Item -Force /openjdk-14.0.1_windows-x64_bin.zip                       ; \
     SetX /M PATH      "\"\Program Files\Open JDK\bin;$env:PATH\""                ; \
     SetX /M JAVA_HOME "\"\Program Files\Open JDK\""
 
 # Install Kafka w/ Zookeeper
 # 
-ADD http://www-us.apache.org/dist/kafka/2.1.1/kafka_2.12-2.1.1.tgz \kafka_2.12-2.1.1.tgz
-RUN 7z.exe e \kafka_2.12-2.1.1.tgz -o\                          ; \
-    7z.exe x \kafka_2.12-2.1.1.tar -o\                          ; \
-    mv \kafka_2.12-2.1.1 \"\Kafka\"                             ; \
-    rm \kafka_2.12-2.1.1.tar                                    ; \
-    rm \kafka_2.12-2.1.1.tgz                                    ; \
+ADD https://downloads.apache.org/kafka/2.5.0/kafka_2.13-2.5.0.tgz \kafka_2.13-2.5.0.tgz
+RUN 7z.exe e \kafka_2.13-2.5.0.tgz -o\                          ; \
+    7z.exe x \kafka_2.13-2.5.0.tar -o\                          ; \
+    mv \kafka_2.13-2.5.0 \"\Kafka\"                             ; \
+    rm \kafka_2.13-2.5.0.tar                                    ; \
+    rm \kafka_2.13-2.5.0.tgz                                    ; \
     New-Item /Kafka/data -Type Directory                        ; \
     New-Item /Kafka/logs -Type Directory                        ; \
     New-Item /Kafka/logs/service -Type Directory                ; \
@@ -132,7 +123,7 @@ RUN SetX /M PATH "\"C:\Program Files\Microsoft SQL Server\140\Tools\Binn;$env:PA
 # RUN osql -E -t 120 -Q \"SELECT @@VERSION\"
 
 
-# AzureStorageEmulator 5.9.0.0
+# AzureStorageEmulator 5.10.0.0
 # Note: the download link points to the latest version
 # 
 ADD https://go.microsoft.com/fwlink/?linkid=717179&clcid=0x409   /MicrosoftAzureStorageEmulator.msi
@@ -159,9 +150,9 @@ RUN Write-Host "Initializing Azure Storage Service"                             
     nssm set AzureStorage ObjectName \"$env:computername\AzureStorage\" $Password
 
 
-# EventStore 5.0.0
+# EventStore 5.0.8
 # 
-ADD https://eventstore.org/downloads/win/EventStore-OSS-Win-v5.0.0.zip /EventStore.zip
+ADD https://eventstore.org/downloads/win/EventStore-OSS-Win-v5.0.8.zip /EventStore.zip
 RUN Expand-Archive -Path /EventStore.zip -DestinationPath /EventStore  ; \
     Remove-Item -Force /EventStore.zip                                 ; \
     New-Item -Path /EventStore/Data -ItemType Directory                ; \
@@ -177,9 +168,9 @@ RUN nssm install EventStore                                       \
 EXPOSE 1113 2113
 
 
-# Cosmos DB Emulator (Feb 6, 2019)
+# Cosmos DB Emulator (Oct 10, 2019)
 # 
-ADD https://cosmosdbportalstorage.azureedge.net/emulator/2019_02_28_2.2.1-2b4af9b3/azure-cosmosdb-emulator-2.2.1-2b4af9b3.msi /CosmosDB.Emulator.msi
+ADD https://cosmosdbportalstorage.azureedge.net/emulator/2019_10_10_2.7.0-6a08427e/azure-cosmosdb-emulator-2.7.0-6a08427e.msi /CosmosDB.Emulator.msi
 RUN Start-Process -FilePath 'msiexec.exe'                         \
         -ArgumentList '/quiet','/qn','/norestart',                \
                       '/log','\CosmosDB.Emulator.log',            \
@@ -202,7 +193,7 @@ EXPOSE 8081 10250 10251 10252 10253 10254
 
 # Consul
 # 
-ADD https://releases.hashicorp.com/consul/1.2.2/consul_1.2.2_windows_amd64.zip /Consul.zip
+ADD https://releases.hashicorp.com/consul/1.7.2/consul_1.7.2_windows_amd64.zip /Consul.zip
 RUN Expand-Archive -Path /Consul.zip -DestinationPath /Consul   ; \
     Remove-Item -Force /Consul.zip                              ; \
     New-Item -Path /Consul/Data -ItemType Directory             ; \
@@ -217,12 +208,21 @@ RUN Expand-Archive -Path /Consul.zip -DestinationPath /Consul   ; \
 EXPOSE 8500
 
 
+# Erlang
+#
+ADD http://erlang.org/download/otp_win64_22.3.exe /otp_win64_22.3.exe
+RUN Start-Process -Wait -FilePath '\otp_win64_22.3.exe' -ArgumentList '/S'
+RUN SetX /M PATH "\"C:\Program Files\erl10.7\bin;$env:PATH\""    ; \
+    SetX /M ERLANG_HOME "\"C:\Program Files\erl10.7\""           ; \
+    Remove-Item -Force /otp_win64_22.3.exe
+
+
 # RabbitMQ
 #
-ADD https://www.rabbitmq.com/releases/rabbitmq-server/v3.6.6/rabbitmq-server-windows-3.6.6.zip /rabbitmq-server-3.6.6.zip
-RUN Expand-Archive -Path /rabbitmq-server-3.6.6.zip -DestinationPath / ; \
-    Move-Item /rabbitmq_server-3.6.6 /RabbitMQ                         ; \
-    Remove-Item -Force /rabbitmq-server-3.6.6.zip
+ADD https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.3/rabbitmq-server-windows-3.8.3.zip /rabbitmq-server-3.8.3.zip
+RUN Expand-Archive -Path /rabbitmq-server-3.8.3.zip -DestinationPath / ; \
+    Move-Item /rabbitmq_server-3.8.3 /RabbitMQ                         ; \
+    Remove-Item -Force /rabbitmq-server-3.8.3.zip
 RUN Set-Location /RabbitMQ/sbin                                        ; \
     $env:RABBITMQ_NODE_IP_ADDRESS = \"127.0.0.1\"                      ; \
     $env:RABBITMQ_NODENAME = \"rabbitmq@localhost\"                    ; \
@@ -232,7 +232,7 @@ RUN Set-Location /RabbitMQ/sbin                                        ; \
 
 # .Net Core SDK
 #
-ADD https://download.visualstudio.microsoft.com/download/pr/e7a3e196-1b15-45d4-8a4a-2f940cf8c3be/975a1ec833505505adf5b867990d441a/dotnet-sdk-2.2.104-win-x64.zip /DotNet.zip
+ADD https://download.visualstudio.microsoft.com/download/pr/adeab8b1-1c44-41b2-b12a-156442f307e9/65ebf805366410c63edeb06e53959383/dotnet-sdk-3.1.201-win-x64.zip /DotNet.zip
 RUN Expand-Archive -Path /DotNet.zip -DestinationPath /DotNet ; \
     Remove-Item -Force /DotNet.zip                            ; \
     SetX /M PATH "\"C:\DotNet;$env:PATH\""                    ; \
