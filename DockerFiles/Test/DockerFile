@@ -168,9 +168,9 @@ RUN nssm install EventStore                                       \
 EXPOSE 1113 2113
 
 
-# Cosmos DB Emulator (Oct 10, 2019)
+# Cosmos DB Emulator (Feb 25, 2020)
 # 
-ADD https://cosmosdbportalstorage.azureedge.net/emulator/2019_10_10_2.7.0-6a08427e/azure-cosmosdb-emulator-2.7.0-6a08427e.msi /CosmosDB.Emulator.msi
+ADD https://cosmosdbportalstorage.azureedge.net/emulator/2020_02_25_2.9.2-ae070d26/azure-cosmosdb-emulator-2.9.2-ae070d26.msi /CosmosDB.Emulator.msi
 RUN Start-Process -FilePath 'msiexec.exe'                         \
         -ArgumentList '/quiet','/qn','/norestart',                \
                       '/log','\CosmosDB.Emulator.log',            \
