@@ -1,6 +1,5 @@
 ﻿namespace Nata.IO.Kafunk
 
-open System
 open Kafunk
 
     

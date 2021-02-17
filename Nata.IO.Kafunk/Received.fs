@@ -1,8 +1,6 @@
 ﻿namespace Nata.IO.Kafunk
 
 open System
-open System.Net
-open System.Text
 open Kafunk
 
 type Received =
