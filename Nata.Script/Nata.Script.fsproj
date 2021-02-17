@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net50</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <IsPackable>false</IsPackable>
     <Authors>Jonathan Leaver</Authors>
     <Copyright>© 2016 Jonathan Leaver</Copyright>
