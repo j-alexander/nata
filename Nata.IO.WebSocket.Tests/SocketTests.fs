@@ -65,7 +65,7 @@ type SocketTests() =
         write(Event.create([||]))
         let results =
             subscription
-            |> Seq.map (Event.data >> (fun xs -> BitConverter.ToInt32(xs, 0)))
+            |> Seq.map (Event.data >> (fun xs -> BitConverter.ToInt64(xs, 0)))
             |> Seq.take 5
             |> Seq.toList
         Assert.AreEqual([0L..4L], results)
