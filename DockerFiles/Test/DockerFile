@@ -210,19 +210,19 @@ EXPOSE 8500
 
 # Erlang
 #
-ADD http://erlang.org/download/otp_win64_22.3.exe /otp_win64_22.3.exe
-RUN Start-Process -Wait -FilePath '\otp_win64_22.3.exe' -ArgumentList '/S'
-RUN SetX /M PATH "\"C:\Program Files\erl10.7\bin;$env:PATH\""    ; \
-    SetX /M ERLANG_HOME "\"C:\Program Files\erl10.7\""           ; \
-    Remove-Item -Force /otp_win64_22.3.exe
+ADD http://erlang.org/download/otp_win64_23.2.exe /otp_win64_23.2.exe
+RUN Start-Process -Wait -FilePath '\otp_win64_23.2.exe' -ArgumentList '/S'
+RUN SetX /M PATH "\"C:\Program Files\erl-23.2\bin;$env:PATH\""    ; \
+    SetX /M ERLANG_HOME "\"C:\Program Files\erl-23.2\""           ; \
+    Remove-Item -Force /otp_win64_23.2.exe
 
 
 # RabbitMQ
 #
-ADD https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.3/rabbitmq-server-windows-3.8.3.zip /rabbitmq-server-3.8.3.zip
-RUN Expand-Archive -Path /rabbitmq-server-3.8.3.zip -DestinationPath / ; \
-    Move-Item /rabbitmq_server-3.8.3 /RabbitMQ                         ; \
-    Remove-Item -Force /rabbitmq-server-3.8.3.zip
+ADD https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.12/rabbitmq-server-windows-3.8.12.zip /rabbitmq-server-windows-3.8.12.zip
+RUN Expand-Archive -Path /rabbitmq-server-windows-3.8.12.zip -DestinationPath / ; \
+    Move-Item /rabbitmq_server-3.8.12 /RabbitMQ                         ; \
+    Remove-Item -Force /rabbitmq-server-windows-3.8.12.zip
 RUN Set-Location /RabbitMQ/sbin                                        ; \
     $env:RABBITMQ_NODE_IP_ADDRESS = \"127.0.0.1\"                      ; \
     $env:RABBITMQ_NODENAME = \"rabbitmq@localhost\"                    ; \
