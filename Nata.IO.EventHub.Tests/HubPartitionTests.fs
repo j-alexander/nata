@@ -39,7 +39,7 @@ type HubPartitionTests() =
             |> Seq.filter (fun _ -> false)
             |> Seq.toList
 
-        Assert.AreEqual([], results)
+        Assert.IsEmpty(results)
 
     [<Test; MaxTime(30000)>]
     member x.TestWriteRead() =
@@ -125,7 +125,7 @@ type HubPartitionTests() =
             |> Seq.filter ((=) unexpected.Data)
             |> Seq.toList
 
-        Assert.AreEqual([], results)
+        Assert.IsEmpty(results)
         
     [<Test>]
     override x.TestReadFromRelativePositions() = Assert.Ignore("Not yet supported.")
