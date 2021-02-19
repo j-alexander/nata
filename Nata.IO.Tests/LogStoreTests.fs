@@ -42,7 +42,7 @@ type LogStoreTests() as x =
     [<Test; MaxTime(45000)>]
     member x.TestEmptyRead() =
         let read = x.Connect() |> reader
-        Assert.AreEqual([], read() |> Seq.toList)
+        Assert.IsEmpty(read() |> Seq.toList)
 
     [<Test>]
     member x.TestRead() =
@@ -58,7 +58,7 @@ type LogStoreTests() as x =
     [<Test; MaxTime(45000)>]
     member x.TestEmptyReadFrom() =
         let readFrom = x.Connect() |> readerFrom
-        Assert.AreEqual([], readFrom Position.Start |> Seq.toList)
+        Assert.IsEmpty(readFrom Position.Start |> Seq.toList)
 
     [<Test>]
     member x.TestReadFrom() =
@@ -404,7 +404,7 @@ type LogStoreTests() as x =
             readFrom position
             |> Seq.map (fst >> Event.data)
             |> Seq.head
-        Assert.AreEqual([], List.ofSeq(readFrom(Position.End)))
+        Assert.IsEmpty(List.ofSeq(readFrom(Position.End)))
 
         Assert.AreEqual(data.[2],take(Position.Before(Position.End)))
         Assert.AreEqual(data.[2],take(Position.At(index.[2])))
@@ -440,7 +440,7 @@ type LogStoreTests() as x =
             readFrom (Position.Before Position.End)
             |> Seq.tryPick (fst >> Event.data >> Some)
             |> Option.toList
-        Assert.AreEqual([], snapshot())
+        Assert.IsEmpty(snapshot())
         let events =
             [ event("TestReadFromBeforeEnd-0")
               event("TestReadFromBeforeEnd-1")

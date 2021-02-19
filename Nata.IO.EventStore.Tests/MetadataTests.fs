@@ -60,7 +60,7 @@ type MetadataTests() =
         Assert.AreEqual([314], readFrom Position.Start |> Seq.toList)
 
         Thread.Sleep(7000)
-        Assert.AreEqual([], readFrom Position.Start |> Seq.toList, "Should have expired after 10 seconds.")
+        Assert.IsEmpty(readFrom Position.Start |> Seq.toList, "Should have expired after 10 seconds.")
 
         write 315
         Assert.AreEqual([315], readFrom Position.Start |> Seq.toList)

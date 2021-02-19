@@ -150,9 +150,9 @@ RUN Write-Host "Initializing Azure Storage Service"                             
     nssm set AzureStorage ObjectName \"$env:computername\AzureStorage\" $Password
 
 
-# EventStore 5.0.8
+# EventStore 5.0.9
 # 
-ADD https://eventstore.org/downloads/win/EventStore-OSS-Win-v5.0.8.zip /EventStore.zip
+ADD https://raw.githubusercontent.com/EventStore/Downloads/master/win/EventStore-OSS-Win-v5.0.9.zip /EventStore.zip
 RUN Expand-Archive -Path /EventStore.zip -DestinationPath /EventStore  ; \
     Remove-Item -Force /EventStore.zip                                 ; \
     New-Item -Path /EventStore/Data -ItemType Directory                ; \
