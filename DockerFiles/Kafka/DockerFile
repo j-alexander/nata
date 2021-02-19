@@ -1,5 +1,12 @@
 FROM nata/java
 
+# 7 ZIP
+# 
+ADD http://www.7-zip.org/a/7z1900-x64.exe /7z-x64.exe
+RUN Start-Process -Wait -FilePath '\7z-x64.exe' -ArgumentList '/S'     ; \
+    SetX /M PATH "\"C:\Program Files\7-zip;$env:PATH\""                ; \
+    Remove-Item -Force /7z-x64.exe
+
 ADD https://nssm.cc/release/nssm-2.24.zip \nssm-2.24.zip
 
 # Install NSSM
@@ -10,38 +17,43 @@ RUN Expand-Archive -Path /nssm-2.24.zip -DestinationPath /  ; \
     SetX /M PATH "\"C:\Program Files\nssm;$env:PATH\""      ; \
     Remove-Item -Force /nssm-2.24.zip
 
-# Extract Kafka 10.2 to /Kafka
-ADD http://www-us.apache.org/dist/kafka/0.10.2.0/kafka_2.12-0.10.2.0.tgz \kafka_2.12-0.10.2.0.tgz
-RUN 7z.exe e \kafka_2.12-0.10.2.0.tgz -o\            ; \
-    7z.exe x \kafka_2.12-0.10.2.0.tar -o\            ; \
-    Move-Item /kafka_2.12-0.10.2.0 /Kafka            ; \
-    Remove-Item -Force /kafka_2.12-0.10.2.0.tar      ; \
-    Remove-Item -Force /kafka_2.12-0.10.2.0.tgz
-            
-# Zookeeper Data in /Data/Zookeeper
-RUN $ZKProps = '/kafka/config/zookeeper.properties'                ; \
-    $ZP = Get-Content $ZKProps                                     ; \
-    $ZP = $ZP.Replace('/tmp/zookeeper','/Data/Zookeeper')          ; \
-    Set-Content $ZKProps $ZP
-        
-# Install Zookeeper Service
-RUN [ "nssm.exe",                                                    \
-      "install", "Zookeeper",                                        \
-      "\"C:\\Kafka\\bin\\windows\\zookeeper-server-start.bat\"",     \
-      "\"C:\\Kafka\\config\\zookeeper.properties\""     ]
-     
-# Kafka Settings, Data in /Data/Kafka
-ADD server.properties "C:\Kafka\config\server.properties"
+# Extract Kafka 2.6.1 to /Kafka
+ADD https://downloads.apache.org/kafka/2.6.1/kafka_2.13-2.6.1.tgz \kafka_2.13-2.6.1.tgz
+RUN 7z.exe e \kafka_2.13-2.6.1.tgz -o\                          ; \
+    7z.exe x \kafka_2.13-2.6.1.tar -o\                          ; \
+    mv \kafka_2.13-2.6.1 \"\Kafka\"                             ; \
+    rm \kafka_2.13-2.6.1.tar                                    ; \
+    rm \kafka_2.13-2.6.1.tgz                                    ; \
+    New-Item /Kafka/data -Type Directory                        ; \
+    New-Item /Kafka/logs -Type Directory                        ; \
+    New-Item /Kafka/logs/service -Type Directory                ; \
+    Write-Host "Setting Zookeeper Properties"                   ; \
+    $ZKProps = '/kafka/config/zookeeper.properties'             ; \
+    $ZP = Get-Content $ZKProps                                  ; \
+    $ZP = $ZP.Replace('/tmp/zookeeper','/Kafka/data/zookeeper') ; \
+    Set-Content $ZKProps $ZP                                    ; \
+    Write-Host "Setting Kafka Server Properties"                ; \
+    $KSProps = '/kafka/config/server.properties'                ; \
+    $KS = Get-Content $KSProps                                  ; \
+    $KS = $KS.Replace('/tmp/kafka-logs','/Kafka/data/broker')   ; \
+    Set-Content $KSProps $KS
 
-# Install Kafka Service
-RUN [ "nssm.exe",                                                    \
-      "install", "Kafka",                                            \
-      "\"C:\\Kafka\\bin\\windows\\kafka-server-start.bat\"",         \
-      "\"C:\\Kafka\\config\\server.properties\""     ]
-     
-# Kafka->Zookeeper Service Dependency
-RUN [ "nssm.exe",                                                    \
-      "set", "Kafka", "DependOnService", "Zookeeper"     ]
+# Startup Services
+RUN nssm install Zookeeper                                        \
+         'C:\Kafka\bin\windows\zookeeper-server-start.bat'        \
+         'C:\Kafka\config\zookeeper.properties'                 ; \
+    nssm set Zookeeper AppStdOut                                  \
+         'C:\Kafka\logs\service\zookeeper.log'                  ; \
+    nssm set Zookeeper AppEnvironmentExtra                        \
+         LOG_DIR=/Kafka/logs                                    ; \
+    nssm install Kafka                                            \
+         'C:\Kafka\bin\windows\kafka-server-start.bat'            \
+         'C:\Kafka\config\server.properties'                    ; \
+    nssm set Kafka AppStdOut                                      \
+         'C:\Kafka\logs\service\kafka.log'                      ; \
+    nssm set Kafka AppEnvironmentExtra                            \
+         LOG_DIR=/Kafka/logs                                    ; \
+    nssm set Kafka DependOnService Zookeeper
 
 # Create Initial Log
 RUN Set-Content '/Kafka/logs/server.log' ''

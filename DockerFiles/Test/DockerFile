@@ -35,7 +35,7 @@ ADD https://live.sysinternals.com/handle.exe '/windows/system32/handle.exe'
 ADD https://live.sysinternals.com/procdump64.exe '/windows/system32/procdump64.exe'
 
 
-# Install Open JDK 11
+# Install Open JDK 14
 # 
 ADD https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1_windows-x64_bin.zip /openjdk-14.0.1_windows-x64_bin.zip
 RUN Expand-Archive -Path /openjdk-14.0.1_windows-x64_bin.zip -DestinationPath /  ; \
@@ -46,12 +46,12 @@ RUN Expand-Archive -Path /openjdk-14.0.1_windows-x64_bin.zip -DestinationPath / 
 
 # Install Kafka w/ Zookeeper
 # 
-ADD https://downloads.apache.org/kafka/2.5.0/kafka_2.13-2.5.0.tgz \kafka_2.13-2.5.0.tgz
-RUN 7z.exe e \kafka_2.13-2.5.0.tgz -o\                          ; \
-    7z.exe x \kafka_2.13-2.5.0.tar -o\                          ; \
-    mv \kafka_2.13-2.5.0 \"\Kafka\"                             ; \
-    rm \kafka_2.13-2.5.0.tar                                    ; \
-    rm \kafka_2.13-2.5.0.tgz                                    ; \
+ADD https://downloads.apache.org/kafka/2.6.1/kafka_2.13-2.6.1.tgz \kafka_2.13-2.6.1.tgz
+RUN 7z.exe e \kafka_2.13-2.6.1.tgz -o\                          ; \
+    7z.exe x \kafka_2.13-2.6.1.tar -o\                          ; \
+    mv \kafka_2.13-2.6.1 \"\Kafka\"                             ; \
+    rm \kafka_2.13-2.6.1.tar                                    ; \
+    rm \kafka_2.13-2.6.1.tgz                                    ; \
     New-Item /Kafka/data -Type Directory                        ; \
     New-Item /Kafka/logs -Type Directory                        ; \
     New-Item /Kafka/logs/service -Type Directory                ; \
