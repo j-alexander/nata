@@ -2,28 +2,16 @@ FROM microsoft/windowsservercore
 
 # Configure Powershell as the Default Shell
 SHELL ["powershell", "-NoProfile", "-Command", "$ErrorActionPreference = 'Stop';"]
-
-# Install 7-Zip
-ADD http://www.7-zip.org/a/7z1604-x64.exe /7-Zip.exe
-RUN Start-Process '\7-Zip.exe' -ArgumentList '/S' -Wait           ; \
-    SetX /M PATH "\"C:\Program Files\7-Zip;$env:PATH\""           ; \
-    Remove-Item -Force 7-Zip.exe
+	
+# Install Open JDK 14
+# 
+ADD https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1_windows-x64_bin.zip /openjdk-14.0.1_windows-x64_bin.zip
+RUN Expand-Archive -Path /openjdk-14.0.1_windows-x64_bin.zip -DestinationPath /  ; \
+    Move-Item C:\jdk-14.0.1 "\"C:\Program Files\Open JDK\""                      ; \
+    Remove-Item -Force /openjdk-14.0.1_windows-x64_bin.zip                       ; \
+    SetX /M PATH      "\"\Program Files\Open JDK\bin;$env:PATH\""                ; \
+    SetX /M JAVA_HOME "\"\Program Files\Open JDK\""
 		
-# Download Java 8 from Oracle
-ENV JAVA8_URL http://download.oracle.com/otn-pub/java/jdk/8u131-b11/d54c1d3a095b4ff2b6607d096fa80163/jre-8u131-windows-x64.tar.gz
-RUN $client = New-Object System.Net.WebClient                                                                 ; \
-    $client.Headers.Add([System.Net.HttpRequestHeader]::Cookie, \"oraclelicense=accept-securebackup-cookie\") ; \
-    $client.DownloadFile("$env:JAVA8_URL", \"\jre-8u131-windows-x64.tar.gz\")
-
-# Install Java
-RUN 7z.exe e /jre-8u131-windows-x64.tar.gz -o/                    ; \
-    7z.exe x /jre-8u131-windows-x64.tar -o/                       ; \
-    Move-Item /jre1.8.0_131 /Java                                 ; \
-    SetX /M PATH      "\"\Java\bin;$env:PATH\""                   ; \
-    SetX /M JAVA_HOME "\"\Java\""                                 ; \
-    Remove-Item -Force /jre-8u131-windows-x64.tar                 ; \
-    Remove-Item -Force /jre-8u131-windows-x64.tar.gz
-		
-# Java(TM) SE Runtime Environment (build 1.8.0_131-b11)
-# Java HotSpot(TM) 64-Bit Server VM (build 25.131-b11, mixed mode)
+# OpenJDK Runtime Environment (build 14.0.1+7)
+# OpenJDK 64-Bit Server VM (build 14.0.1+7, mixed mode, sharing)
 CMD java -version

@@ -35,7 +35,7 @@ ADD https://live.sysinternals.com/handle.exe '/windows/system32/handle.exe'
 ADD https://live.sysinternals.com/procdump64.exe '/windows/system32/procdump64.exe'
 
 
-# Install Open JDK 11
+# Install Open JDK 14
 # 
 ADD https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1_windows-x64_bin.zip /openjdk-14.0.1_windows-x64_bin.zip
 RUN Expand-Archive -Path /openjdk-14.0.1_windows-x64_bin.zip -DestinationPath /  ; \
@@ -46,12 +46,12 @@ RUN Expand-Archive -Path /openjdk-14.0.1_windows-x64_bin.zip -DestinationPath / 
 
 # Install Kafka w/ Zookeeper
 # 
-ADD https://downloads.apache.org/kafka/2.5.0/kafka_2.13-2.5.0.tgz \kafka_2.13-2.5.0.tgz
-RUN 7z.exe e \kafka_2.13-2.5.0.tgz -o\                          ; \
-    7z.exe x \kafka_2.13-2.5.0.tar -o\                          ; \
-    mv \kafka_2.13-2.5.0 \"\Kafka\"                             ; \
-    rm \kafka_2.13-2.5.0.tar                                    ; \
-    rm \kafka_2.13-2.5.0.tgz                                    ; \
+ADD https://downloads.apache.org/kafka/2.6.1/kafka_2.13-2.6.1.tgz \kafka_2.13-2.6.1.tgz
+RUN 7z.exe e \kafka_2.13-2.6.1.tgz -o\                          ; \
+    7z.exe x \kafka_2.13-2.6.1.tar -o\                          ; \
+    mv \kafka_2.13-2.6.1 \"\Kafka\"                             ; \
+    rm \kafka_2.13-2.6.1.tar                                    ; \
+    rm \kafka_2.13-2.6.1.tgz                                    ; \
     New-Item /Kafka/data -Type Directory                        ; \
     New-Item /Kafka/logs -Type Directory                        ; \
     New-Item /Kafka/logs/service -Type Directory                ; \
@@ -150,9 +150,9 @@ RUN Write-Host "Initializing Azure Storage Service"                             
     nssm set AzureStorage ObjectName \"$env:computername\AzureStorage\" $Password
 
 
-# EventStore 5.0.8
+# EventStore 5.0.9
 # 
-ADD https://eventstore.org/downloads/win/EventStore-OSS-Win-v5.0.8.zip /EventStore.zip
+ADD https://raw.githubusercontent.com/EventStore/Downloads/master/win/EventStore-OSS-Win-v5.0.9.zip /EventStore.zip
 RUN Expand-Archive -Path /EventStore.zip -DestinationPath /EventStore  ; \
     Remove-Item -Force /EventStore.zip                                 ; \
     New-Item -Path /EventStore/Data -ItemType Directory                ; \
@@ -168,9 +168,9 @@ RUN nssm install EventStore                                       \
 EXPOSE 1113 2113
 
 
-# Cosmos DB Emulator (Feb 25, 2020)
+# Cosmos DB Emulator (Jan 01, 2021)
 # 
-ADD https://cosmosdbportalstorage.azureedge.net/emulator/2020_02_25_2.9.2-ae070d26/azure-cosmosdb-emulator-2.9.2-ae070d26.msi /CosmosDB.Emulator.msi
+ADD https://cosmosdbportalstorage.azureedge.net/emulator/2021_01_01_2.11.10-595e6574/azure-cosmosdb-emulator-2.11.10-595e6574.msi /CosmosDB.Emulator.msi
 RUN Start-Process -FilePath 'msiexec.exe'                         \
         -ArgumentList '/quiet','/qn','/norestart',                \
                       '/log','\CosmosDB.Emulator.log',            \
@@ -210,19 +210,19 @@ EXPOSE 8500
 
 # Erlang
 #
-ADD http://erlang.org/download/otp_win64_22.3.exe /otp_win64_22.3.exe
-RUN Start-Process -Wait -FilePath '\otp_win64_22.3.exe' -ArgumentList '/S'
-RUN SetX /M PATH "\"C:\Program Files\erl10.7\bin;$env:PATH\""    ; \
-    SetX /M ERLANG_HOME "\"C:\Program Files\erl10.7\""           ; \
-    Remove-Item -Force /otp_win64_22.3.exe
+ADD http://erlang.org/download/otp_win64_23.2.exe /otp_win64_23.2.exe
+RUN Start-Process -Wait -FilePath '\otp_win64_23.2.exe' -ArgumentList '/S'
+RUN SetX /M PATH "\"C:\Program Files\erl-23.2\bin;$env:PATH\""    ; \
+    SetX /M ERLANG_HOME "\"C:\Program Files\erl-23.2\""           ; \
+    Remove-Item -Force /otp_win64_23.2.exe
 
 
 # RabbitMQ
 #
-ADD https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.3/rabbitmq-server-windows-3.8.3.zip /rabbitmq-server-3.8.3.zip
-RUN Expand-Archive -Path /rabbitmq-server-3.8.3.zip -DestinationPath / ; \
-    Move-Item /rabbitmq_server-3.8.3 /RabbitMQ                         ; \
-    Remove-Item -Force /rabbitmq-server-3.8.3.zip
+ADD https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.12/rabbitmq-server-windows-3.8.12.zip /rabbitmq-server-windows-3.8.12.zip
+RUN Expand-Archive -Path /rabbitmq-server-windows-3.8.12.zip -DestinationPath / ; \
+    Move-Item /rabbitmq_server-3.8.12 /RabbitMQ                         ; \
+    Remove-Item -Force /rabbitmq-server-windows-3.8.12.zip
 RUN Set-Location /RabbitMQ/sbin                                        ; \
     $env:RABBITMQ_NODE_IP_ADDRESS = \"127.0.0.1\"                      ; \
     $env:RABBITMQ_NODENAME = \"rabbitmq@localhost\"                    ; \

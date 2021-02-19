@@ -1,12 +1,8 @@
 ﻿namespace Nata.IO.Kafunk
 
-open System
-open System.Net
-open System.Text
 open Kafunk
 
 open Nata.Core
-open Nata.IO
     
 type Offset =
     { PartitionId : Partition 
@@ -37,7 +33,7 @@ with
         query {
             for l in l do
             join r in r on (l.PartitionId = r.PartitionId)
-            sumBy (l.Position - Math.Min(l.Position, r.Position))
+            sumBy (l.Position - System.Math.Min(l.Position, r.Position))
         }
     
 
@@ -56,7 +52,7 @@ module Offset =
           Offset.Position = range.Max }
 
     let remaining (range:OffsetRange, offset:Offset) =
-        range.Max - Math.Min(offset.Position, range.Max)
+        range.Max - System.Math.Min(offset.Position, range.Max)
 
     let completed (range:OffsetRange, offset:Offset) =
         remaining (range, offset) <= 0L
@@ -104,10 +100,10 @@ module Offsets =
         List.map Offset.finish >> Offsets
 
     let before (range:OffsetRanges) (offsets:Offsets) =
-        raise (new NotImplementedException())
+        raise (new System.NotImplementedException())
 
     let after (range:OffsetRanges) (offsets:Offsets) =
-        raise (new NotImplementedException())
+        raise (new System.NotImplementedException())
 
     let filter (partition:int) (Offsets offsets) =
         offsets

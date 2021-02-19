@@ -68,7 +68,7 @@ type SocketTests() =
             |> Seq.map (Event.data >> (fun xs -> BitConverter.ToInt32(xs, 0)))
             |> Seq.take 5
             |> Seq.toList
-        Assert.AreEqual([0L..4L], results)
+        Assert.AreEqual([0..4], results)
 
     [<Test; MaxTime(10000)>]
     member x.TestStringReadWriteEcho() =

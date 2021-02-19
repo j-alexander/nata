@@ -130,7 +130,7 @@ module Stream =
                   (position : Position<Index>)
                   (event : Event) : Index =
             let rec targetVersionOf = function
-                | Position.Start -> int64 ExpectedVersion.EmptyStream
+                | Position.Start -> int64 ExpectedVersion.NoStream
                 | Position.At x -> x-1L
                 | Position.End -> int64 ExpectedVersion.Any  
                 | Position.Before x ->

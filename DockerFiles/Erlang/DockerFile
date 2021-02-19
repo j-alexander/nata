@@ -4,10 +4,10 @@ FROM microsoft/windowsservercore
 SHELL ["powershell", "-NoProfile", "-Command", "$ErrorActionPreference = 'Stop';"]
 
 # Erlang
-ADD http://erlang.org/download/otp_win64_19.2.exe /otp_win64_19.2.exe
-RUN Start-Process -Wait -FilePath '\otp_win64_19.2.exe' -ArgumentList '/S'
-RUN SetX /M PATH "\"C:\Program Files\erl8.2\bin;$env:PATH\""
-RUN SetX /M ERLANG_HOME "\"C:\Program Files\erl8.2\""
+ADD http://erlang.org/download/otp_win64_23.2.exe /otp_win64_23.2.exe
+RUN Start-Process -Wait -FilePath '\otp_win64_23.2.exe' -ArgumentList '/S'
+RUN SetX /M PATH "\"C:\Program Files\erl-23.2\bin;$env:PATH\""
+RUN SetX /M ERLANG_HOME "\"C:\Program Files\erl-23.2\""
 
-# Eshell V8.2
+# Eshell V11.1.4
 CMD erl.exe
