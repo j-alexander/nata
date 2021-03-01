@@ -1,8 +1,7 @@
 $Source = $PSScriptRoot
 
-
-.paket/paket.bootstrapper.exe
-.paket/paket.exe restore
+dotnet tool restore
+dotnet paket restore
 dotnet restore
 dotnet build -c Debug --no-restore 
 ForEach ($Test in $(ls *.Tests)) {
