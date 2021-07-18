@@ -24,7 +24,7 @@ type ContinuationToken = string
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Query =
     
-    let private documents (bytes:byte[]) =
+    let private toDocuments (bytes:byte[]) =
         let json =
             Encoding.UTF8.GetString bytes
             |> JsonValue.Parse
@@ -32,6 +32,20 @@ module Query =
         match json with
         | Some (JsonValue.Array xs) -> Array.map JsonValue.toBytes xs
         | _ -> raise (new InvalidDataException("Cosmos query response is missing the 'Documents' element."))
+    
+    let private toEvents (documents:seq<byte[]>) =
+        seq {
+            for bytes in documents do
+                let data, metadata =
+                    bytes
+                    |> Document.Metadata.get
+                yield
+                    data
+                    |> Event.create
+                    |> Event.withName metadata.id
+                    |> Event.withCreatedAt metadata._ts
+                    |> Event.withTag metadata._etag
+        }
     
     let connectWithParameters : Container.Settings -> Source<Query*Parameters,Bytes,ContinuationToken> =
         fun container ->
@@ -50,28 +64,24 @@ module Query =
                         use iterator =
                             let options = new QueryRequestOptions(MaxItemCount = batchSize)
                             container.GetItemQueryStreamIterator(queryDefinition, token, options)
-                        while iterator.HasMoreResults do
-                            let response = // : QueryResponse =
-                                iterator.ReadNextAsync()
-                                |> Async.AwaitTask
-                                |> Async.RunSynchronously
-                            let token =
-                                response.ContinuationToken
-                            let documents =
-                                use stream = new MemoryStream()
-                                response.Content.CopyTo(stream)
-                                stream.ToArray() |> documents
-                            for bytes in documents do
-                                let data, metadata =
-                                    bytes
-                                    |> Document.Metadata.get
-                                let event =
-                                    data
-                                    |> Event.create
-                                    |> Event.withName metadata.id
-                                    |> Event.withCreatedAt metadata._ts
-                                    |> Event.withTag metadata._etag
-                                yield event, token
+                        let rec loop token =
+                            seq {
+                                if iterator.HasMoreResults then
+                                    let response =
+                                        iterator.ReadNextAsync()
+                                        |> Async.AwaitTask
+                                        |> Async.RunSynchronously               
+                                    let events =
+                                        use stream = new MemoryStream()
+                                        response.Content.CopyTo(stream)
+                                        stream.ToArray()
+                                        |> toDocuments
+                                        |> toEvents
+                                    for event in events do
+                                        yield event, token
+                                    yield! loop response.ContinuationToken
+                            }
+                        yield! loop token
                     }
                 
                 let read() =
