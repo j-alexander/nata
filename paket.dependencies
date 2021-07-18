@@ -14,7 +14,7 @@ nuget kafka-net-for-dotnet-core
 nuget Kafunk
 nuget Microsoft.AspNet.WebApi.Core
 nuget Microsoft.AspNet.WebApi.Owin
-nuget Microsoft.Azure.DocumentDB.Core
+nuget Microsoft.Azure.Cosmos
 nuget Microsoft.Azure.EventHubs
 nuget Microsoft.NET.Test.Sdk
 nuget Microsoft.Owin

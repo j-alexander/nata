@@ -15,7 +15,7 @@
   <ItemGroup>
     <None Include="paket.references" />
     <Compile Include="Endpoint.fs" />
-    <Compile Include="Collection.fs" />
+    <Compile Include="Container.fs" />
     <Compile Include="Document.fs" />
     <Compile Include="Query.fs" />
   </ItemGroup>

@@ -19,9 +19,9 @@ type TestNumber = {
 type DocumentTests() = 
 
     let connect() =
-        Document.connect { Collection.Endpoint = Endpoint.emulator
-                           Collection.Database = guid()
-                           Collection.Name = guid() }
+        Document.connect { Container.Settings.Endpoint = Endpoint.emulator
+                           Container.Settings.Database = guid()
+                           Container.Settings.Name = guid() }
 
     let channel() =
         connect()

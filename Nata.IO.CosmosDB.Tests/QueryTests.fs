@@ -10,10 +10,10 @@ open Nata.IO.CosmosDB
 type QueryTests() =
 
     let connect(collection) =
-        let collection =
-            { Collection.Endpoint = Endpoint.emulator
-              Collection.Database = guid()
-              Collection.Name = guid() }
+        let collection : Container.Settings =
+            { Endpoint = Endpoint.emulator
+              Database = guid()
+              Name = guid() }
         Document.connect collection
         |> Source.mapData (JsonValue.Codec.createBytesToType())
         ,
