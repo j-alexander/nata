@@ -3,12 +3,7 @@
 open System
 open System.IO
 open System.Text
-open System.Linq
-open System.Threading.Tasks
-open System.Net
 open Microsoft.Azure.Cosmos
-open Microsoft.Azure.Cosmos.Linq
-open Newtonsoft.Json
 open FSharp.Data
 
 open Nata.Core

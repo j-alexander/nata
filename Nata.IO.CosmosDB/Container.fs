@@ -1,12 +1,6 @@
 ﻿namespace Nata.IO.CosmosDB
 
-open System
-open System.IO
-open System.Linq
-open System.Threading.Tasks
-open System.Net
 open Microsoft.Azure.Cosmos
-open Newtonsoft.Json
 
 type Id = string
 type Bytes = byte[]
