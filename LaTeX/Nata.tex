@@ -2182,6 +2182,119 @@ Allow mixed payloads: compact JSON blob or a single numeric metric as text.
 
 \subsection{BloomFilter}
 
+\noindent A Bloom filter is a compact, probabilistic set optimized for fast membership checks. It trades exactness for space and speed: it can yield false positives (``probably seen''), but never false negatives after you add an element. In practice, this is ideal for skip-lists, de-duplication, and pre-filtering high-volume streams.
+
+\paragraph{Overview}
+\begin{itemize}
+  \item Immutability: operations return a new filter so you can keep prior snapshots when needed.
+  \item Union: combine knowledge from multiple filters in O(n) over their bitsets (sizes must match).
+  \item Presets: \mintinline{fsharp}{small} ($\sim$2M bits), \mintinline{fsharp}{medium} ($\sim$20M bits), \mintinline{fsharp}{large} ($\sim$200M bits) cover common scales.
+  \item Common uses: de-duplicate events, suppress repeated requests, pre-filter expensive lookups, throttle idempotent sinks.
+\end{itemize}
+
+\subsubsection{Quick start}
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    // start with a medium filter by default
+    let f0 : BloomFilter = BloomFilter.empty
+
+    // record a few keys (any string works: ids, hashes, URIs, ...)
+    let f1 = f0 |> BloomFilter.add "user:ada"
+    let f2 = f1 |> BloomFilter.add "user:alan"
+
+    // membership: "probably seen"
+    let seenAda   : bool = BloomFilter.contains "user:ada" f2       // true
+    let seenGrace : bool = BloomFilter.contains "user:grace" f2     // false (very likely)
+\end{minted}
+
+\subsubsection{De-duplicate a live feed}
+When processing real-world streams (logs, webhooks, crawls), it’s common to receive duplicates. A Bloom filter lets you drop repeats without holding the full set in memory.
+
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    // keep only the first occurrence of each id
+    let dedupe (ids:seq<string>) : seq<string> =
+        let folder (f, kept) id =
+            if BloomFilter.contains id f then f, kept
+            else BloomFilter.add id f, id :: kept
+        ids
+        |> Seq.fold folder (BloomFilter.small, [])
+        |> snd
+        |> List.rev
+\end{minted}
+
+You can slot this directly after a gzip reader or JSON parser to sanitize upstream feeds before heavier work.
+
+\begin{minted}{fsharp}
+    open System.IO
+    open Nata.Core
+    open Nata.Core.GZip
+    open Nata.Core.JsonValue
+
+    // NDJSON in, unique ids out
+    let uniqueIdsFromGzip (source:Stream) : seq<string> =
+        source
+        |> GZip.Stream.read
+        |> Seq.choose (JsonValue.tryParse
+                       >> Option.bind (JsonValue.tryGet "id")
+                       >> Option.map string)
+        |> dedupe
+\end{minted}
+
+\subsubsection{Union across shards}
+If multiple workers or shards maintain their own filters, you can merge them to get the aggregate “seen” view. All inputs must use the same size preset.
+
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    let merged : BloomFilter =
+        [ shardA; shardB; shardC ]    // each is a BloomFilter of the same size
+        |> List.reduce BloomFilter.union
+
+    let likelySeen = BloomFilter.contains "object:42" merged
+\end{minted}
+
+\subsubsection{Composite keys and multi-checks}
+Model “seen today” or “seen this user and this session” by composing stable string keys. Use \mintinline{fsharp}{containsAll} for conjunction and \mintinline{fsharp}{containsAny} for disjunction.
+
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    // key by day + user for a coarse time window
+    let keyOf (at:System.DateTime) (user:string) =
+        sprintf "%s|%s" (at.ToString "yyyyMMdd") user
+
+    let seenToday (f:BloomFilter) (user:string) (at:System.DateTime) : bool =
+        BloomFilter.contains (keyOf at user) f
+
+    // multi-checks: all or any tokens present
+    let hasAll  (f:BloomFilter) (tokens:string list) : bool = BloomFilter.containsAll tokens f
+    let hasAny  (f:BloomFilter) (tokens:string list) : bool = BloomFilter.containsAny tokens f
+\end{minted}
+
+\subsubsection{Rolling windows}
+Instead of exact expiry, rotate filters on a cadence (hourly/daily) to bound false positives over time. This works well when combined with upstream time-normalization helpers.
+
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    // create a fresh filter at the start of each day; carry on as usual
+    let freshFilterFor (at:System.DateTime) : BloomFilter =
+        let yyyyMMdd = at.ToString "yyyyMMdd"
+        // e.g., use yyyyMMdd as a key to pick/reset the active filter in storage
+        BloomFilter.medium
+\end{minted}
+
+\paragraph{Notes}
+\begin{itemize}
+  \item False positives are possible by design; false negatives are not (once added).
+  \item If false positives become frequent, choose a larger preset or rotate filters more often.
+  \item \mintinline{fsharp}{union} requires filters created with the same size. Mixing sizes is not supported.
+  \item Keys are plain strings: prefer stable, canonical encodings (e.g., lowercase IDs, normalized URIs).
+\end{itemize}
+
 \subsection{SHA256}
 
 
