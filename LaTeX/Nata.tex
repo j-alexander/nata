@@ -947,6 +947,102 @@ A snapshot hub retains the most recent event, and provides that event (if availa
 \clearpage
 \section{Nata.Core}
 
+\subsection{Overview}
+
+\noindent \mintinline{fsharp}{Nata.Core} gathers small, reusable building blocks that make day-to-day functional programming more expressive and safe. 
+They emphasize predictable semantics, ergonomic pipelining, and minimal ceremony. 
+You will find tuple helpers for shaping data, sequence operators for time-series and merging, option/null handling, numeric and string utilities, and small bridges between \mintinline{fsharp}{Async} and \mintinline{fsharp}{Task}.
+
+\subsubsection{Design goals}
+\begin{itemize}
+  \item Ergonomic piping: helpers like \mintinline{fsharp}{swap}, \mintinline{fsharp}{mapFst}, and \mintinline{fsharp}{mapSnd} keep pipelines readable.
+  \item Safety by default: null- and exception-safe adapters (\mintinline{fsharp}{Null.toOption}, \mintinline{fsharp}{Option.tryFunction}) reduce accidental partiality.
+  \item Time-series friendly: \mintinline{fsharp}{Seq.mergeBy}, \mintinline{fsharp}{Seq.changesBy}, and \mintinline{fsharp}{Seq.delta} focus on ordered streams.
+  \item Pragmatic interop: small shims for parsing and clamping (\mintinline{fsharp}{*.ofString}, \mintinline{fsharp}{*.between}) and for \mintinline{fsharp}{Task}<->\mintinline{fsharp}{Async}.
+\end{itemize}
+
+\subsubsection{Guided examples}
+
+\paragraph{Tuples and pipelining}
+Shaping events often starts with tuples. Use \mintinline{fsharp}{mapFst} and \mintinline{fsharp}{mapSnd} to transform one side without touching the other.
+\begin{minted}{fsharp}
+    // unpack (Event * Index) into (Data * Index)
+    let unpack : (Event<'a>*'i) -> ('a*'i) =
+        mapFst Event.data
+
+    // look up a sequence of keys via a map, left-to-right
+    let tryFindAll (m:Map<'k,'v>) (keys:seq<'k>) : seq<'v> =
+        keys
+        |> Seq.choose (m |> swap Map.tryFind)
+\end{minted}
+
+\paragraph{Time-series: changes and deltas}
+Filter out consecutive duplicates or compute first-order differences with \mintinline{fsharp}{Seq.changesBy} and \mintinline{fsharp}{Seq.delta}.
+\begin{minted}{fsharp}
+    // keep only changes in closing price
+    let changedCloses : seq<decimal> =
+        closes |> Seq.changesBy id
+
+    // turn a stream of values into pairwise deltas
+    // e.g. [10m; 12m; 11m] -> [2m; -1m]
+    let deltas : seq<decimal> =
+        closes
+        |> Seq.delta
+        |> Seq.choose (fun (last,next) -> last |> Option.map (fun l -> next - l))
+\end{minted}
+
+\paragraph{Merging ordered streams}
+When two feeds are independently ordered (e.g., by timestamp), \mintinline{fsharp}{Seq.mergeBy} preserves overall order without re-sorting.
+\begin{minted}{fsharp}
+    // left and right are (Event * timestamp) streams
+    let mergedData : seq<'a> =
+        Seq.mergeBy snd left right
+        |> Seq.mapFst Event.data
+        |> Seq.map fst  // drop timestamps if desired
+\end{minted}
+
+\paragraph{Options, nulls, and exceptions}
+Prefer options to represent absence. Convert nulls, coalesce fallbacks, and sink exceptions into \mintinline{fsharp}{None} when it’s appropriate.
+\begin{minted}{fsharp}
+    let bigOrder : int option =
+        qty |> Option.whenTrue (fun q -> q > 1000)
+
+    let preferred : string option =
+        someNullableString |> Null.toOption
+
+    let safeParsed : int option =
+        "42" |> Option.tryFunction Int32.Parse
+
+    let chosen : decimal =
+        primary
+        |> Option.coalesce backup
+        |> Option.defaultValue 0m
+\end{minted}
+
+\paragraph{Parsing and clamping}
+Small helpers make validation pipelines explicit and testable.
+\begin{minted}{fsharp}
+    let cappedRatio : decimal option =
+        input
+        |> Decimal.ofString                 // string -> decimal option
+        |> Option.map (Decimal.between (0m, 1m)) // clamp into [0,1]
+\end{minted}
+
+\paragraph{Tasks and async}
+Bridge \mintinline{fsharp}{Task}-based APIs into \mintinline{fsharp}{Async}, or wait safely for results in controlled places.
+\begin{minted}{fsharp}
+    // get an Async<'a> from Task<'a>
+    let asAsync : Async<'a> = Task.waitForResultAsync someTask
+
+    // synchronously wait (e.g., at boundaries)
+    let result : 'a = Task.waitForResult someTask
+
+    // rethrow with original stack trace inside async workflows
+    let rethrow (e:exn) = Async.reraise e
+\end{minted}
+
+\noindent You can combine these primitives to build clear, reliable pipelines that keep domain logic front-and-center while handling the practical edges of real-world data.
+
 \subsection{Package}
 
 \begin{enumerate}
@@ -964,6 +1060,8 @@ A snapshot hub retains the most recent event, and provides that event (if availa
 \end{enumerate}
 
 \subsection{Extensions}
+
+Small, sharp tools that smooth common pipelines: generating identifiers, reshaping tuples, and composing selectors so that domain logic stays readable. The emphasis is on tiny, predictable helpers that slot into larger flows.
 
 \begin{itemize}
 \item generate a unique id, or the bytes of one
@@ -995,6 +1093,27 @@ A snapshot hub retains the most recent event, and provides that event (if availa
 
 \item \mintinline{fsharp}{chooseFst} or \mintinline{fsharp}{chooseSnd}
 
+\paragraph{Mini examples}
+\begin{minted}{fsharp}
+    // transform only the index (snd) in a (data * index) tuple
+    let bumpIndex : ('a * int) -> ('a * int) =
+        mapSnd ((+) 1)
+
+    // filter a list of (key * value) by key only
+    let onlyImportant : ('k * 'v) list -> ('k * 'v) list =
+        List.filter (filterFst isImportant)
+
+    // choose on the first or second element to conditionally keep tuples
+    let keepIfParsedFst : (string * 'b) list -> (int * 'b) list =
+        List.choose (chooseFst (fun s ->
+            match System.Int32.TryParse s with true, v -> Some v | _ -> None))
+
+    let keepIfParsedSnd : ('a * string) list -> ('a * int) list =
+        List.choose (chooseSnd (fun s ->
+            match System.Int32.TryParse s with true, v -> Some v | _ -> None))
+\end{minted}
+\noindent See also \mintinline{fsharp}{Seq.mapFst}/\mintinline{fsharp}{Seq.mapSnd} for sequence variants.
+
 \end{itemize}
 
 \subsubsection{Seq}
@@ -1007,6 +1126,7 @@ A snapshot hub retains the most recent event, and provides that event (if availa
 \begin{minted}{fsharp}
     let data = events |> Seq.mapFst Event.data
 \end{minted}
+\noindent See also \mintinline{fsharp}{mapFst}/\mintinline{fsharp}{mapSnd} for tuple variants.
 
 \item similarly use \mintinline{fsharp}{Seq.filterFst}/\mintinline{fsharp}{Seq.filterSnd} or \mintinline{fsharp}{Seq.chooseFst}/\mintinline{fsharp}{Seq.chooseSnd} to select elements by data or index:
 
@@ -1024,6 +1144,7 @@ A snapshot hub retains the most recent event, and provides that event (if availa
     |> Seq.consume
     |> Seq.iter calculate // immediately calculates a value from readySeq
 \end{minted}
+\emph{Behavior:} pulls from multiple enumerators concurrently, yields values as they arrive, stops when all are exhausted, rethrows the first exception encountered, and attempts to dispose all enumerators.
 
 \item \mintinline{fsharp}{Seq.merge} pulls from left or right based on whichever value comes first
 \begin{minted}{fsharp}
@@ -1037,6 +1158,7 @@ A snapshot hub retains the most recent event, and provides that event (if availa
         Seq.mergeBy snd leftEvents rightEvents
         |> Seq.map (fst >> Event.data)
 \end{minted}
+\emph{Semantics:} inputs should already be ordered by the projection for correct global ordering; when keys are equal, both elements are yielded (left then right).
 
 \item \mintinline{fsharp}{Seq.changes}
 
@@ -1045,6 +1167,51 @@ A snapshot hub retains the most recent event, and provides that event (if availa
 \item \mintinline{fsharp}{Seq.delta}
 
 \end{itemize}
+\emph{Determinism and cost:} \mintinline{fsharp}{Seq.changes}/\mintinline{fsharp}{Seq.changesBy} and \mintinline{fsharp}{Seq.delta} are single-pass, streaming operations that retain only the last projected value.
+
+\paragraph{Guided examples}
+\begin{minted}{fsharp}
+    // trace elements in a stream during diagnostics
+    events
+    |> Seq.log (fun x -> printfn "observed = %A" x)
+    |> Seq.iter ignore
+
+    // trace with index when order matters
+    events
+    |> Seq.logi (fun i x -> printfn "#%d = %A" i x)
+    |> Seq.iter ignore
+
+    // skip the first n elements if they represent a warmup period
+    events
+    |> Seq.trySkip 10
+    |> Seq.iter process
+
+    // merge in order by timestamp
+    let ordered : seq<Event<'a>> =
+        Seq.mergeBy (fun (e,ts) -> ts) left right
+        |> Seq.map fst
+
+    // compute point-in-time differences
+    let diffs : seq<decimal> =
+        values
+        |> Seq.delta
+        |> Seq.choose (fun (last,next) -> last |> Option.map (fun l -> next - l))
+\end{minted}
+
+\paragraph{Small utilities: heads and change detection}
+\begin{minted}{fsharp}
+    // tryHead returns None on empty sequences
+    let firstEvent : Event<'a> option =
+        events |> Seq.tryHead
+
+    // changes keeps first element and any element whose projection differs from the previous one
+    let uniqueValues : seq<'a> =
+        xs |> Seq.changes
+
+    // changesBy allows custom projection (e.g., by key)
+    let uniqueByKey : seq<'a> =
+        xs |> Seq.changesBy (fun x -> x.Key)
+\end{minted}
 
 \subsubsection{Option}
 
@@ -1102,6 +1269,30 @@ A snapshot hub retains the most recent event, and provides that event (if availa
 
 \end{itemize}
 
+\paragraph{Notes and examples}
+\begin{minted}{fsharp}
+    // prefer the first Some; otherwise fall back
+    let chosenUser : User option =
+        primaryUser
+        |> Option.coalesce backupUser
+
+    // compute a fallback only when needed
+    let config : Settings =
+        cached
+        |> Option.coalesceWith (fun () -> loadFromDisk())
+        |> Option.defaultWith (fun () -> defaultSettings())
+
+    // provide a concrete default when both are None
+    let threads : int =
+        None |> Option.defaultValue 4
+
+    // split and join of nested options
+    let a,b = Some (1,2) |> Option.distribute   // Some 1, Some 2
+    let flattened : int option = Some (Some 3) |> Option.join  // Some 3
+\end{minted}
+
+\noindent When failures must preserve error information, prefer \mintinline{fsharp}{Result}; \mintinline{fsharp}{Option.tryFunction} is best when “absence on failure” is the intended signal.
+
 \subsubsection{Null}
 
 \begin{itemize}
@@ -1152,6 +1343,12 @@ Transform \mintinline{fsharp}{Nullable} values, or exchange them for \mintinline
 \item \mintinline{fsharp}{Boolean.ofString} / \mintinline{fsharp}{Boolean.toString}
 \end{itemize}
 
+\paragraph{Boolean helpers: quick examples}
+\begin{minted}{fsharp}
+    let featureEnabled : bool option = "true"  |> Boolean.ofString  // Some true
+    let asText         : string      = false   |> Boolean.toString  // "False"
+\end{minted}
+
 \subsubsection{Decimal}
 
 \begin{itemize}
@@ -1173,6 +1370,30 @@ Transform \mintinline{fsharp}{Nullable} values, or exchange them for \mintinline
 \item \mintinline{fsharp}{Int32.ofString} / \mintinline{fsharp}{Int32.toString}
 \end{itemize}
 
+\paragraph{Numeric helpers: quick examples}
+\begin{minted}{fsharp}
+    // parse with validation, clamp to a safe range
+    let safePercent : int option =
+        input
+        |> Int32.ofString
+        |> Option.map (Int32.between (0, 100))
+
+    // decimal ratios clamped to [0m, 1m]
+    let ratio : decimal option =
+        s
+        |> Decimal.ofString
+        |> Option.map (Decimal.between (0m, 1m))
+
+    // 64-bit parsing and clamping
+    let maybeId64 : int64 option = "12345" |> Int64.ofString
+    let cappedId64 : int64 option = maybeId64 |> Option.map (Int64.between (0L, 10000L))
+
+    // toString helpers for serialization/logging
+    let iAsText : string = 42           |> Int32.toString
+    let dAsText : string = 12.34m       |> Decimal.toString
+    let lAsText : string = 123456789L   |> Int64.toString
+\end{minted}
+
 \subsubsection{String}
 
 \begin{itemize}
@@ -1184,6 +1405,32 @@ Transform \mintinline{fsharp}{Nullable} values, or exchange them for \mintinline
 \item \mintinline{fsharp}{String.trySubstring}
 \item \mintinline{fsharp}{String.tryStartAt}
 \end{itemize}
+
+\paragraph{Null-safe string operations}
+\begin{minted}{fsharp}
+    // case-insensitive search
+    let hasHello : bool =
+        "Hello, World!" |> String.containsIgnoreCase "hello"
+
+    // safe slicing when indices may be out of bounds
+    let middle : string option =
+        "abcdef" |> String.trySubstring 2 3   // Some "cde"
+
+    // tolerant splitting for nullable input
+    let parts : string list =
+        (null:string) |> String.split ','     // []
+
+    // simple edit helpers
+    let masked : string = "abc-123-xyz" |> String.remove "-"
+    let swapped : string = "color"      |> String.replace "or" "our"  // "colour"
+
+    // contains with null-tolerance
+    let hasToken : bool = "a,b,c" |> String.contains "b"
+
+    // safe substring from index to end
+    let tail : string option = "prefix-body" |> String.tryStartAt 7   // Some "body"
+\end{minted}
+\noindent \emph{Null semantics:} \mintinline{fsharp}{String.contains null null} returns true; if either argument is null otherwise, it returns false.
 
 \subsubsection{Async}
 
@@ -1197,6 +1444,28 @@ Transform \mintinline{fsharp}{Nullable} values, or exchange them for \mintinline
 \item \mintinline{fsharp}{Task.wait}, \mintinline{fsharp}{Task.waitAsync}
 \item \mintinline{fsharp}{Task.waitForResult}, \mintinline{fsharp}{Task.waitForResultAsync}
 \end{itemize}
+
+\paragraph{Concurrency interop}
+\begin{minted}{fsharp}
+    // rethrow inside async with original stack trace
+    let runSafely (work: Async<'a>) : Async<'a> = async {
+        try
+            return! work
+        with e ->
+            Async.reraise e
+            return Unchecked.defaultof<'a> // unreachable
+    }
+
+    // bridge Task<'T> -> Async<'T>, or wait at well-chosen boundaries
+    let fromTask : Async<'a> = Task.waitForResultAsync someTask
+    let result  : 'a        = Task.waitForResult someTask
+
+    // wait asynchronously for Task (no result)
+    do! Task.waitAsync someUnitTask
+
+    // or synchronously (use sparingly, at process boundaries)
+    Task.wait someUnitTask
+\end{minted}
 
 \subsection{Codec}
 
