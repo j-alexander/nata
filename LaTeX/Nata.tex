@@ -2028,9 +2028,157 @@ Allow mixed payloads: compact JSON blob or a single numeric metric as text.
 
 \subsection{GZip}
 
+\noindent Lightweight helpers for working with gzip-compressed, line-oriented text. The emphasis is on streaming: you can write an unbounded sequence of lines to a compressed sink, or lazily read large archives without loading them into memory. This is a practical fit for log pipelines, newline-delimited JSON, CSV snapshots, and other append-friendly feeds.
+
+\paragraph{Overview}
+\begin{itemize}
+  \item Text encoding: UTF-8, one logical line per element (\mintinline{fsharp}{WriteLine}/\mintinline{fsharp}{ReadLine}).
+  \item Streaming semantics: \mintinline{fsharp}{read} returns a lazy \mintinline{fsharp}{seq<string>} that decompresses on demand.
+  \item Back-pressure friendly: \mintinline{fsharp}{write} flushes per line so long-running producers keep bounded buffers.
+  \item Resource ownership: the underlying stream/file is disposed when the gzip layer is disposed (see notes).
+\end{itemize}
+
 \subsubsection{GZip.Stream}
 
+\paragraph{Signatures}
+\begin{minted}{fsharp}
+    open System.IO
+
+    // write a sequence of lines into a target stream as gzip
+    val write : target:Stream -> lines:seq<string> -> unit
+
+    // lazily read lines from a gzip source stream
+    val read  : source:Stream -> seq<string>
+\end{minted}
+
+\paragraph{Write: compress a live feed to a stream}
+\begin{minted}{fsharp}
+    open System
+    open System.IO
+    open Nata.Core
+
+    // imagine a long-running sequence (metrics, logs, ids, ...)
+    let lines : seq<string> =
+        seq {
+            for i in 1 .. 1_000_000 do
+                yield sprintf "%d,%O" i DateTime.UtcNow
+        }
+
+    use target = new MemoryStream() // any writable stream (file, network, memory)
+    GZip.Stream.write target lines
+
+    // bytes are gzip-compressed; rewind to inspect
+    target.Position <- 0L
+    let compressedSize = target.Length
+\end{minted}
+
+\paragraph{Read: process large gzip content lazily}
+\begin{minted}{fsharp}
+    open System
+    open System.IO
+    open Nata.Core
+
+    // given a gzip payload in memory (or any readable stream),
+    // deserialize without loading all lines at once
+    let process (source:Stream) =
+        for line in GZip.Stream.read source do
+            // parse & handle each line
+            match line.Split ',' with
+            | [| count; timestamp |] -> ()
+            | _ -> ()
+
+    // example with MemoryStream
+    use buffer = new MemoryStream()
+    GZip.Stream.write buffer (seq { for i in 1 .. 1000 -> string i })
+    buffer.Position <- 0L
+    process buffer
+\end{minted}
+
+\paragraph{Newline-delimited JSON (NDJSON) pipelines}
+\begin{minted}{fsharp}
+    open System.IO
+    open Nata.Core
+    open Nata.Core.JsonValue
+
+    // write NDJSON to a gzip stream
+    let writeJson (target:Stream) (values:seq<'T>) =
+        values
+        |> Seq.map (JsonValue.ofType >> JsonValue.toString) // compact one-line JSON
+        |> GZip.Stream.write target
+
+    // read NDJSON from a gzip stream
+    let readJson<'T> (source:Stream) : seq<'T> =
+        source
+        |> GZip.Stream.read
+        |> Seq.choose (JsonValue.tryParse >> Option.map JsonValue.toType<'T>)
+\end{minted}
+
+\emph{Semantics and notes:}
+\begin{itemize}
+  \item The returned sequence from \mintinline{fsharp}{read} is lazy. Enumeration performs on-the-fly decompression; the gzip and underlying streams are disposed when enumeration completes or the enumerator is disposed.
+  \item \mintinline{fsharp}{write} flushes after each line to keep buffers small. This favors long-running producers; if you batch large amounts, consider shaping input into larger chunks if throughput is critical.
+  \item Resource ownership: the gzip layer closes the underlying stream when done. If you need to keep the underlying stream open for further work, write to or read from a dedicated stream instance.
+\end{itemize}
+
 \subsubsection{GZip.File}
+
+\paragraph{Signatures}
+\begin{minted}{fsharp}
+    open System.IO
+
+    // write lines to a .gz file (creates or overwrites from the beginning)
+    val write : target:FileInfo -> lines:seq<string> -> unit
+
+    // lazily read lines from a .gz file
+    val read  : source:FileInfo -> seq<string>
+\end{minted}
+
+\paragraph{Write: archive a daily feed}
+\begin{minted}{fsharp}
+    open System
+    open System.IO
+    open Nata.Core
+
+    let today = DateTime.UtcNow.ToString("yyyyMMdd")
+    let file  = FileInfo(sprintf "events-%s.gz" today)
+
+    let events : seq<string> =
+        seq {
+            yield "started"
+            for i in 1 .. 100_000 do yield sprintf "tick=%d" i
+            yield "stopped"
+        }
+
+    GZip.File.write file events
+\end{minted}
+
+\paragraph{Read: stream from disk without loading it all}
+\begin{minted}{fsharp}
+    open System.IO
+    open Nata.Core
+
+    let scan (gz:FileInfo) =
+        gz
+        |> GZip.File.read
+        |> Seq.filter (fun line -> line.Contains "ERROR")
+        |> Seq.iter (printfn "error: %s")
+
+    scan (FileInfo "service.log.gz")
+\end{minted}
+
+\emph{File behavior and notes:}
+\begin{itemize}
+  \item Reading is lazy: lines are decompressed as you iterate. This allows you to process multi-GB gzip files with bounded memory.
+  \item Writing opens the file for writing from the beginning. If a file already exists and your new compressed output is shorter than the old content, trailing bytes may remain on disk. Prefer writing to a fresh path (e.g., rotate by date/time) or delete the existing file before writing when you need a clean overwrite.
+  \item Both \mintinline{fsharp}{write} and \mintinline{fsharp}{read} manage their file streams internally and dispose them when complete.
+\end{itemize}
+
+\paragraph{Common scenarios}
+\begin{itemize}
+  \item Log compaction: persist operational logs as newline-delimited text into daily \mintinline{fsharp}{.gz} files; read them back lazily for reporting.
+  \item Data exchange: ship NDJSON snapshots to object storage; downstream jobs stream-decompress and decode line-by-line.
+  \item Long-running streams: keep a process emitting metrics where each line is immediately flushed into a rolling \mintinline{fsharp}{.gz} file to bound memory while retaining good compression.
+\end{itemize}
 
 \subsection{BloomFilter}
 
