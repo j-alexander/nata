@@ -2349,6 +2349,160 @@ Immutability keeps the surface area honest: the same input yields the same outpu
 \end{itemize}
 
 \clearpage
+\section{Nata.Fun}
+
+\subsection{JsonPath}
+
+Real-world data almost always arrives as JSON: telemetry, logs, events, API responses, and so on. In practice, we rarely need the whole document every time. Instead, we reach into it and pull out just the parts we need to compute, route, enrich, or persist. Nata provides two complementary ways to do this:
+
+\begin{itemize}
+  \item A string-based JsonPath API for selecting tokens across many JSON documents (excellent for streams).
+  \item A JsonValue-based API for selecting values inside a parsed FSharp.Data \mintinline{fsharp}{JsonValue} (excellent for in-memory traversals and slicing).
+\end{itemize}
+
+In other words: if you have a sequence of JSON strings, use the string-based helpers; if you have a parsed \mintinline{fsharp}{JsonValue}, use the JsonValue helpers.
+
+\paragraph{Query syntax at a glance}
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\textbf{Pattern} & \textbf{Meaning} \\
+\hline
+\mintinline{fsharp}{.name} & Exact property descent \\
+\mintinline{fsharp}{..name} & Recursive descent (match here and deeper) \\
+\mintinline{fsharp}{"*"} & A wildcard property name \\
+\mintinline{fsharp}{[*]} & All array elements \\
+\mintinline{fsharp}{[0,2,-1]} & Literal indices (negatives count from the end) \\
+\mintinline{fsharp}{[start:finish:step]} & Slice; start/finish optional; step defaults to 1 \\
+\mintinline{fsharp}{..lines[*].sku} & Combine segments to traverse structure \\
+\end{tabular}
+\end{center}
+
+\subsubsection{Selecting from strings with JsonPath}
+
+When you have a sequence of JSON strings—say from files, HTTP responses, a message bus, or a queue—you can query each document with a JsonPath expression and collect the results.
+
+At the core is \mintinline{fsharp}{strings}:
+
+\begin{minted}{fsharp}
+open Nata.Fun.JsonPath
+
+// Select all matching tokens as strings for a single json document
+let names : string list =
+    Query.strings "$.customers[*].name" json
+\end{minted}
+
+Some very common patterns:
+
+- First or default: return a single value (or empty string) if present.
+\begin{minted}{fsharp}
+let id : string = Query.first "$.customer.id" json
+\end{minted}
+
+- Fields: lift multiple paths together in order, preserving positional correspondence.
+\begin{minted}{fsharp}
+let keys = [ "$.orderId"; "$.customer.id"; "$.total" ]
+let row : string list = Query.fields keys json
+\end{minted}
+
+- Streams: collect across a sequence of JSON documents.
+\begin{minted}{fsharp}
+// Suppose 'events' is seq<string> of incoming JSON messages
+let allSkus : string seq =
+    Query.find "$..lines[*].sku" events
+\end{minted}
+
+- Distinct: deduplicate values (useful for keys, tags, or categories).
+\begin{minted}{fsharp}
+let distinctUserIds : string seq =
+    events |> Query.find "$.user.id" |> Seq.distinct
+// or equivalently:
+let distinctUserIds2 : string seq =
+    events |> Query.findDistinct "$.user.id"
+\end{minted}
+
+- Tabular extraction: project many values per document in a stable order.
+\begin{minted}{fsharp}
+let cols = [ "$.ts"; "$.level"; "$.message" ]
+let rows : string list seq =
+    Query.findFields cols events // seq of [ ts; level; message ]
+
+let csvLines : string seq =
+    Query.findFieldsCsv cols events // seq of "ts,level,message"
+\end{minted}
+
+Why this matters: streams of operational data regularly need light shaping before they can be folded, joined, or written to storage. These helpers are zero-ceremony ways to normalize fields, pick identifiers, and wire up quick dashboards or sinks.
+
+\paragraph{Typical uses}
+\begin{itemize}
+  \item Pull the first available value: \mintinline{fsharp}{Query.first "\$.payload.correlationId" json}
+  \item Extract every occurrence across nested arrays: \mintinline{fsharp}{Query.find "\$..metrics[*].name" stream}
+  \item Build CSV lines on the fly for archival or quick inspection: \mintinline{fsharp}{Query.findFieldsCsv [ "\$.t"; "\$.id"; "\$.value" ] stream}
+\end{itemize}
+
+\subsubsection{Selecting from JsonValue with structural traversal}
+
+Sometimes your pipeline already holds parsed \mintinline{fsharp}{JsonValue} values—perhaps due to upstream validation, schema checks, or prior projections. Using the syntax summarized above, the JsonValue module provides a structural, automata-driven traversal well-suited to recursive descent and array slicing.
+
+Core functions:
+
+\begin{minted}{fsharp}
+open Nata.Fun.JsonPath
+open Nata.Fun.JsonPath.JsonValue
+open FSharp.Data
+
+let sample = JsonValue.Parse """
+{
+  "orders": [
+    { "id": "A1", "lines": [ { "sku":"X", "qty":2 }, { "sku":"Y", "qty":1 } ] },
+    { "id": "B2", "lines": [ { "sku":"X", "qty":3 }, { "sku":"Z", "qty":4 } ] }
+  ]
+}
+"""
+
+// Collect all matches as a sequence of JsonValue
+let skus : JsonValue seq =
+    JsonValue.findSeq "..lines[*].sku" sample
+
+// Get just the first match (throws if none)
+let firstOrderId : JsonValue =
+    JsonValue.find ".orders[0].id" sample
+
+// Get as a list (useful for tests or small results)
+let lastLinesPerOrder : JsonValue list =
+    JsonValue.findList ".orders[*].lines[-1]" sample
+
+// Try-find (safe option)
+let maybeThirdOrder : JsonValue option =
+    JsonValue.tryFind ".orders[2]" sample
+\end{minted}
+
+This is particularly helpful when you want to use slicing semantics that are natural for arrays:
+
+\begin{itemize}
+  \item Last element: \mintinline{fsharp}{[-1]}
+  \item First N elements: \mintinline{fsharp}{[0:N]}
+  \item Every other element: \mintinline{fsharp}{[::2]}
+  \item A window: \mintinline{fsharp}{[start:finish:step]}
+\end{itemize}
+
+\paragraph{Typical uses}
+\begin{itemize}
+  \item Fetch the last line item per order: \mintinline{fsharp}{JsonValue.findSeq ".orders[*].lines[-1]" json}
+  \item Recursively pick all occurrences of a property: \mintinline{fsharp}{JsonValue.findSeq "..correlationId" json}
+  \item Slice efficiently without materializing entire arrays: \mintinline{fsharp}{JsonValue.findSeq ".frames[100:200:5]" json}
+\end{itemize}
+
+\subsubsection{Choosing between the two}
+
+\begin{itemize}
+  \item You have a stream of raw JSON strings: favor \mintinline{fsharp}{Query.find} and friends (\mintinline{fsharp}{strings}, \mintinline{fsharp}{first}, \mintinline{fsharp}{fields}, \mintinline{fsharp}{findFields}, \mintinline{fsharp}{findFieldsCsv}). These compose naturally with \mintinline{fsharp}{Seq} and work well for quick projections and exports.
+  \item You already have \mintinline{fsharp}{JsonValue}: favor \mintinline{fsharp}{JsonValue.findSeq/find/findList/tryFind}, especially when you want recursive descent or array slicing/negative indexing behavior.
+\end{itemize}
+
+Both approaches complement the broader Nata patterns: extract what you need, project or fold it deterministically, and keep your pipelines small, pure, and observable.
+
+
+\clearpage
 \appendix
 % \listoffigures
 \end{document}
