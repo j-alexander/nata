@@ -1606,13 +1606,425 @@ Codecs shine at process boundaries: serialize to bytes for storage, reverse for 
 
 \subsection{JsonValue}
 
+\noindent A small interop layer around \mintinline{fsharp}{FSharp.Data.JsonValue} that focuses on:
+\begin{itemize}
+  \item parsing and safe navigation (\mintinline{fsharp}{tryParse}, \mintinline{fsharp}{tryGet}/\mintinline{fsharp}{get}, \mintinline{fsharp}{properties}/\mintinline{fsharp}{keys}/\mintinline{fsharp}{values})
+  \item converting to/from compact text and bytes (\mintinline{fsharp}{toString}/\mintinline{fsharp}{ofString}, \mintinline{fsharp}{toBytes}/\mintinline{fsharp}{ofBytes})
+  \item bridging JSON to domain types (\mintinline{fsharp}{toType<'T>}/\mintinline{fsharp}{ofType<'T>}) with pragmatic converters for options, tuples, and discriminated unions
+  \item composable codecs for common round-trips
+\end{itemize}
+
+\subsubsection{Parse and navigate}
+
+\begin{minted}{fsharp}
+    open FSharp.Data
+    open Nata.Core.JsonValue
+
+    let text = """{ "name": "Ada", "age": 36, "tags": ["math","code"] }"""
+
+    // tolerant parse: None if invalid JSON
+    let parsed : JsonValue option = text |> JsonValue.tryParse
+
+    // required property (throws if missing)
+    let name : JsonValue =
+        parsed
+        |> Option.defaultWith (fun () -> failwith "invalid json")
+        |> JsonValue.get "name"
+
+    // optional property
+    let nickname : JsonValue option =
+        parsed
+        |> Option.bind (JsonValue.tryGet "nickname")
+
+    // list structure
+    let keys   : string[]    = parsed.Value |> JsonValue.keys
+    let values : JsonValue[] = parsed.Value |> JsonValue.values
+\end{minted}
+
+\paragraph{Notes}
+\begin{itemize}
+  \item \mintinline{fsharp}{get} assumes the property exists and will throw if it doesn't; use \mintinline{fsharp}{tryGet} when absence is acceptable.
+  \item \mintinline{fsharp}{toString} emits compact JSON (no pretty formatting) to keep byte-wise round-trips stable.
+\end{itemize}
+
+\subsubsection{Strings and bytes}
+
+\begin{minted}{fsharp}
+    open Nata.Core.JsonValue
+
+    let json : JsonValue = JsonValue.ofString """{ "n": 3 }"""
+
+    // JsonValue <-> string
+    let asText : string   = json |> JsonValue.toString
+    let back   : JsonValue = asText |> JsonValue.ofString
+
+    // JsonValue <-> bytes (UTF-8)
+    let asBytes : byte[]  = json |> JsonValue.toBytes
+    let back2   : JsonValue = asBytes |> JsonValue.ofBytes
+\end{minted}
+
+\subsubsection{Types and converters}
+
+\noindent You can translate between JSON and domain types via \mintinline{fsharp}{toType<'T>} and \mintinline{fsharp}{ofType<'T>}. Converters are provided so that common F\# shapes serialize naturally:
+\begin{itemize}
+  \item \textbf{Options} serialize their contained value or null (e.g., \mintinline{fsharp}{Some 3} $\rightarrow$ \mintinline{fsharp}{3}, \mintinline{fsharp}{None} $\rightarrow$ \mintinline{fsharp}{null}).
+  \item \textbf{Tuples} serialize as JSON arrays (e.g., \mintinline{fsharp}{(1,"a")} $\rightarrow$ \mintinline{fsharp}{[1,"a"]}).
+  \item \textbf{Simple unions (no fields)} serialize as their case name by default. Unions with data appear in a canonical \mintinline{fsharp}{{"Case": "...","Fields":[...]}} form.
+\end{itemize}
+
+\begin{minted}{fsharp}
+    open Nata.Core.JsonValue
+
+    // simple record round-trip
+    type User = { Id:int; Name:string }
+
+    let asUserJson : JsonValue = { Id=1; Name="Ada" } |> JsonValue.ofType
+    let userBack   : User      = asUserJson |> JsonValue.toType
+
+    // unions with data use the Case/Fields shape
+    type NumberOrText = | Number of int | Text of string
+
+    let sample : NumberOrText = Text "hello"
+    let jsonDU : JsonValue = sample |> JsonValue.ofType
+    let backDU : NumberOrText = jsonDU |> JsonValue.toType
+\end{minted}
+
+\subsubsection{Codecs: compose round-trips}
+
+\noindent The \mintinline{fsharp}{JsonValue.Codec} submodule exposes codecs to assemble end-to-end pipelines:
+\begin{itemize}
+  \item \mintinline{fsharp}{JsonValueToString} / \mintinline{fsharp}{StringToJsonValue}
+  \item \mintinline{fsharp}{JsonValueToBytes}  / \mintinline{fsharp}{BytesToJsonValue}
+  \item \mintinline{fsharp}{createTypeToJsonValue<'T>} / \mintinline{fsharp}{createJsonValueToType<'T>}
+  \item \mintinline{fsharp}{createTypeToString<'T>} / \mintinline{fsharp}{createStringToType<'T>}
+  \item \mintinline{fsharp}{createTypeToBytes<'T>} / \mintinline{fsharp}{createBytesToType<'T>}
+\end{itemize}
+
+\paragraph{Guided examples}
+\begin{minted}{fsharp}
+    open Nata.Core
+    open Nata.Core.JsonValue
+
+    // 1) User preferences <-> string
+    type UserPreference = { Theme:string; ReceiveEmails:bool }
+
+    let prefToText, prefOfText : Codec<UserPreference, string> =
+        JsonValue.Codec.createTypeToString()
+
+    let originalPref = { Theme = "dark"; ReceiveEmails = true }
+
+    let savedText   : string          = originalPref |> Codec.encoder prefToText
+    let restoredPref: UserPreference  = savedText     |> Codec.decoder prefToText
+
+    assert (restoredPref = originalPref)
+
+    // 2) Shopping cart line <-> bytes
+    type CartLine = { Sku:string; Qty:int; Price:decimal }
+
+    let lineToBytes, lineOfBytes : Codec<CartLine, byte[]> =
+        JsonValue.Codec.createTypeToBytes()
+
+    let line    = { Sku="ABC-123"; Qty=2; Price=9.99m }
+    let payload : byte[] = line |> Codec.encoder lineToBytes
+    let back    : CartLine = payload |> Codec.decoder lineToBytes
+
+    assert (back = line)
+
+    // 3) Small JSON blobs in pipelines
+    //    (compact text and UTF-8 bytes)
+    let compact : string =
+        """{ "id": 42, "name": "Ada" }"""
+        |> JsonValue.ofString
+        |> JsonValue.toString   // compact, stable
+
+    let blob : byte[] =
+        """{ "ok": true }"""
+        |> JsonValue.ofString
+        |> JsonValue.toBytes
+
+    let asJson : JsonValue = blob |> JsonValue.ofBytes
+\end{minted}
+
+\paragraph{Small example JSON for a discriminated union}
+\begin{minted}{fsharp}
+    // unions without fields become their case name; with fields they use Case/Fields
+    type Status = Ok | Error of string
+
+    let asJson : JsonValue = Error "invalid input" |> JsonValue.ofType
+    // {
+    //   "Case": "Error",
+    //   "Fields": [ "invalid input" ]
+    // }
+\end{minted}
+
 \subsection{DateTime}
 
+\noindent UTC-first helpers for epoch math, tolerant parsing, JSON interop, and composable codecs. The emphasis is on predictable round-trips and clear intent when moving across process and storage boundaries.
+
+\subsubsection{Overview}
+\begin{itemize}
+  \item Convert dates to and from Unix time:
+    \begin{itemize}
+      \item \mintinline{fsharp}{toUnixSeconds}/\mintinline{fsharp}{ofUnixSeconds}
+      \item \mintinline{fsharp}{toUnixMilliseconds}/\mintinline{fsharp}{ofUnixMilliseconds}
+    \end{itemize}
+  \item Normalize between time zones:
+    \begin{itemize}
+      \item \mintinline{fsharp}{toUtc}/\mintinline{fsharp}{toLocal}, \mintinline{fsharp}{ofOffset}
+    \end{itemize}
+  \item Tolerant parsing:
+    \begin{itemize}
+      \item \mintinline{fsharp}{ofString : string -> DateTime option}
+    \end{itemize}
+  \item JSON bridge:
+    \begin{itemize}
+      \item \mintinline{fsharp}{toJsonValue}/\mintinline{fsharp}{ofJsonValue} using ISO 8601 round-trip format
+    \end{itemize}
+  \item Resolution helpers to floor timestamps to a boundary:
+    \begin{itemize}
+      \item \mintinline{fsharp}{Resolution.year}/\mintinline{fsharp}{month}/\mintinline{fsharp}{day}/\mintinline{fsharp}{hour}/\mintinline{fsharp}{minute}/\mintinline{fsharp}{second}/\mintinline{fsharp}{ms}
+    \end{itemize}
+  \item Codecs for composable round-trips:
+    \begin{itemize}
+      \item DateTime \(\leftrightarrow\) Unix seconds/milliseconds, JSON, and compact JSON text
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Guided examples}
+
+\paragraph{Unix time (seconds and milliseconds)}
+Convert to integral time since the Unix epoch and back. Conversions run through UTC to avoid surprises.
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    let nowUtc : System.DateTime = System.DateTime.UtcNow
+
+    // seconds since 1970-01-01T00:00:00Z
+    let s : DateTime.Unix = DateTime.toUnixSeconds nowUtc
+    let backFromS : System.DateTime = DateTime.ofUnixSeconds s
+
+    // milliseconds since epoch
+    let ms : DateTime.Unix = DateTime.toUnixMilliseconds nowUtc
+    let backFromMs : System.DateTime = DateTime.ofUnixMilliseconds ms
+\end{minted}
+\emph{Semantics:} seconds/milliseconds are measured from the UTC epoch; integer casts use the usual truncation semantics for fractional values.
+
+\paragraph{Offsets and local/UTC conversions}
+Bridge from \mintinline{fsharp}{DateTimeOffset}, and normalize explicitly when you cross boundaries where time zones matter.
+\begin{minted}{fsharp}
+    let fromOffset (dto:System.DateTimeOffset) : System.DateTime =
+        dto |> DateTime.ofOffset   // dto.UtcDateTime
+
+    let roundTripLocal (x:System.DateTime) : System.DateTime =
+        x |> DateTime.toLocal |> DateTime.toUtc
+\end{minted}
+
+\paragraph{Tolerant parsing, JSON interop}
+Parse text when it’s acceptable to fail with \mintinline{fsharp}{None}. Encode as JSON using an ISO 8601 round-trip string.
+\begin{minted}{fsharp}
+    open FSharp.Data
+    open Nata.Core.JsonValue
+
+    let parsed : System.DateTime option =
+        "2023-04-05T12:34:56Z" |> DateTime.ofString
+
+    // DateTime <-> JsonValue
+    let asJson : JsonValue =
+        System.DateTime(2023,4,5,12,34,56,System.DateTimeKind.Utc)
+        |> DateTime.toJsonValue
+
+    let back : System.DateTime =
+        asJson |> DateTime.ofJsonValue
+
+    // compact JSON text for transport/logging
+    let compact : string =
+        asJson |> JsonValue.toString   // e.g., "\"2023-04-05T12:34:56.0000000Z\""
+\end{minted}
+\emph{Notes:} \mintinline{fsharp}{toJsonValue} emits an ISO 8601 round-trip string (format specifier \mintinline{fsharp}{"o"}) inside a JSON string; \mintinline{fsharp}{JsonValue.toString} returns compact JSON (so quotes are included for JSON strings).
+
 \subsubsection{DateTime.Resolution}
+Floor timestamps to a chosen boundary while preserving the original \mintinline{fsharp}{DateTimeKind} (UTC or Local).
+\begin{minted}{fsharp}
+    let sample =
+        System.DateTime(2023, 4, 5, 12, 34, 56, 789, System.DateTimeKind.Utc)
+
+    let atYear   = sample |> DateTime.Resolution.year   // 2023-01-01T00:00:00.000Z
+    let atMonth  = sample |> DateTime.Resolution.month  // 2023-04-01T00:00:00.000Z
+    let atDay    = sample |> DateTime.Resolution.day    // 2023-04-05T00:00:00.000Z
+    let atHour   = sample |> DateTime.Resolution.hour   // 2023-04-05T12:00:00.000Z
+    let atMinute = sample |> DateTime.Resolution.minute // 2023-04-05T12:34:00.000Z
+    let atSecond = sample |> DateTime.Resolution.second // 2023-04-05T12:34:56.000Z
+    let atMs     = sample |> DateTime.Resolution.ms     // 2023-04-05T12:34:56.789Z
+\end{minted}
+\emph{Semantics:} each function zeroes lower-order components (e.g., \mintinline{fsharp}{minute} keeps year/month/day/hour and sets minute’s lower parts to zero). These are useful for binning, windowing, and summarization.
 
 \subsubsection{DateTime.Codec}
+Composable codecs for common round-trips. These pair naturally with the general \mintinline{fsharp}{Codec} and \mintinline{fsharp}{JsonValue.Codec} helpers elsewhere in this document.
+\begin{minted}{fsharp}
+    open Nata.Core
+    open Nata.Core.JsonValue
+
+    // DateTime <-> Unix seconds
+    let toSec, ofSec = DateTime.Codec.DateTimeToUnixSeconds
+    let secValue : DateTime.Unix = System.DateTime.UtcNow |> Codec.encoder toSec
+    let fromSec  : System.DateTime = secValue |> Codec.decoder toSec
+
+    // DateTime <-> Unix milliseconds
+    let toMs, ofMs = DateTime.Codec.DateTimeToUnixMilliseconds
+
+    // DateTime <-> JsonValue
+    let toJson, ofJson = DateTime.Codec.DateTimeToJson
+
+    // DateTime <-> compact JSON text
+    // (note: this is JSON text of a JSON string value, e.g. "\"...Z\"")
+    let toText, ofText = DateTime.Codec.DateTimeToString
+
+    let serialized : string =
+        System.DateTime(2023,1,1,0,0,0,System.DateTimeKind.Utc)
+        |> Codec.encoder toText
+
+    let restored : System.DateTime =
+        serialized |> Codec.decoder toText
+
+    // End-to-end: DateTime <-> bytes (via JSON)
+    let DateTimeToBytes : Codec<System.DateTime, byte[]> =
+        DateTime.Codec.DateTimeToJson
+        |> Codec.concatenate JsonValue.Codec.JsonValueToBytes
+
+    let payload : byte[] =
+        System.DateTime.UtcNow |> Codec.encoder DateTimeToBytes
+
+    let roundTripped : System.DateTime =
+        payload |> Codec.decoder DateTimeToBytes
+\end{minted}
+\emph{Notes:} the text/bytes codecs intentionally use compact JSON for consistency with other JSON-based codecs; reverse them when you need the opposite direction, or concatenate with additional codecs to meet I/O boundaries cleanly.
 
 \subsection{Patterns}
+
+\noindent Small, purposeful active patterns make parsing-at-the-boundary feel natural. They turn tolerant conversions into readable matches so that pipelines stay declarative while handling the messy edges of real-world data.
+
+\subsubsection{Overview}
+The following partial patterns are available:
+\begin{itemize}
+  \item \mintinline{fsharp}{( |Nullable|_| ) : System.Nullable<'T> -> 'T option} — bridge from \mintinline{fsharp}{Nullable<'T>} into \mintinline{fsharp}{option}.
+  \item \mintinline{fsharp}{( |Boolean|_| ) : string -> bool option} — match text that parses to a boolean.
+  \item \mintinline{fsharp}{( |Decimal|_| ) : string -> decimal option} — match text that parses to a decimal.
+  \item \mintinline{fsharp}{( |Integer32|_| ) : string -> int option} — match text that parses to Int32.
+  \item \mintinline{fsharp}{( |Integer64|_| ) : string -> int64 option} — match text that parses to Int64.
+  \item \mintinline{fsharp}{( |DateTime|_| ) : string -> System.DateTime option} — match text that parses to a timestamp.
+  \item \mintinline{fsharp}{( |JsonValue|_| ) : string -> JsonValue option} — match text that parses to JSON.
+  \item \mintinline{fsharp}{( |AggregateException|_| ) : exn -> exn option} — unwrap an \mintinline{fsharp}{AggregateException} to its inner exception.
+  \item \mintinline{fsharp}{( |AbsoluteUri|_| ) : string -> System.Uri option} — match absolute URIs.
+  \item \mintinline{fsharp}{( |RelativeUri|_| ) : string -> System.Uri option} — match relative URIs.
+  \item \mintinline{fsharp}{( |Uri|_| ) : string -> System.Uri option} — match URIs of either kind.
+\end{itemize}
+
+\paragraph{Why patterns?}
+At ingestion points (files, queues, sockets, webhooks) you often receive untyped text. Active patterns let you route and normalize that input succinctly:
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    let handle (line:string) =
+        match line with
+        | JsonValue json ->
+            // structured payload; proceed to domain decode
+            json |> JsonValue.toString |> printfn "json=%s"
+        | Integer64 id ->
+            // numeric id in text form
+            printfn "id=%d" id
+        | AbsoluteUri uri ->
+            // fetch or enqueue work for this resource
+            printfn "uri=%O" uri
+        | Boolean flag ->
+            printfn "flag=%b" flag
+        | _ ->
+            printfn "unrecognized: %s" line
+\end{minted}
+
+\subsubsection{Guided examples}
+\paragraph{Batch lines into typed records}
+Normalize a CSV-like feed where each field may be missing or malformed; only keep fully-parsed rows.
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    type Order = { UserId:int64; At:System.DateTime; Amount:decimal }
+
+    let tryOrder (line:string) : Order option =
+        match line.Split(',') with
+        | [| Integer64 userId; DateTime at; Decimal amount |] ->
+            Some { UserId = userId; At = at; Amount = amount }
+        | _ -> None
+
+    let parsed : seq<Order> =
+        lines |> Seq.choose tryOrder
+\end{minted}
+
+\paragraph{Nullable interop (databases, external SDKs)}
+Turn \mintinline{fsharp}{Nullable<'T>} into options without ceremony.
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    let discountOption : decimal option =
+        match row.NullableDiscount with
+        | Nullable d -> Some d
+        | _ -> None
+\end{minted}
+
+\paragraph{URIs in routing and partitioning}
+Accept both relative and absolute targets, or insist on absolute when necessary.
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    let route (target:string) =
+        match target with
+        | AbsoluteUri uri -> sprintf "fetch-remote:%O" uri
+        | RelativeUri uri -> sprintf "fetch-local:%O" uri
+        | _               -> "drop"
+
+    [ "/inbox/a.json"; "https://example.com/x"; "???"]
+    |> List.map route
+    // ["fetch-local:/inbox/a.json"; "fetch-remote:https://example.com/x"; "drop"]
+\end{minted}
+
+\paragraph{Surface the real error from tasks}
+Unwrap \mintinline{fsharp}{AggregateException} so handlers can match on the underlying exception type.
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    let handleError (e:exn) =
+        match e with
+        | AggregateException inner ->
+            printfn "inner: %s" inner.Message
+        | _ ->
+            printfn "error: %s" e.Message
+\end{minted}
+
+\paragraph{Streaming JSON with tolerant fallbacks}
+Allow mixed payloads: compact JSON blob or a single numeric metric as text.
+\begin{minted}{fsharp}
+    open Nata.Core
+    open Nata.Core.JsonValue
+
+    type Payload = Metric of decimal | Doc of JsonValue
+
+    let classify (s:string) : Payload option =
+        match s with
+        | JsonValue json -> Some (Doc json)
+        | Decimal d      -> Some (Metric d)
+        | _              -> None
+
+    let results : seq<Payload> =
+        inputs |> Seq.choose classify
+\end{minted}
+
+\subsubsection{Notes}
+\begin{itemize}
+  \item All patterns are partial: a non-match simply falls through to the next case.
+  \item Numeric, boolean, and date parsing rely on standard \mintinline{fsharp}{TryParse} semantics.
+  \item \mintinline{fsharp}{JsonValue} uses a tolerant JSON parser; compact JSON text is convenient for logging and transport.
+  \item URI patterns distinguish absolute vs. relative using \mintinline{fsharp}{System.Uri.TryCreate} with the corresponding \mintinline{fsharp}{UriKind}.
+  \item Prefer patterns when routing by shape; prefer functions/codecs when you need explicit, composable transformations in a pipeline.
+\end{itemize}
 
 \subsection{GZip}
 
