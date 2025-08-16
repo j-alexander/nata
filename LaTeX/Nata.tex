@@ -1469,6 +1469,141 @@ Transform \mintinline{fsharp}{Nullable} values, or exchange them for \mintinline
 
 \subsection{Codec}
 
+\noindent A codec is a small, composable pair of pure functions used to translate values back and forth between two representations. It captures both directions explicitly:
+\begin{minted}{fsharp}
+    // A codec is (encode : 'In -> 'Out, decode : 'Out -> 'In)
+    type Codec<'In,'Out> = ('In -> 'Out) * ('Out -> 'In)
+\end{minted}
+This makes codecs pleasant to wire together: you can reverse them when you need the opposite direction, and concatenate them to build multi-step translations that still round-trip.
+
+\subsubsection{Helpers: encoder, decoder, reverse, concatenate}
+\begin{itemize}
+  \item \mintinline{fsharp}{Codec.encoder} and \mintinline{fsharp}{Codec.decoder} project out the first and second function of a codec. These are convenient when you prefer named accessors over tuple deconstruction.
+  \item \mintinline{fsharp}{Codec.reverse} swaps directions, turning a codec \mintinline{fsharp}{'In <-> 'Out} into \mintinline{fsharp}{'Out <-> 'In}.
+  \item \mintinline{fsharp}{Codec.concatenate} composes two codecs end-to-end so you can build \mintinline{fsharp}{'A <-> 'C} from \mintinline{fsharp}{'A <-> 'B} and \mintinline{fsharp}{'B <-> 'C}.
+\end{itemize}
+
+\paragraph{Guided examples}
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    // Pull out the encode/decode functions
+    let encodeInt, decodeInt = Codec.Int32ToString
+    let text : string = encodeInt 42            // "42"
+    let back : int    = decodeInt "not-a-number"// 0 (tolerant default)
+
+    // Reverse a codec when you need the opposite direction
+    let stringToDecimal : Codec<string, decimal> =
+        Codec.reverse Codec.DecimalToString
+
+    let parse : string -> decimal = Codec.encoder stringToDecimal
+    let d1 = parse "12.50"    // 12.50m
+    let d0 = parse "oops"     // 0m (tolerant default)
+
+    // Concatenate to build multi-step codecs (Int32 <-> String <-> Bytes)
+    let Int32ToBytes : Codec<int, byte[]> =
+        Codec.Int32ToString
+        |> Codec.concatenate Codec.StringToBytes
+
+    let toBytes   : int   -> byte[] = Codec.encoder Int32ToBytes
+    let fromBytes : byte[]-> int    = Codec.decoder Int32ToBytes
+
+    let bytes   = toBytes 42
+    let value42 = fromBytes bytes    // 42
+
+    // You can also decompose and pipe directly if you prefer
+    let textAgain : string =
+        42 |> Codec.encoder Codec.Int32ToString
+
+    let safeBool : bool =
+        "TRUE" |> Codec.decoder Codec.BooleanToString  // true
+\end{minted}
+
+\subsubsection{Built-in codecs}
+The following codecs provide practical defaults for everyday work. They are all tolerant of common edge cases and aim to round-trip sensibly.
+
+\paragraph{Identity}
+\begin{itemize}
+  \item \mintinline{fsharp}{Codec.Identity : Codec<'a,'a>} — the no-op codec.
+\end{itemize}
+\begin{minted}{fsharp}
+    let sameA, sameB = Codec.Identity
+    let x = sameA 123   // 123
+    let y = sameB 123   // 123
+\end{minted}
+
+\paragraph{UTF-8 strings and bytes}
+\begin{itemize}
+  \item \mintinline{fsharp}{Codec.StringToBytes : Codec<string, byte[]>}
+  \item \mintinline{fsharp}{Codec.BytesToString : Codec<byte[], string>} (the reverse)
+\end{itemize}
+Semantics: UTF-8 encoding. Null-safe by design — null strings behave like empty text, and null byte arrays behave like empty buffers.
+\begin{minted}{fsharp}
+    let toBytes, toText = Codec.StringToBytes
+
+    let b1 : byte[] = toBytes "hello"  // UTF-8 bytes
+    let s1 : string = toText b1        // "hello"
+
+    let emptyFromNullText : byte[] = toBytes null      // [||]
+    let emptyTextFromNull : string  = toText null      // ""
+\end{minted}
+
+\paragraph{Numbers and booleans (string round-trips)}
+Each numeric/boolean codec maps invalid input to a safe default when decoding from string.
+\begin{itemize}
+  \item \mintinline{fsharp}{Codec.Int32ToString   : Codec<int,    string>} — decode default: \mintinline{fsharp}{0}
+  \item \mintinline{fsharp}{Codec.Int64ToString   : Codec<int64,  string>} — decode default: \mintinline{fsharp}{0L}
+  \item \mintinline{fsharp}{Codec.DecimalToString : Codec<decimal,string>} — decode default: \mintinline{fsharp}{0m}
+  \item \mintinline{fsharp}{Codec.BooleanToString : Codec<bool,   string>} — decode default: \mintinline{fsharp}{false}
+\end{itemize}
+Reverse variants are provided for convenience:
+\begin{itemize}
+  \item \mintinline{fsharp}{Codec.StringToInt32    : Codec<string, int>}
+  \item \mintinline{fsharp}{Codec.StringToInt64    : Codec<string, int64>}
+  \item \mintinline{fsharp}{Codec.StringToDecimal  : Codec<string, decimal>}
+  \item \mintinline{fsharp}{Codec.StringToBoolean  : Codec<string, bool>}
+\end{itemize}
+\begin{minted}{fsharp}
+    // Int32
+    let toText32, fromText32 = Codec.Int32ToString
+    let ok  = fromText32 "123"     // 123
+    let bad = fromText32 "oops"    // 0 (default)
+
+    // Boolean
+    let toBoolText, fromBoolText = Codec.BooleanToString
+    let yes = fromBoolText "true"  // true
+    let no  = fromBoolText "nope"  // false (default)
+
+    // Decimal and Int64 similarly
+    let toTextDec, fromTextDec = Codec.DecimalToString
+    let amt = fromTextDec "9.99"   // 9.99m
+
+    let toText64, fromText64 = Codec.Int64ToString
+    let id  = fromText64 "18446744073709551615" // overflowy text -> 0L default
+\end{minted}
+
+\subsubsection{Composing to meet I/O boundaries}
+Codecs shine at process boundaries: serialize to bytes for storage, reverse for parsing when reading, and keep the round-trip logic centralized.
+\begin{minted}{fsharp}
+    // Build a codec for decimal <-> bytes via string
+    let DecimalToBytes : Codec<decimal, byte[]> =
+        Codec.DecimalToString
+        |> Codec.concatenate Codec.StringToBytes
+
+    // Use it to persist and recover
+    let write : decimal -> byte[] = Codec.encoder DecimalToBytes
+    let read  : byte[]  -> decimal = Codec.decoder DecimalToBytes
+
+    let persisted = write 12.34m
+    let restored  = read persisted    // 12.34m
+\end{minted}
+
+\paragraph{Notes}
+\begin{itemize}
+  \item Decoding is intentionally forgiving in the built-in codecs (e.g., invalid numeric text falls back to a neutral value). If you need strict parsing, consider validating prior to decode or wrapping with a stricter adapter.
+  \item \mintinline{fsharp}{Codec.reverse} and \mintinline{fsharp}{Codec.concatenate} preserve the spirit of reversible transformations while making multi-step encodings ergonomic.
+\end{itemize}
+
 \subsection{JsonValue}
 
 \subsection{DateTime}
