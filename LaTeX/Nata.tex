@@ -2297,6 +2297,56 @@ Instead of exact expiry, rotate filters on a cadence (hourly/daily) to bound fal
 
 \subsection{SHA256}
 
+\noindent A compact, fully-immutable implementation of SHA-256 for day-to-day functional work. It favors simple, predictable composition: inputs are plain bytes or UTF-8 text; outputs are either raw digest bytes or lower-case hex strings. There is no internal state, no disposable resources, no hidden I/O — which makes it pleasant to use in pipelines, tests, and reference comparisons.
+
+\paragraph{Signatures}
+\begin{minted}{fsharp}
+open Nata.Core
+
+// pure digests (no I/O, no mutation)
+val hashBytes        : byte[]  -> byte[]  // 32-byte digest
+val hash             : byte[]  -> string  // 64-char hex (lowercase)
+val hashUTF8Bytes    : string  -> byte[]  // UTF-8 -> digest bytes
+val hashUTF8         : string  -> string  // UTF-8 -> hex
+
+// platform-backed comparison helpers (useful for verification)
+val referenceBytes     : byte[]  -> byte[]
+val reference          : byte[]  -> string
+val referenceUTF8Bytes : string  -> byte[]
+val referenceUTF8      : string  -> string
+\end{minted}
+
+\paragraph{Quick start}
+\begin{minted}{fsharp}
+open System.Text
+open Nata.Core
+
+// hash raw bytes
+let digestHex : string =
+    "abc" |> Encoding.UTF8.GetBytes |> SHA256.hash
+
+// convenient UTF-8 helpers
+let fox : string =
+    "The quick brown fox jumps over the lazy dog"
+    |> SHA256.hashUTF8
+// "d7a8fbb3...c9e592"
+
+// verify against the platform reference
+let same : bool =
+    let bytes = Encoding.UTF8.GetBytes "hello"
+    (SHA256.hash bytes) = (SHA256.reference bytes)
+\end{minted}
+
+\paragraph{Why an immutable implementation?}
+Immutability keeps the surface area honest: the same input yields the same output every time. With no resources to manage—no streams to dispose, no hidden buffers—the functions drop cleanly into folds, maps, and parallel evaluations. This makes them ideal for verification as well: you can place a pure digest beside a platform digest and reason about differences without incidental state. As a bonus, the implementation is a readable reference for the algorithm itself, a portable baseline you can trust when threading hashes through larger pipelines.
+
+\paragraph{Notes}
+\begin{itemize}
+  \item Hex output is lower-case; digest bytes are exactly 32 bytes.
+  \item \mintinline{fsharp}{hashUTF8}/\mintinline{fsharp}{hashUTF8Bytes} always use UTF-8 for text input.
+  \item For maximum throughput on large single buffers, prefer the platform implementation; for composable, audit-friendly pipelines and tests, the immutable implementation shines.
+  \item Stable input representations matter: prefer canonical JSON (compact, ordered) or explicit binary layouts when the digest must be an id.
+\end{itemize}
 
 \clearpage
 \appendix
