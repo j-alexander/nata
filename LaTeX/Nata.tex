@@ -991,22 +991,32 @@ A snapshot hub retains the most recent event, and provides that event (if availa
         mapFst Event.data
 \end{minted}
 
+\item \mintinline{fsharp}{filterFst} or \mintinline{fsharp}{filterSnd}
+
+\item \mintinline{fsharp}{chooseFst} or \mintinline{fsharp}{chooseSnd}
+
 \end{itemize}
 
 \subsubsection{Seq}
 
 \begin{itemize}
 
+\item \mintinline{fsharp}{Seq.tryHead}
+
 \item use \mintinline{fsharp}{Seq.mapFst} or \mintinline{fsharp}{Seq.mapSnd} to transform just the data or index of a seq
 \begin{minted}{fsharp}
     let data = events |> Seq.mapFst Event.data
 \end{minted}
 
-\item similarly use \mintinline{Seq.filterFst}/\mintinline{Seq.filterSnd} or \mintinline{fsharp}{Seq.chooseFst}/\mintinline{fsharp}{Seq.chooseSnd} to select elements by data or index:
+\item similarly use \mintinline{fsharp}{Seq.filterFst}/\mintinline{fsharp}{Seq.filterSnd} or \mintinline{fsharp}{Seq.chooseFst}/\mintinline{fsharp}{Seq.chooseSnd} to select elements by data or index:
 
 \begin{minted}{fsharp}
     events |> Seq.filterFst (Event.data >> isGood)
 \end{minted}
+
+\item \mintinline{fsharp}{Seq.log} \mintinline{fsharp}{Seq.logi}
+
+\item \mintinline{fsharp}{Seq.trySkip}
 
 \item \mintinline{fsharp}{Seq.consume} from multiple sequences as data becomes available
 \begin{minted}{fsharp}
@@ -1027,6 +1037,12 @@ A snapshot hub retains the most recent event, and provides that event (if availa
         Seq.mergeBy snd leftEvents rightEvents
         |> Seq.map (fst >> Event.data)
 \end{minted}
+
+\item \mintinline{fsharp}{Seq.changes}
+
+\item \mintinline{fsharp}{Seq.changesBy}
+
+\item \mintinline{fsharp}{Seq.delta}
 
 \end{itemize}
 
@@ -1117,7 +1133,7 @@ Transform \mintinline{fsharp}{Nullable} values, or exchange them for \mintinline
 \end{minted}
 
 \item convert a \mintinline{fsharp}{Nullable.toOption} and get the \mintinline{fsharp}{Nullable.ofOption} values
-\begin{minted}
+\begin{minted}{fsharp}
     let threeOption =
         Nullable 3
         |> Nullable.toOption
@@ -1130,13 +1146,57 @@ Transform \mintinline{fsharp}{Nullable} values, or exchange them for \mintinline
 
 \end{itemize}
 
+\subsubsection{Boolean}
+
+\begin{itemize}
+\item \mintinline{fsharp}{Boolean.ofString} / \mintinline{fsharp}{Boolean.toString}
+\end{itemize}
+
 \subsubsection{Decimal}
+
+\begin{itemize}
+\item \mintinline{fsharp}{Decimal.between}
+\item \mintinline{fsharp}{Decimal.ofString} / \mintinline{fsharp}{Decimal.toString}
+\end{itemize}
 
 \subsubsection{Int64}
 
+\begin{itemize}
+\item \mintinline{fsharp}{Int64.between}
+\item \mintinline{fsharp}{Int64.ofString} / \mintinline{fsharp}{Int64.toString}
+\end{itemize}
+
 \subsubsection{Int32}
 
+\begin{itemize}
+\item \mintinline{fsharp}{Int32.between}
+\item \mintinline{fsharp}{Int32.ofString} / \mintinline{fsharp}{Int32.toString}
+\end{itemize}
+
 \subsubsection{String}
+
+\begin{itemize}
+\item \mintinline{fsharp}{String.replace}
+\item \mintinline{fsharp}{String.remove}
+\item \mintinline{fsharp}{String.contains}
+\item \mintinline{fsharp}{String.containsIgnoreCase}
+\item \mintinline{fsharp}{String.split}
+\item \mintinline{fsharp}{String.trySubstring}
+\item \mintinline{fsharp}{String.tryStartAt}
+\end{itemize}
+
+\subsubsection{Async}
+
+\begin{itemize}
+\item \mintinline{fsharp}{Async.reraise}
+\end{itemize}
+
+\subsubsection{Task}
+
+\begin{itemize}
+\item \mintinline{fsharp}{Task.wait}, \mintinline{fsharp}{Task.waitAsync}
+\item \mintinline{fsharp}{Task.waitForResult}, \mintinline{fsharp}{Task.waitForResultAsync}
+\end{itemize}
 
 \subsection{Codec}
 
@@ -1156,6 +1216,9 @@ Transform \mintinline{fsharp}{Nullable} values, or exchange them for \mintinline
 
 \subsubsection{GZip.File}
 
+\subsection{BloomFilter}
+
+\subsection{SHA256}
 
 
 \clearpage
