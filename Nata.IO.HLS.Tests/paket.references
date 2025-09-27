@@ -6,3 +6,5 @@ System.ValueTuple
 NUnit3TestAdapter
 Microsoft.NET.Test.Sdk
 OpenCvSharp4
+OpenCvSharp4.runtime.osx_arm64
+FFMpegCore

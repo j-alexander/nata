@@ -12,11 +12,12 @@ type Client = VideoCapture
 module Client =
 
     let create { Settings.Address=address } =
-        new VideoCapture(address, VideoCaptureAPIs.ANY)
+        new VideoCapture(address, VideoCaptureAPIs.FFMPEG) // VideoCaptureAPIs.ANY)
     
     let read (settings:Settings) =
         seq {
-            use client = create settings 
+            use client = create settings
+            
             if client.IsOpened() then
                 printfn "Stream opened successfully. Reading frames..."
                         

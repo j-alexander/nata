@@ -25,7 +25,10 @@ type HLSTests() =
     let testAddress =
         "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8"
 
-    let connect() = 
+    let connect() =
+        // Print the full build configuration string
+        let buildInfo = Cv2.GetBuildInformation()
+        printfn "%s" buildInfo
         { Settings.Address=testAddress }
         |> HLS.Client.connect
 
@@ -39,6 +42,21 @@ type HLSTests() =
         //printfn $"Total Data Size: {f.DataSize} bytes"
         printfn $"Is Continuous: {f.IsContinuous} (Indicates data stored in a single contiguous block)"
         printfn "---------------------------------"
+    
+    (*
+    On MacOS, for the version of the runtime I was using, I copied it local so that the tests could find it.
+    sudo cp ~/.nuget/packages/opencvsharp4.runtime.osx_arm64/4.8.1/runtimes/osx-arm64/native/*.dylib /usr/local/lib/    
+
+    There's probably a better way to do this, for example, I tried the following item group in the test project file:
+    
+      <ItemGroup>
+        <Content Include="$(NuGetPackageRoot)opencvsharp4.runtime.osx_arm64/4.8.1/runtimes/osx-arm64/native/*.dylib"
+                 CopyToOutputDirectory="Always" />
+      </ItemGroup>
+      
+    It successfully pulls them into the output folder, but for some reason the test runner on rider with "dotnet test"
+    can't find them in the output folder.
+    *)
     
     [<Test>]
     member x.TestRead() =
