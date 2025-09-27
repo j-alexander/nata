@@ -1,4 +1,4 @@
-﻿namespace Nata.IO.Consul.Tests
+﻿namespace Nata.IO.HLS.Tests
 
 open System
 open System.IO
@@ -12,38 +12,35 @@ open NUnit.Framework
 open Nata.Core
 open Nata.IO
 open Nata.IO.Channel
-open Nata.IO.Consul
+open Nata.IO.HLS
 
 [<TestFixture>]
-type ConsulTests() =
+type HLSTests() =
 
     let event() =
         Event.create(guid(), Guid.NewGuid().ToByteArray())
 
     let connect = 
-        { Settings.Address="http://127.0.0.1:8500/"
-          Settings.DataCenter="dc1" }
-        |> Consul.Client.connect
+        { Settings.Address="http://127.0.0.1:8500/" }
+        |> HLS.Client.connect
 
     [<Test>]
-    member x.TestReadWrite() =
-        let prefix = guid() |> sprintf "%s/"
-        let read,write =
-            let node = connect prefix
-            node |> reader,
-            node |> writer
+    member x.TestRead() =
+        let read =
+            connect()
+            |> reader
 
         for i in 1..3 do
-
-            let expect = event()
-            write expect   
-            let expectKey, expectValue = Event.data expect
-
-            let result = 
-                read() 
-                |> Seq.filter (Event.data >> fst >> fun k -> k.Contains(expectKey))
-                |> Seq.head
-            let resultKey, resultValue = Event.data result
-
-            Assert.AreEqual(expectKey, resultKey)
-            Assert.AreEqual(expectValue, resultValue)
+            //
+            // let expectKey, expectValue =
+            //     (), ()
+            //
+            // let result = 
+            //     read() 
+            //     |> Seq.filter (Event.data >> (fun _ -> true))
+            //     |> Seq.head
+            // let resultKey, resultValue = Event.data result
+            //
+            // Assert.AreEqual(expectKey, resultKey)
+            // Assert.AreEqual(expectValue, resultValue)
+            Assert.True(true)

@@ -1,6 +1,5 @@
-﻿namespace Nata.IO.Consul
+﻿namespace Nata.IO.HLS
 
 type Settings = {
     Address : string
-    DataCenter : string
 }

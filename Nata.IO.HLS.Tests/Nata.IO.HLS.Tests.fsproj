@@ -17,7 +17,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-    <Compile Include="HLSTest.fs" />
+    <Compile Include="HLSTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj" />

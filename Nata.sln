@@ -81,6 +81,10 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.Codec.FsPickler", "Nat
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Nata.Codec.FsPickler.Tests", "Nata.Codec.FsPickler.Tests\Nata.Codec.FsPickler.Tests.fsproj", "{225D0C16-CB90-4AA0-8B4B-7248D411A876}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.HLS", "Nata.IO.HLS\Nata.IO.HLS.fsproj", "{B3346C6F-5467-4505-822C-6BBCB1619F4D}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Nata.IO.HLS.Tests", "Nata.IO.HLS.Tests\Nata.IO.HLS.Tests.fsproj", "{9661AB3C-0CE3-432A-B4AA-BF1F37A410F4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -231,6 +235,14 @@ Global
 		{225D0C16-CB90-4AA0-8B4B-7248D411A876}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{225D0C16-CB90-4AA0-8B4B-7248D411A876}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{225D0C16-CB90-4AA0-8B4B-7248D411A876}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3346C6F-5467-4505-822C-6BBCB1619F4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3346C6F-5467-4505-822C-6BBCB1619F4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3346C6F-5467-4505-822C-6BBCB1619F4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3346C6F-5467-4505-822C-6BBCB1619F4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9661AB3C-0CE3-432A-B4AA-BF1F37A410F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9661AB3C-0CE3-432A-B4AA-BF1F37A410F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9661AB3C-0CE3-432A-B4AA-BF1F37A410F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9661AB3C-0CE3-432A-B4AA-BF1F37A410F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
