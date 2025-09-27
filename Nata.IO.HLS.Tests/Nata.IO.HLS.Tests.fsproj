@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net60</TargetFramework>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <Authors>Jonathan Leaver</Authors>
+    <Copyright>© 2016 Jonathan Leaver</Copyright>
+    <PackageIconUrl>https://avatars3.githubusercontent.com/u/4975537</PackageIconUrl>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/j-alexander/nata</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/j-alexander/nata.git</RepositoryUrl>
+    <Company>LambdaFun.com</Company>
+    <Description>HLS IO Test Library for the Nata Project</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="paket.references" />
+    <Compile Include="HLSTest.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Nata.Core\Nata.Core.fsproj" />
+    <ProjectReference Include="..\Nata.IO\Nata.IO.fsproj" />
+    <ProjectReference Include="..\Nata.IO.HLS\Nata.IO.HLS.fsproj" />
+    <ProjectReference Include="..\Nata.IO.Tests\Nata.IO.Tests.fsproj" />
+  </ItemGroup>
+  <Import Project="..\.paket\Paket.Restore.targets" />
+</Project>
