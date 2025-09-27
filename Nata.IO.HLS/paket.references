@@ -2,9 +2,6 @@ FSharp.Data
 Newtonsoft.Json
 FSharp.Core
 System.ValueTuple
-OpenCvSharp4
-EmguFFmpeg
-EmguFFmpeg.OpenCvSharp
 FFmpeg4Sharp
-FFMpegCore
 FFmpeg.Loader
+FFmpeg.AutoGen

@@ -23,10 +23,14 @@ open Nata.IO.HLS
 [<TestFixture>]
 type HLSTests() =
     
-    let setup  = HLS.Setup.run()
+    let setup  =
+        let value = HLS.Setup.run()
+        printfn "HLS.Setup report: %s" value
+        value
     
     let testAddress =
         "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8"
+        //"file:/Users/jonathan/Desktop/9c7e9d0b-978b-4bc7-a25d-4488323dd495.mp4"
 
     let connect() =
         // Print the full build configuration string
@@ -35,17 +39,6 @@ type HLSTests() =
         { Settings.Address=testAddress }
         |> HLS.Client.connect
 
-    // let profileMat(f: Mat) = 
-    //     printfn "--- Frame Profile Information ---"
-    //     printfn $"Dimensions (Width x Height): {f.Width} x {f.Height} pixels"
-    //     printfn $"Total Pixels: {f.Total()} pixels"
-    //     printfn $"Channels: {f.Channels()} (Color Depth)"
-    //     printfn $"Type (Internal OpenCV Code): {f.Type()}"
-    //     printfn $"Depth (Internal OpenCV Code): {f.Depth()}"
-    //     //printfn $"Total Data Size: {f.DataSize} bytes"
-    //     printfn $"Is Continuous: {f.IsContinuous} (Indicates data stored in a single contiguous block)"
-    //     printfn "---------------------------------"
-    //
     let profileMediaFrame(f: MediaFrame) =
         printfn "Frame Type: %A" f.PictType // e.g., AV_PICTURE_TYPE_I, AV_PICTURE_TYPE_P
         printfn "Presentation Timestamp (PTS): %d" f.Pts
