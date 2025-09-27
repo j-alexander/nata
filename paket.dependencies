@@ -26,6 +26,7 @@ nuget NLog
 nuget NUnit
 nuget NUnit.Console
 nuget NUnit3TestAdapter
+nuget OpenCvSharp4
 nuget Owin
 nuget RabbitMQ.Client
 nuget Suave
