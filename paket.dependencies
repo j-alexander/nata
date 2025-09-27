@@ -1,7 +1,10 @@
 source https://www.nuget.org/api/v2/
 
 nuget Consul
+nuget EmguFFmpeg.OpenCvSharp
 nuget EventStore.Client ~> 5
+nuget FFmpeg.Loader
+nuget FFmpeg4Sharp
 nuget FFMpegCore
 nuget FSharp.Compiler.Service
 nuget FSharp.Core
