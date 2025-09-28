@@ -1,6 +1,7 @@
 ﻿namespace Nata.IO.HLS.Tests
 
 open System
+open System.Diagnostics
 open System.IO
 open System.Runtime.InteropServices
 
@@ -30,6 +31,8 @@ type HLSTests() =
         ffmpeg.LibraryVersionMap
         |> Seq.iter (printfn "%A")
     
+    let log = LogManager.GetLogger("Nata.IO.HLS.Tests.HLSTests")
+    
     let testAddress =
         "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8"
 
@@ -46,10 +49,12 @@ type HLSTests() =
         printfn "Data Planes (Components): %d" f.Data.Length
         printfn "Linesize (Stride) of Plane 0: %d bytes" f.Linesize.[0u]
     
-    let captureMediaFrame i (f:MediaFrame) =
-        let r = Codec.fromMediaFrameToBitmap f
+    let convert (f:MediaFrame) =
+        Codec.fromMediaFrameToBitmap f
+        
+    let captureMediaFrame i (bitmap:SKBitmap) =
         use file = File.OpenWrite(sprintf "/Users/jonathan/Desktop/Output/%08d.png" i)
-        r.Encode(SKEncodedImageFormat.Png, 100).SaveTo(file)
+        bitmap.Encode(SKEncodedImageFormat.Png, 100).SaveTo(file)
     
     [<SetUp>]
     member x.SetUp() =
@@ -59,13 +64,42 @@ type HLSTests() =
         config.AddRule(LogLevel.Debug, LogLevel.Fatal, consoleTarget, "*")
         LogManager.Configuration <- config
     
+    (*
+2025-09-28 16:02:34.3330|INFO|Nata.IO.HLS.Tests.HLSTests|Starting
+2025-09-28 16:02:34.3377|INFO|Nata.IO.HLS.Tests.HLSTests|Create required 00:00:00.0008115
+2025-09-28 16:02:43.0970|INFO|Nata.IO.HLS.Client|Selected video stream 1 for decoding
+2025-09-28 16:02:54.3557|INFO|Nata.IO.HLS.Tests.HLSTests|Stream required 00:00:20.0177841
+2025-09-28 16:02:55.4002|INFO|Nata.IO.HLS.Tests.HLSTests|Conversion required 00:00:01.0443470
+2025-09-28 16:03:16.3706|INFO|Nata.IO.HLS.Tests.HLSTests|Save required 00:00:20.9695205
+    *)
     [<Test>]
     member x.TestRead() =
+        log.Info("Starting")
+        
+        let watchCreate = Stopwatch.StartNew()
         let read =
             connect()
             |> reader
-
-        read()
-        |> Seq.take 500
-        |> Seq.map Event.data
-        |> Seq.iteri captureMediaFrame
+        watchCreate.Stop()
+        log.Info(sprintf "Create required %A" watchCreate.Elapsed)
+        
+        let watchStream = Stopwatch.StartNew()
+        let frames = 
+            read()
+            |> Seq.take 500
+            |> Seq.toList
+        watchStream.Stop()
+        log.Info(sprintf "Stream required %A" watchStream.Elapsed)
+        
+        let watchConversion = Stopwatch.StartNew()
+        let bitmaps =
+            frames
+            |> List.map (Event.data >> Codec.fromMediaFrameToBitmap)
+        watchConversion.Stop()
+        log.Info(sprintf "Conversion required %A" watchConversion.Elapsed)
+        
+        let watchSave = Stopwatch.StartNew()
+        bitmaps 
+        |> List.iteri captureMediaFrame
+        watchSave.Stop()
+        log.Info(sprintf "Save required %A" watchSave.Elapsed)
