@@ -68,4 +68,4 @@ type HLSTests() =
         read()
         |> Seq.take 500
         |> Seq.map Event.data
-        |> Seq.iteri profileMediaFrame
+        |> Seq.iteri captureMediaFrame

@@ -10,9 +10,8 @@ open Nata.Core
 
 let fromMediaFrameToBitmap(frame:MediaFrame) =
     
-    
-    if frame.Format <> int AVPixelFormat.AV_PIX_FMT_BGR24 then
-        failwithf "Frame pixel format must be BGR24, but got %A" frame.Format
+    if frame.Format <> int AVPixelFormat.AV_PIX_FMT_BGRA then
+        failwithf "Frame pixel format must be BGRA, but got %A" frame.Format
 
     let width = frame.Width
     let height = frame.Height
@@ -21,32 +20,20 @@ let fromMediaFrameToBitmap(frame:MediaFrame) =
     // Create SKBitmap (BGRA8888)
     let bmp = new SKBitmap(width, height, SKColorType.Bgra8888, SKAlphaType.Unpremul)
     use pixmap = bmp.PeekPixels()
-    let bmpPtr = pixmap.GetPixels()  // nativeint
+    let bmpPtr = pixmap.GetPixels()
     let bmpRowBytes = pixmap.RowBytes
 
-    // Temporary buffer for one row in BGRA
-    let rowBytes = Array.zeroCreate<byte> (width * 4)
-
+    // Direct copy since formats match
     for y in 0 .. height - 1 do
-        // Correct way: offset nativeptr<byte> by elements
-        let srcRowPtr : nativeptr<byte> = NativePtr.add frame.Data.[0u] (y * stride)
-
-        // Convert BGR -> BGRA
-        for x in 0 .. width - 1 do
-            let srcPixel = NativePtr.add srcRowPtr (x * 3)
-            let b = NativePtr.read srcPixel
-            let g = NativePtr.read (NativePtr.add srcPixel 1)
-            let r = NativePtr.read (NativePtr.add srcPixel 2)
-
-            let idx = x * 4
-            rowBytes.[idx] <- b
-            rowBytes.[idx + 1] <- g
-            rowBytes.[idx + 2] <- r
-            rowBytes.[idx + 3] <- 255uy
-
-        // Copy row into Skia bitmap memory
+        let srcRowPtr = NativePtr.add frame.Data.[0u] (y * stride)
         let dstPtr = IntPtr.Add(bmpPtr, y * bmpRowBytes)
-        Marshal.Copy(rowBytes, 0, dstPtr, width * 4)
+        
+        // Direct memory copy using correct Marshal.Copy signature
+        let copySize = min (width * 4) bmpRowBytes
+        let srcIntPtr = NativePtr.toNativeInt srcRowPtr
+        
+        // Copy from source IntPtr to destination IntPtr
+        Buffer.MemoryCopy(srcIntPtr.ToPointer(), dstPtr.ToPointer(), copySize, copySize)
         
     bmp
     

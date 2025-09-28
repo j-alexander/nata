@@ -52,10 +52,10 @@ module Client =
             for packet in demuxer.ReadPackets() do
                 if packet.StreamIndex = selectedStreamIndex then
                     let decoder = streamDecoders.[packet.StreamIndex]
-                    convert.SetOpts(decoder.Width, decoder.Height, Abstractions.AVPixelFormat.AV_PIX_FMT_BGR24)
+                    convert.SetOpts(decoder.Width, decoder.Height, Abstractions.AVPixelFormat.AV_PIX_FMT_BGRA)
                     for frame in decoder.DecodePacket(packet) do
-                        for bgrFrame in convert.Convert(frame) do
-                            yield bgrFrame.Clone() |> Event.create
+                        for bgraFrame in convert.Convert(frame) do
+                            yield bgraFrame.Clone() |> Event.create
         }
             
     let connect (settings:Settings) =
