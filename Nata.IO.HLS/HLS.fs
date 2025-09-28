@@ -1,13 +1,14 @@
 ﻿namespace Nata.IO.HLS
 
-open System
-open System.Text
 open FFmpeg.AutoGen
 open FFmpegSharp
 open Nata.IO
 
 type Client = VideoCapture
 
+type Settings = {
+    Address : string
+}
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Client =

@@ -1,7 +1,7 @@
 FSharp.Data
 Newtonsoft.Json
+NLog
 FSharp.Core
 System.ValueTuple
 FFmpeg4Sharp
-FFmpeg.Loader
 FFmpeg.AutoGen

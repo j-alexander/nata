@@ -1,25 +1,12 @@
 ﻿namespace Nata.IO.HLS.Tests
 
-open System
-open System.IO
-open System.Collections.Concurrent
-open System.Reflection
 open System.Runtime.InteropServices
-open System.Threading
-open System.Threading.Tasks
-open FSharp.Data
 
-open Nata.IO.Event
-
-open FFmpeg.Loader
-//open OpenCvSharp
 open FFmpegSharp
 open FFmpeg.AutoGen
-open FFmpeg.AutoGen.Bindings
 open FFmpeg.AutoGen.Bindings.DynamicallyLoaded
 open NUnit.Framework
 
-open Nata.Core
 open Nata.IO
 open Nata.IO.Channel
 open Nata.IO.HLS
@@ -27,20 +14,13 @@ open Nata.IO.HLS
 [<TestFixture>]
 type HLSTests() =
     
-    let setup  =
-        let arch = RuntimeInformation.ProcessArchitecture;
-        printfn "Running on process architecture: %A" arch
-        
-        //FFmpeg.AutoGen.ffmpeg.RootPath <- "/opt/homebrew/lib"
+    do
+        RuntimeInformation.ProcessArchitecture
+        |> printfn "Running on process architecture: %A"
         DynamicallyLoadedBindings.LibrariesPath <- "/opt/homebrew/lib"
         DynamicallyLoadedBindings.Initialize()
-        //FFmpeg.AutoGen.ffmpeg.avdevice_register_all()
-    
-        //printfn "FFmpeg version info: %A" (ffmpeg.av_version_info())
-
-        //printfn "Number of codecs: %A" (ffmpeg.av_codec_count())
-        for x in FFmpeg.AutoGen.ffmpeg.LibraryVersionMap do
-            printfn "%A" x
+        ffmpeg.LibraryVersionMap
+        |> Seq.iter (printfn "%A")
     
     let testAddress =
         "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8"
@@ -67,7 +47,6 @@ type HLSTests() =
             |> reader
 
         read()
-        |> Seq.take 100
+        |> Seq.take 3
         |> Seq.iter (fun { Event.Data = data } ->
-            
             profileMediaFrame data)

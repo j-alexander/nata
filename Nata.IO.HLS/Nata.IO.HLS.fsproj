@@ -14,9 +14,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
-    <Compile Include="Codec.fs" />
-    <Compile Include="Settings.fs" />
-    <Compile Include="Setup.fs" />
     <Compile Include="HLS.fs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,12 +1,11 @@
 Newtonsoft.Json
 FSharp.Data
 NUnit
+NLog
 FSharp.Core
 System.ValueTuple
 NUnit3TestAdapter
 Microsoft.NET.Test.Sdk
-OpenCvSharp4.runtime.osx_arm64
 FFmpeg4Sharp
-FFmpeg.Loader
 FFmpeg.AutoGen
 FFmpeg.AutoGen.Bindings.DynamicallyLoaded
