@@ -1,5 +1,6 @@
 ﻿namespace Nata.IO.HLS
 
+open NLog
 open FFmpeg.AutoGen
 open FFmpegSharp
 open Nata.IO
@@ -13,6 +14,8 @@ type Settings = {
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Client =
             
+    let log = LogManager.GetLogger("Nata.IO.HLS.Client")
+
     let read { Settings.Address=address } : seq<Event<MediaFrame>> =
         seq {
             use demuxer = MediaDemuxer.Open(address)
@@ -24,14 +27,14 @@ module Client =
                 |> Seq.map (fun (stream:MediaStream) ->
                     MediaDecoder.CreateDecoder(stream.CodecparRef))
                 |> Seq.toList
-            printfn "%d video stream decoders found" streamDecoders.Length 
+            log.Info(sprintf "%d video stream decoders found" streamDecoders.Length)
             
             for packet in demuxer.ReadPackets() do
                 match streamDecoders.[packet.StreamIndex] with
                 | null ->
-                    printfn "Null decoder %d" packet.StreamIndex
+                    log.Info(sprintf "Null decoder %d" packet.StreamIndex)
                 | decoder when (decoder.CodecType <> Abstractions.AVMediaType.AVMEDIA_TYPE_VIDEO) ->
-                    printfn "Some other decoder codec type %s" (decoder.CodecType.ToString())
+                    log.Info(sprintf  "Some other decoder codec type %s" (decoder.CodecType.ToString()))
                 | decoder ->
                     if (decoder.CodecType = Abstractions.AVMediaType.AVMEDIA_TYPE_VIDEO) then
                         convert.SetOpts(decoder.Width, decoder.Height, Abstractions.AVPixelFormat.AV_PIX_FMT_BGR24)
