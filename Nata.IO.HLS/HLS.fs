@@ -1,8 +1,8 @@
 ﻿namespace Nata.IO.HLS
 
-open NLog
 open FFmpeg.AutoGen
 open FFmpegSharp
+open NLog
 open Nata.IO
 
 type Client = VideoCapture

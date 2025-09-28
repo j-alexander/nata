@@ -7,6 +7,10 @@ open FFmpeg.AutoGen
 open FFmpeg.AutoGen.Bindings.DynamicallyLoaded
 open NUnit.Framework
 
+open NLog
+open NLog.Config
+open NLog.Targets
+
 open Nata.IO
 open Nata.IO.Channel
 open Nata.IO.HLS
@@ -39,6 +43,13 @@ type HLSTests() =
         printfn "Linesize (Stride) of Plane 0: %d bytes" f.Linesize.[0u]
         ()
     
+    [<SetUp>]
+    member x.SetUp() =
+        let config = new LoggingConfiguration()
+        let consoleTarget = new ConsoleTarget("logconsole") :> Target
+        config.AddTarget(consoleTarget)
+        config.AddRule(LogLevel.Debug, LogLevel.Fatal, consoleTarget, "*")
+        LogManager.Configuration <- config
     
     [<Test>]
     member x.TestRead() =
