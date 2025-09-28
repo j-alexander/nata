@@ -1,5 +1,7 @@
 ﻿namespace Nata.IO.HLS.Tests
 
+open System
+open System.IO
 open System.Runtime.InteropServices
 
 open FFmpegSharp
@@ -35,18 +37,19 @@ type HLSTests() =
         { Settings.Address=testAddress }
         |> HLS.Client.connect
 
-    let profileMediaFrame(f: MediaFrame) =
-        printfn "Frame Type: %A" f.PictType // e.g., AV_PICTURE_TYPE_I, AV_PICTURE_TYPE_P
+    let profileMediaFrame i (f: MediaFrame) =
+        printfn "Frame Type: %A" f.PictType
         printfn "Presentation Timestamp (PTS): %d" f.Pts
         printfn "Frame Width: %d" f.Width
         printfn "Frame Height: %d" f.Height
         
         printfn "Data Planes (Components): %d" f.Data.Length
         printfn "Linesize (Stride) of Plane 0: %d bytes" f.Linesize.[0u]
+    
+    let captureMediaFrame i (f:MediaFrame) =
         let r = Codec.fromMediaFrameToBitmap f
-        use file = System.IO.File.OpenWrite(sprintf "/Users/jonathan/Desktop/%s.png" (guid()))
+        use file = File.OpenWrite(sprintf "/Users/jonathan/Desktop/Output/%08d.png" i)
         r.Encode(SKEncodedImageFormat.Png, 100).SaveTo(file)
-        ()
     
     [<SetUp>]
     member x.SetUp() =
@@ -63,10 +66,6 @@ type HLSTests() =
             |> reader
 
         read()
-        |> Seq.take 3
-        |> Seq.iter (fun { Event.Data = data } ->
-            profileMediaFrame data)
-        
-        //let img = frameToSkiaImage mediaFrame
-        //use file = System.IO.File.OpenWrite("frame.png")
-        //img.Encode(SKEncodedImageFormat.Png, 100).SaveTo(file)
+        |> Seq.take 500
+        |> Seq.map Event.data
+        |> Seq.iteri profileMediaFrame
