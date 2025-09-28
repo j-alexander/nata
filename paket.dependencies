@@ -2,6 +2,7 @@ source https://www.nuget.org/api/v2/
 
 nuget Consul
 nuget EventStore.Client ~> 5
+nuget FFmpeg.AutoGen.Bindings.DynamicallyLoaded
 nuget FFmpeg.Loader
 nuget FFmpeg4Sharp
 nuget FSharp.Compiler.Service

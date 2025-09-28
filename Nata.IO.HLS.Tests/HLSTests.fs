@@ -4,6 +4,7 @@ open System
 open System.IO
 open System.Collections.Concurrent
 open System.Reflection
+open System.Runtime.InteropServices
 open System.Threading
 open System.Threading.Tasks
 open FSharp.Data
@@ -13,6 +14,9 @@ open Nata.IO.Event
 open FFmpeg.Loader
 //open OpenCvSharp
 open FFmpegSharp
+open FFmpeg.AutoGen
+open FFmpeg.AutoGen.Bindings
+open FFmpeg.AutoGen.Bindings.DynamicallyLoaded
 open NUnit.Framework
 
 open Nata.Core
@@ -24,18 +28,24 @@ open Nata.IO.HLS
 type HLSTests() =
     
     let setup  =
-        let value = HLS.Setup.run()
-        printfn "HLS.Setup report: %s" value
-        value
+        let arch = RuntimeInformation.ProcessArchitecture;
+        printfn "Running on process architecture: %A" arch
+        
+        //FFmpeg.AutoGen.ffmpeg.RootPath <- "/opt/homebrew/lib"
+        DynamicallyLoadedBindings.LibrariesPath <- "/opt/homebrew/lib"
+        DynamicallyLoadedBindings.Initialize()
+        //FFmpeg.AutoGen.ffmpeg.avdevice_register_all()
+    
+        //printfn "FFmpeg version info: %A" (ffmpeg.av_version_info())
+
+        //printfn "Number of codecs: %A" (ffmpeg.av_codec_count())
+        for x in FFmpeg.AutoGen.ffmpeg.LibraryVersionMap do
+            printfn "%A" x
     
     let testAddress =
         "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8"
-        //"file:/Users/jonathan/Desktop/9c7e9d0b-978b-4bc7-a25d-4488323dd495.mp4"
 
     let connect() =
-        // Print the full build configuration string
-        //let buildInfo = Cv2.GetBuildInformation()
-        //printfn "%s" buildInfo
         { Settings.Address=testAddress }
         |> HLS.Client.connect
 

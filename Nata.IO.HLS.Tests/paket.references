@@ -9,3 +9,4 @@ OpenCvSharp4.runtime.osx_arm64
 FFmpeg4Sharp
 FFmpeg.Loader
 FFmpeg.AutoGen
+FFmpeg.AutoGen.Bindings.DynamicallyLoaded

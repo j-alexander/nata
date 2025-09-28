@@ -9,15 +9,14 @@ module Nata.IO.HLS.Setup
 //
 // in some cases you might find just downloading the very specific ffmpeg version is helpful
 
-let run() =
-    FFmpeg.Loader.FFmpegLoader
-        .SearchApplication()
-        .ThenSearchPaths("/usr/local/lib/") // x86-64 Mac
-        .ThenSearchPaths("/usr/local/bin/") // x86-64 Mac
-        .ThenSearchPaths("/opt/homebrew/lib/") // Arm64 Mac
-        .ThenSearchPaths("/opt/homebrew/bin/") // Arm64 Mac
-        .ThenSearchSystem()
-        .ThenSearchEnvironmentPaths("PATH")
-        .ThenSearchEnvironmentPaths("FFMPEG_PATH")
-        .Load()
-        
+// let run() =
+//     FFmpeg.Loader.FFmpegLoader
+//         .SearchApplication()
+//         .ThenSearchPaths("/usr/local/lib/") // x86-64 Mac
+//         .ThenSearchPaths("/usr/local/bin/") // x86-64 Mac
+//         .ThenSearchPaths("/opt/homebrew/lib/") // Arm64 Mac
+//         .ThenSearchPaths("/opt/homebrew/bin/") // Arm64 Mac
+//         .ThenSearchSystem()
+//         .ThenSearchEnvironmentPaths("PATH")
+//         .ThenSearchEnvironmentPaths("FFMPEG_PATH")
+//         .Load()
