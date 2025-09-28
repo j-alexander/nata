@@ -31,6 +31,7 @@ nuget NUnit.Console
 nuget NUnit3TestAdapter
 nuget Owin
 nuget RabbitMQ.Client
+nuget SkiaSharp
 nuget Suave
 nuget System.ValueTuple
 nuget WebSocket4Net

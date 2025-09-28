@@ -5,3 +5,4 @@ FSharp.Core
 System.ValueTuple
 FFmpeg4Sharp
 FFmpeg.AutoGen
+SkiaSharp

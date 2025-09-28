@@ -6,11 +6,13 @@ open FFmpegSharp
 open FFmpeg.AutoGen
 open FFmpeg.AutoGen.Bindings.DynamicallyLoaded
 open NUnit.Framework
+open SkiaSharp
 
 open NLog
 open NLog.Config
 open NLog.Targets
 
+open Nata.Core
 open Nata.IO
 open Nata.IO.Channel
 open Nata.IO.HLS
@@ -41,6 +43,9 @@ type HLSTests() =
         
         printfn "Data Planes (Components): %d" f.Data.Length
         printfn "Linesize (Stride) of Plane 0: %d bytes" f.Linesize.[0u]
+        let r = Codec.fromMediaFrameToBitmap f
+        use file = System.IO.File.OpenWrite(sprintf "/Users/jonathan/Desktop/%s.png" (guid()))
+        r.Encode(SKEncodedImageFormat.Png, 100).SaveTo(file)
         ()
     
     [<SetUp>]
@@ -61,3 +66,7 @@ type HLSTests() =
         |> Seq.take 3
         |> Seq.iter (fun { Event.Data = data } ->
             profileMediaFrame data)
+        
+        //let img = frameToSkiaImage mediaFrame
+        //use file = System.IO.File.OpenWrite("frame.png")
+        //img.Encode(SKEncodedImageFormat.Png, 100).SaveTo(file)

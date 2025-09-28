@@ -9,3 +9,4 @@ Microsoft.NET.Test.Sdk
 FFmpeg4Sharp
 FFmpeg.AutoGen
 FFmpeg.AutoGen.Bindings.DynamicallyLoaded
+SkiaSharp
