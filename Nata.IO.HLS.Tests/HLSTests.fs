@@ -24,9 +24,14 @@ open Nata.IO.HLS
 type HLSTests() =
     
     do
-        RuntimeInformation.ProcessArchitecture
-        |> printfn "Running on process architecture: %A"
-        DynamicallyLoadedBindings.LibrariesPath <- "/opt/homebrew/lib"
+        let path =
+            match RuntimeInformation.ProcessArchitecture with
+            | Architecture.Arm64 -> "/opt/homebrew/lib"
+            | Architecture.X64 ->  @"C:\Program Files\ffmpeg-7.1.1-full_build-shared\bin"
+            | os ->  failwithf "New architecture (%A) - this test needs to be updated." os
+        if (not (Directory.Exists(path))) then
+            failwithf "FFmpeg 7.1 does not exist at %A" path
+        DynamicallyLoadedBindings.LibrariesPath <- path
         DynamicallyLoadedBindings.Initialize()
         ffmpeg.LibraryVersionMap
         |> Seq.iter (printfn "%A")
@@ -53,7 +58,7 @@ type HLSTests() =
         Codec.fromMediaFrameToBitmap f
         
     let captureMediaFrame i (bitmap:SKBitmap) =
-        use file = File.OpenWrite(sprintf "/Users/jonathan/Desktop/Output/%08d.png" i)
+        use file = File.OpenWrite(sprintf "/Users/Jonathan/Desktop/Output/%08d.png" i)
         bitmap.Encode(SKEncodedImageFormat.Png, 100).SaveTo(file)
     
     [<SetUp>]
@@ -65,12 +70,21 @@ type HLSTests() =
         LogManager.Configuration <- config
     
     (*
+On M3 MacBook Air 24G
 2025-09-28 16:02:34.3330|INFO|Nata.IO.HLS.Tests.HLSTests|Starting
 2025-09-28 16:02:34.3377|INFO|Nata.IO.HLS.Tests.HLSTests|Create required 00:00:00.0008115
 2025-09-28 16:02:43.0970|INFO|Nata.IO.HLS.Client|Selected video stream 1 for decoding
 2025-09-28 16:02:54.3557|INFO|Nata.IO.HLS.Tests.HLSTests|Stream required 00:00:20.0177841
 2025-09-28 16:02:55.4002|INFO|Nata.IO.HLS.Tests.HLSTests|Conversion required 00:00:01.0443470
 2025-09-28 16:03:16.3706|INFO|Nata.IO.HLS.Tests.HLSTests|Save required 00:00:20.9695205
+
+On 9950X 64G
+2025-10-08 22:19:25.8820|INFO|Nata.IO.HLS.Tests.HLSTests|Starting
+2025-10-08 22:19:25.8820|INFO|Nata.IO.HLS.Tests.HLSTests|Create required 00:00:00.0011766
+2025-10-08 22:19:37.4102|INFO|Nata.IO.HLS.Client|Selected video stream 1 for decoding
+2025-10-08 22:19:39.8954|INFO|Nata.IO.HLS.Tests.HLSTests|Stream required 00:00:14.0074642
+2025-10-08 22:19:40.6886|INFO|Nata.IO.HLS.Tests.HLSTests|Conversion required 00:00:00.7929683
+2025-10-08 22:19:58.4751|INFO|Nata.IO.HLS.Tests.HLSTests|Save required 00:00:17.7866143
     *)
     [<Test>]
     member x.TestRead() =
