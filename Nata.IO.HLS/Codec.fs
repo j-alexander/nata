@@ -2,11 +2,9 @@ module Nata.IO.HLS.Codec
 
 open System
 open SkiaSharp
-open System.Runtime.InteropServices
 open Microsoft.FSharp.NativeInterop
 open FFmpeg.AutoGen
 open FFmpegSharp
-open Nata.Core
 
 let fromMediaFrameToBitmap(frame:MediaFrame) =
     

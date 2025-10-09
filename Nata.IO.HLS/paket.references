@@ -5,4 +5,5 @@ FSharp.Core
 System.ValueTuple
 FFmpeg4Sharp
 FFmpeg.AutoGen
+FFmpeg.AutoGen.Bindings.DynamicallyLoaded
 SkiaSharp

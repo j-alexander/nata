@@ -6,8 +6,6 @@ open System.IO
 open System.Runtime.InteropServices
 
 open FFmpegSharp
-open FFmpeg.AutoGen
-open FFmpeg.AutoGen.Bindings.DynamicallyLoaded
 open NUnit.Framework
 open SkiaSharp
 
@@ -23,18 +21,13 @@ open Nata.IO.HLS
 [<TestFixture>]
 type HLSTests() =
     
-    do
-        let path =
+    let path =
+        let defaultPath =
             match RuntimeInformation.ProcessArchitecture with
             | Architecture.Arm64 -> "/opt/homebrew/lib"
             | Architecture.X64 ->  @"C:\Program Files\ffmpeg-7.1.1-full_build-shared\bin"
             | os ->  failwithf "New architecture (%A) - this test needs to be updated." os
-        if (not (Directory.Exists(path))) then
-            failwithf "FFmpeg 7.1 does not exist at %A" path
-        DynamicallyLoadedBindings.LibrariesPath <- path
-        DynamicallyLoadedBindings.Initialize()
-        ffmpeg.LibraryVersionMap
-        |> Seq.iter (printfn "%A")
+        new DirectoryInfo(defaultPath)
     
     let log = LogManager.GetLogger("Nata.IO.HLS.Tests.HLSTests")
     
@@ -42,7 +35,8 @@ type HLSTests() =
         "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8"
 
     let connect() =
-        { Settings.Address=testAddress }
+        { Settings.HttpLiveStreamingAddress=testAddress
+          Settings.FFmpeg71DynamicLibraryPath = path }
         |> HLS.Client.connect
 
     let profileMediaFrame i (f: MediaFrame) =

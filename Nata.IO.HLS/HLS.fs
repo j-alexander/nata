@@ -1,6 +1,8 @@
 ﻿namespace Nata.IO.HLS
 
+open System.IO
 open FFmpeg.AutoGen
+open FFmpeg.AutoGen.Bindings.DynamicallyLoaded
 open FFmpegSharp
 open NLog
 open Nata.IO
@@ -8,7 +10,8 @@ open Nata.IO
 type Client = VideoCapture
 
 type Settings = {
-    Address : string
+    HttpLiveStreamingAddress : string
+    FFmpeg71DynamicLibraryPath : DirectoryInfo
 }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
@@ -16,7 +19,7 @@ module Client =
             
     let log = LogManager.GetLogger("Nata.IO.HLS.Client")
     
-    let read { Settings.Address = address } : seq<Event<MediaFrame>> =
+    let read { Settings.HttpLiveStreamingAddress = address } : seq<Event<MediaFrame>> =
         seq {
             use demuxer = MediaDemuxer.Open(address)
             use convert = new PixelConverter()
@@ -58,7 +61,18 @@ module Client =
                             yield bgraFrame.Clone() |> Event.create
         }
             
+    let initialize (path:DirectoryInfo) =
+        if (path.Exists |> not) then
+            path.FullName
+            |> sprintf "FFmpeg 7.1 does not exist at %A"
+            |> failwith
+        DynamicallyLoadedBindings.LibrariesPath <- path.FullName
+        DynamicallyLoadedBindings.Initialize()
+        ffmpeg.LibraryVersionMap
+        |> Seq.iter (sprintf "%A" >> log.Info)
+    
     let connect (settings:Settings) =
+        initialize settings.FFmpeg71DynamicLibraryPath
         [
             Capability.Reader <| fun () ->
                 read settings
