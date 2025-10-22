@@ -1,0 +1,63 @@
+FROM nata/sqlserver
+
+# Configure Powershell as the Default Shell
+SHELL ["powershell", "-NoProfile", "-Command", "$ErrorActionPreference = 'Stop';"]
+
+# 7 ZIP
+# 
+ADD https://www.7-zip.org/a/7z2501-x64.exe /7z-x64.exe
+RUN Start-Process -Wait -FilePath '\7z-x64.exe' -ArgumentList '/S'     ; \
+    SetX /M PATH "\"C:\Program Files\7-zip;$env:PATH\""                ; \
+    Remove-Item -Force /7z-x64.exe
+
+# NSSM
+# 
+ADD https://nssm.cc/release/nssm-2.24.zip /nssm-2.24.zip
+RUN Expand-Archive -Path /nssm-2.24.zip -DestinationPath /              ; \
+    Move-Item /nssm-2.24/win64 "\"C:\Program Files\nssm"\"              ; \
+    Remove-Item -Recurse -Force /nssm-2.24                              ; \
+    SetX /M PATH "\"C:\Program Files\nssm;$env:PATH\""                  ; \
+    Remove-Item -Force /nssm-2.24.zip
+
+# PS Tools
+# 
+ADD https://live.sysinternals.com/pslist.exe '/windows/system32/pslist.exe'
+ADD https://live.sysinternals.com/psinfo.exe '/windows/system32/psinfo.exe'
+ADD https://live.sysinternals.com/psexec.exe '/windows/system32/psexec.exe'
+ADD https://live.sysinternals.com/pskill.exe '/windows/system32/pskill.exe'
+ADD https://live.sysinternals.com/handle.exe '/windows/system32/handle.exe'
+ADD https://live.sysinternals.com/procdump64.exe '/windows/system32/procdump64.exe'
+
+# Cosmos DB Emulator (Jun 24, 2025)
+# 
+ADD https://cdbemulator-dmhwaeevbhd3e9f8.b02.azurefd.net/msi/pipeline/azure-cosmosdb-emulator-2.14.25-ec34375b.msi /CosmosDB.Emulator.msi
+RUN Start-Process -FilePath 'msiexec.exe'                         \
+        -ArgumentList '/quiet','/qn','/norestart',                \
+                      '/log','\CosmosDB.Emulator.log',            \
+                      '/i','\CosmosDB.Emulator.msi'               \
+        -NoNewWindow                                              \
+        -Wait                                                   ; \
+    Remove-Item -Force /CosmosDB.Emulator.msi                   ; \
+    Remove-Item -Force /CosmosDB.Emulator.log                   ; \
+    New-Item /CosmosDB/Data -Type Directory
+RUN SetX /M PATH "\"C:\Program Files\Azure Cosmos DB Emulator;$env:PATH\""
+RUN nssm install CosmosDB                                             \
+    'C:\Program Files\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe' \
+        /noui                                                         \
+        /disablethrottling                                            \
+        /port=8081                                                    \
+        /datapath=\CosmosDB\Data                                    ; \
+    nssm set CosmosDB start SERVICE_DEMAND_START
+EXPOSE 8081 10250 10251 10252 10253 10254
+
+CMD Write-Host 'Starting SQL Server Service:'                        ; \
+    net start mssqlserver                                            ; \
+    Write-Host 'Starting CosmosDB Emulator:'                         ; \
+    Import-Module 'C:\Program Files\Azure Cosmos DB Emulator\PSModules\Microsoft.Azure.CosmosDB.Emulator' ; \
+    net start cosmosdb                                               ; \
+    Write-Host 'Waiting for StartPending.'                           ; \
+    Wait-CosmosDbEmulator -Status StartPending                       ; \
+    Write-Host 'Waiting for Running.'                                ; \
+    Wait-CosmosDbEmulator -Status StartPending                       ; \
+    Write-Host 'Waiting for Stopped'                                 ; \
+    Wait-CosmosDbEmulator -Status Stopped         

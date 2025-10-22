@@ -9,7 +9,7 @@ CMD PowerShell.exe
 
 # 7 ZIP
 # 
-ADD http://www.7-zip.org/a/7z1900-x64.exe /7z-x64.exe
+ADD https://www.7-zip.org/a/7z2501-x64.exe /7z-x64.exe
 RUN Start-Process -Wait -FilePath '\7z-x64.exe' -ArgumentList '/S'     ; \
     SetX /M PATH "\"C:\Program Files\7-zip;$env:PATH\""                ; \
     Remove-Item -Force /7z-x64.exe
@@ -35,7 +35,7 @@ ADD https://live.sysinternals.com/handle.exe '/windows/system32/handle.exe'
 ADD https://live.sysinternals.com/procdump64.exe '/windows/system32/procdump64.exe'
 
 
-# Install Open JDK 14
+# Install Open JDK 14.0.1 (build 14.0.1+7) Windows 64-bit (see https://jdk.java.net/archive/)
 # 
 ADD https://download.java.net/java/GA/jdk14.0.1/664493ef4a6946b186ff29eb326336a2/7/GPL/openjdk-14.0.1_windows-x64_bin.zip /openjdk-14.0.1_windows-x64_bin.zip
 RUN Expand-Archive -Path /openjdk-14.0.1_windows-x64_bin.zip -DestinationPath /  ; \
@@ -44,12 +44,13 @@ RUN Expand-Archive -Path /openjdk-14.0.1_windows-x64_bin.zip -DestinationPath / 
     SetX /M PATH      "\"\Program Files\Open JDK\bin;$env:PATH\""                ; \
     SetX /M JAVA_HOME "\"\Program Files\Open JDK\""
 
+
 # Install Kafka w/ Zookeeper
 # 
-ADD https://downloads.apache.org/kafka/2.6.1/kafka_2.13-2.6.1.tgz \kafka_2.13-2.6.1.tgz
+ADD https://archive.apache.org/dist/kafka/2.6.1/kafka_2.13-2.6.1.tgz \kafka_2.13-2.6.1.tgz
 RUN 7z.exe e \kafka_2.13-2.6.1.tgz -o\                          ; \
     7z.exe x \kafka_2.13-2.6.1.tar -o\                          ; \
-    mv \kafka_2.13-2.6.1 \"\Kafka\"                             ; \
+    mv \kafka_2.13-2.6.1 \Kafka                                 ; \
     rm \kafka_2.13-2.6.1.tar                                    ; \
     rm \kafka_2.13-2.6.1.tgz                                    ; \
     New-Item /Kafka/data -Type Directory                        ; \
@@ -140,14 +141,15 @@ RUN SetX /M PATH "\"C:\Program Files (x86)\Microsoft SDKs\Azure\Storage Emulator
 
 RUN New-Item /AzureStorage -Type Directory
 ADD AzureStorage/Run-Service.ps1 /AzureStorage/Run-Service.ps1
-RUN Write-Host "Initializing Azure Storage Service"                                                                                        ; \
-    $Password =  \"HGnJZr4smc!\"                                                                                                           ; \
-    $Secure = $Password | ConvertTo-SecureString -Force -AsPlainText                                                                       ; \
-    New-LocalUser -Name \"AzureStorage\" -Description \"Azure Storage\" -Password $Secure -PasswordNeverExpires                            ; \
-    Add-LocalGroupMember -Group \"Administrators\" -Member \"AzureStorage\"                                                                ; \
-    nssm install AzureStorage 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -command /AzureStorage/Run-Service.ps1       ; \
-    nssm set AzureStorage AppStdout 'C:\AzureStorage\Service.log'                                                                      ; \
-    nssm set AzureStorage ObjectName \"$env:computername\AzureStorage\" $Password
+RUN Write-Host "Initializing Azure Storage Service"                                                                              ; \
+    $Password =  'HGnJZr4smc!'                                                                                                   ; \
+    $Secure = $Password | ConvertTo-SecureString -Force -AsPlainText                                                             ; \
+    New-LocalUser -Name 'AzureStorage' -Description 'Azure Storage' -Password $Secure -PasswordNeverExpires                      ; \
+    Add-LocalGroupMember -Group 'Administrators' -Member 'AzureStorage'                                                          ; \
+    nssm install AzureStorage 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe' -command /AzureStorage/Run-Service.ps1 ; \
+    nssm set AzureStorage AppStdout 'C:\AzureStorage\Service.log'                                                                ; \
+    $Computer = $env:computername + '\AzureStorage'                                                                              ; \
+    nssm set AzureStorage ObjectName $Computer $Password
 
 
 # EventStore 5.0.9
@@ -164,13 +166,13 @@ RUN nssm install EventStore                                       \
          --ext-ip 0.0.0.0                                         \
          --ext-http-prefixes http://+:2113/                     ; \
     nssm set EventStore AppStdOut                                 \
-         'C:\EventStore\eventstore.log'
+         'C:\EventStore\EventStore.log'
 EXPOSE 1113 2113
 
 
-# Cosmos DB Emulator (Jan 01, 2021)
+# Cosmos DB Emulator (Jun 24, 2025)
 # 
-ADD https://cosmosdbportalstorage.azureedge.net/emulator/2021_01_01_2.11.10-595e6574/azure-cosmosdb-emulator-2.11.10-595e6574.msi /CosmosDB.Emulator.msi
+ADD https://cdbemulator-dmhwaeevbhd3e9f8.b02.azurefd.net/msi/pipeline/azure-cosmosdb-emulator-2.14.25-ec34375b.msi /CosmosDB.Emulator.msi
 RUN Start-Process -FilePath 'msiexec.exe'                         \
         -ArgumentList '/quiet','/qn','/norestart',                \
                       '/log','\CosmosDB.Emulator.log',            \
@@ -223,10 +225,10 @@ ADD https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.8.12/rabbit
 RUN Expand-Archive -Path /rabbitmq-server-windows-3.8.12.zip -DestinationPath / ; \
     Move-Item /rabbitmq_server-3.8.12 /RabbitMQ                         ; \
     Remove-Item -Force /rabbitmq-server-windows-3.8.12.zip
-RUN Set-Location /RabbitMQ/sbin                                        ; \
-    $env:RABBITMQ_NODE_IP_ADDRESS = \"127.0.0.1\"                      ; \
-    $env:RABBITMQ_NODENAME = \"rabbitmq@localhost\"                    ; \
-    $env:COMPUTERNAME = \"localhost\"                                  ; \
+RUN Set-Location /RabbitMQ/sbin                                         ; \
+    $env:RABBITMQ_NODE_IP_ADDRESS = '127.0.0.1'                         ; \
+    $env:RABBITMQ_NODENAME = 'rabbitmq@localhost'                       ; \
+    $env:COMPUTERNAME = 'localhost'                                     ; \
     ./rabbitmq-service.bat install
 
 
