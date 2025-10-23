@@ -188,10 +188,10 @@ RUN Start-Process -FilePath 'msiexec.exe'                         \
 RUN SetX /M PATH "\"C:\Program Files\Azure Cosmos DB Emulator;$env:PATH\""
 RUN nssm install CosmosDB                                             \
     'C:\Program Files\Azure Cosmos DB Emulator\CosmosDB.Emulator.exe' \
-        /noui                                                         \
-        /disablethrottling                                            \
-        /port=8081                                                    \
-        /datapath=\CosmosDB\Data                                    ; \
+        /NoUI                                                         \
+        /DisableRateLimiting                                          \
+        /Port=8081                                                    \
+        /DataPath=\CosmosDB\Data                                    ; \
     nssm set CosmosDB start SERVICE_DEMAND_START
 EXPOSE 8081 10250 10251 10252 10253 10254
 
