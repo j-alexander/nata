@@ -152,19 +152,22 @@ RUN Write-Host "Initializing Azure Storage Service"                             
     nssm set AzureStorage ObjectName $Computer $Password
 
 
-# EventStore 5.0.9
-# 
-ADD https://raw.githubusercontent.com/EventStore/Downloads/master/win/EventStore-OSS-Win-v5.0.9.zip /EventStore.zip
-RUN Expand-Archive -Path /EventStore.zip -DestinationPath /EventStore  ; \
-    Remove-Item -Force /EventStore.zip                                 ; \
-    New-Item -Path /EventStore/Data -ItemType Directory                ; \
+# EventStore 22.10.5
+ADD https://github.com/EventStore/EventStore/releases/download/oss-v22.10.5/EventStore-OSS-Windows-2019-v22.10.5.zip /EventStore.zip
+RUN Expand-Archive -Path /EventStore.zip -DestinationPath /    ; \
+    Move-Item EventStore-OSS-Windows-2019-v22.10.5 /EventStore ; \
+    Remove-Item -Force /EventStore.zip                         ; \
+    New-Item -Path /EventStore/Data -ItemType Directory        ; \
     New-Item -Path /EventStore/Logs -ItemType Directory
 RUN nssm install EventStore                                       \
          'C:\EventStore\EventStore.ClusterNode.exe'               \
          --db /EventStore/Data                                    \
          --log /EventStore/Logs                                   \
          --ext-ip 0.0.0.0                                         \
-         --ext-http-prefixes http://+:2113/                     ; \
+         --enable-external-tcp true                               \
+         --run-projections all                                    \
+         --enable-atom-pub-over-http true                         \
+         --insecure                                             ; \
     nssm set EventStore AppStdOut                                 \
          'C:\EventStore\EventStore.log'
 EXPOSE 1113 2113
