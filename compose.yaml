@@ -43,11 +43,13 @@ services:
     environment:
       - ZOO_STANDALONE_ENABLED=true
       - ZOO_CLIENT_PORT=2181
+      - ZOOKEEPER_CLIENT_PORT=2181
       - ZOO_AUTOPURGE_SNAPRETAINCOUNT=3
       - ZOO_AUTOPURGE_PURGEINTERVAL=24
     restart: unless-stopped
   kafka:
-    #3.9.* is the final version to support our Kafunk client
+    #apache/kafka-3.9.1 is the final version to support our Kafunk client (Apache Kafka 3.9.*)
+    #cp-kafka:6.2.0 is the final version to support both our KafkaNet client and Kafunk (Apache Kafka 2.8.x)
     image: confluentinc/cp-kafka:6.2.0
     hostname: kafka
     container_name: kafka
