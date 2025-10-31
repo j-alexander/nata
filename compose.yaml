@@ -34,6 +34,13 @@ services:
     container_name: consul
     ports:
       - "8500:8500"
+  rabbitmq:
+    image: rabbitmq:latest
+    hostname: rabbitmq
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
   zookeeper:
     #cp-zookeeper:6.2.0 uses zookeeper 3.5.x
     image: confluentinc/cp-zookeeper:6.2.0
