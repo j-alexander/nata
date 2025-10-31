@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite:latest
@@ -9,7 +8,6 @@ services:
       - "10001:10001" # Queue service
       - "10002:10002" # Table service
     command: "azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --location /data --debug /data/debug.log"
-    restart: "always"
   eventstore.db:
     #v23.* is the final version to support our TCP client
     image: eventstore/eventstore:23.10.7-jammy
@@ -41,6 +39,27 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+  cosmosdb:
+    image: "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"
+    hostname: cosmosdb
+    container_name: cosmosdb
+    mem_limit: 8g
+    cpu_count: 4
+    environment:
+      - AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE=127.0.0.1
+    ports:
+      - "8081:8081"
+      - "8900:8900"
+      - "8901:8901"
+      - "8979:8979"
+      - "10250:10250"
+      - "10251:10251"
+      - "10252:10252"
+      - "10253:10253"
+      - "10254:10254"
+      - "10255:10255"
+      - "10256:10256"
+      - "10350:10350"
   zookeeper:
     #cp-zookeeper:6.2.0 uses zookeeper 3.5.x
     image: confluentinc/cp-zookeeper:6.2.0
@@ -54,7 +73,6 @@ services:
       - ZOOKEEPER_CLIENT_PORT=2181
       - ZOO_AUTOPURGE_SNAPRETAINCOUNT=3
       - ZOO_AUTOPURGE_PURGEINTERVAL=24
-    restart: unless-stopped
   kafka-28:
     #cp-kafka:6.2.0 is the final version to support both our KafkaNet client and Kafunk (Apache Kafka 2.8.x)
     image: confluentinc/cp-kafka:6.2.0

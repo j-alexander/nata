@@ -3,6 +3,9 @@
 open System
 open System.IO
 open System.Linq
+open System.Net.Http
+open System.Net.Security
+open System.Security.Cryptography.X509Certificates
 open System.Threading.Tasks
 open System.Net
 open Microsoft.Azure.Documents
@@ -37,7 +40,19 @@ module Collection =
         let documentCollection = new DocumentCollection(Id=collection.Name)
         let documentCollectionUri = UriFactory.CreateDocumentCollectionUri(collection.Database, collection.Name)
 
-        let client = new DocumentClient(collection.Endpoint.Url, collection.Endpoint.Key)
+        let httpClientHandler : HttpClientHandler =
+            if Endpoint.emulator = collection.Endpoint then
+                let handler = new HttpClientHandler()
+                let callback (message:HttpRequestMessage)
+                             (cert:X509Certificate)
+                             (chain:X509Chain)
+                             (errors:SslPolicyErrors) =
+                    true
+                handler.ServerCertificateCustomValidationCallback <- new Func<_,_,_,_,_>(callback)
+                handler
+            else null
+
+        let client = new DocumentClient(collection.Endpoint.Url, collection.Endpoint.Key, httpClientHandler)
 
         let databaseResponse =
             client.CreateDatabaseIfNotExistsAsync(database)
