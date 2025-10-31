@@ -46,8 +46,7 @@ module Collection =
                 let callback (message:HttpRequestMessage)
                              (cert:X509Certificate)
                              (chain:X509Chain)
-                             (errors:SslPolicyErrors) =
-                    true
+                             (errors:SslPolicyErrors) = ("CN=localhost" = cert.Subject)
                 handler.ServerCertificateCustomValidationCallback <- new Func<_,_,_,_,_>(callback)
                 handler
             else null

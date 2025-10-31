@@ -43,8 +43,6 @@ services:
     image: "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"
     hostname: cosmosdb
     container_name: cosmosdb
-    mem_limit: 8g
-    cpu_count: 4
     environment:
       - AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE=127.0.0.1
     ports:
