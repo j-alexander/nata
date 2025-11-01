@@ -107,27 +107,42 @@ type DocumentTests() =
                 |> Seq.take 11
                 |> Seq.map (Event.data >> fun { Value=x } -> x)
 
-        let results : int list =
-            let getsSlower, getsFaster =
-                (fun i -> 2 * i),
-                (fun i -> Math.Max(1, 2048/i))
-            Seq.consume
-                [
-                    generation getsSlower
-                    //|> Seq.log (printfn "The early bird gets the worm:%d")
-                    generation getsFaster
-                    //|> Seq.log (printfn "The second mouse gets the cheese:%d")
-                ]
-            |> Seq.take 11
-            |> Seq.toList
+            let expectation : int list =
+                [ 4; 8; 16; 32; 64; 128; 256; 512; 1024; 2048; 4096 ]
+                
+            let results : int list =
+                Seq.consume
+                    [
+                        generation firstMsDelays
+                        //|> Seq.log (printfn "The early bird gets the worm:%d")
+                        generation secondMsDelays
+                        //|> Seq.log (printfn "The second mouse gets the cheese:%d")
+                    ]
+                |> Seq.take expectation.Length
+                |> Seq.toList
 
-        //let results =
-        //  [ 4; 8; 16; 32; 64; 128; 256;   4;  512;    8;   16 ]
-        let expectation : int list =
-            [ 4; 8; 16; 32; 64; 128; 256; 512; 1024; 2048; 4096 ]
-        Assert.AreEqual(expectation, results) // TODO: FAIL
-        Assert.LessOrEqual(
-            4096,
-            readFrom Position.End
-            |> Seq.map (fst >> Event.data >> fun { Value=x } -> x)
-            |> Seq.head)
+            Assert.AreEqual(expectation, results)
+            Assert.LessOrEqual(
+                4096,
+                readFrom Position.End
+                |> Seq.map (fst >> Event.data >> fun { Value=x } -> x)
+                |> Seq.head)
+    
+        let firstIsTwiceAsFast =
+            (fun i -> i),
+            (fun i -> 2*i)
+        let secondEventuallyPassesFirst = 
+            (fun i -> 2 * i),
+            (fun i -> Math.Max(1, 2048/i))
+        let nondeterministic =
+            let random = new Random()
+            (fun i -> random.Next(0, 2*i)),
+            (fun i -> random.Next(0, 2*i))
+            
+        //printfn "Verifying (firstIsTwiceAsFast)"
+        verify(firstIsTwiceAsFast)
+        //printfn "Verifying (secondEventuallyPassesFirst)"
+        verify(secondEventuallyPassesFirst)
+        for i in 1..3 do
+            //printfn $"Verifying (nondeterministic iteration #{i})"
+            verify (nondeterministic)
