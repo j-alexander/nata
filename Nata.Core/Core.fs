@@ -76,7 +76,7 @@ module Core =
                             |> Async.StartAsTask
                             :> Task
                     let complete i =
-                        tasks.[i] <- TaskCompletionSource().Task :> Task
+                        tasks.[i] <- TaskCompletionSource().Task
 
                     [ 0 .. n-1 ]
                     |> List.iter receive

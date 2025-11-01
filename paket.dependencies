@@ -3,7 +3,7 @@ source https://www.nuget.org/api/v2/
 nuget Consul
 nuget EventStore.Client ~> 5
 nuget FSharp.Compiler.Service
-nuget FSharp.Core ~> 5
+nuget FSharp.Core
 nuget FSharp.Data
 nuget FSharp.Formatting >= 2.14.4
 nuget FSharp.Formatting.CommandTool

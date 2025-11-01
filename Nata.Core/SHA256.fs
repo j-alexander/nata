@@ -92,7 +92,8 @@ module SHA256 =
         |> Seq.toArray
 
     let referenceBytes (data:byte[]) =
-        (new SHA256Managed()).ComputeHash(data)
+        use sha = SHA256.Create()
+        sha.ComputeHash(data)
 
     let private hex =
         Array.map (sprintf "%02x")
