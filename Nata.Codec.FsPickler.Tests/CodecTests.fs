@@ -14,7 +14,7 @@ let utf8 =
         "Hello"
         "🙂"
         "🐈"
-        "©2019 Jonathan Leaver"
+        "©2025 Jonathan Leaver"
     ]
 
 [<Test>]

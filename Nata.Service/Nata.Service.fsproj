@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net80</TargetFramework>
     <Authors>Jonathan Leaver</Authors>
-    <Copyright>© 2016 Jonathan Leaver</Copyright>
+    <Copyright>© 2025 Jonathan Leaver</Copyright>
     <PackageIconUrl>https://avatars3.githubusercontent.com/u/4975537</PackageIconUrl>
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/j-alexander/nata</PackageProjectUrl>
