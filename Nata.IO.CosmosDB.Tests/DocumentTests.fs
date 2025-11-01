@@ -91,20 +91,21 @@ type DocumentTests() =
 
     [<Test>]
     member x.TestTwoCompetitors() =
-        let compete, readFrom, write =
-            let channel = channel()
-            Channel.competitor channel,
-            Channel.readerFrom channel,
-            Channel.writer channel
-
-        let generation (delay:int->int) : int seq =
-            compete (Option.defaultValue (Event.create { Value=2 }) >> fun e ->
-                let input = Event.data e
-                let output = { Value = input.Value * 2 }
-                Thread.Sleep(delay input.Value)
-                Event.create output)
-            |> Seq.take 11
-            |> Seq.map (Event.data >> fun { Value=x } -> x)
+            
+        let verify (firstMsDelays, secondMsDelays) =
+            let compete, readFrom =
+                let channel = channel()
+                Channel.competitor channel,
+                Channel.readerFrom channel
+  
+            let generation (delay:int->int) : int seq =
+                compete (Option.defaultValue (Event.create { Value=2 }) >> fun e ->
+                    let input = Event.data e
+                    let output = { Value = input.Value * 2 }
+                    Thread.Sleep(delay input.Value)
+                    Event.create output)
+                |> Seq.take 11
+                |> Seq.map (Event.data >> fun { Value=x } -> x)
 
         let results : int list =
             let getsSlower, getsFaster =

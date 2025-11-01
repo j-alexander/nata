@@ -82,7 +82,10 @@ module Document =
                             |> Async.RunSynchronously
                             |>
                             function
-                            | Choice1Of2 response -> response.Headers.ETag
+                            | Choice1Of2 response when response.IsSuccessStatusCode &&
+                                                       response.StatusCode <> HttpStatusCode.PreconditionFailed ->
+                                response.Headers.ETag
+                            | Choice1Of2 _
                             | Choice2Of2 ResourceAlreadyExists -> raise (new Position.Invalid<_>(position))
                             | Choice2Of2 e -> Async.reraise(e)
                         | Position.After (Position.At etag)
@@ -95,7 +98,9 @@ module Document =
                             |> Async.RunSynchronously
                             |>
                             function
-                            | Choice1Of2 response when response.IsSuccessStatusCode -> response.Headers.ETag
+                            | Choice1Of2 response when response.IsSuccessStatusCode &&
+                                                       response.StatusCode <> HttpStatusCode.PreconditionFailed ->
+                                response.Headers.ETag
                             | Choice1Of2 _
                             | Choice2Of2 ResourceNotFound
                             | Choice2Of2 PreconditionNotMet -> raise (new Position.Invalid<_>(position))
