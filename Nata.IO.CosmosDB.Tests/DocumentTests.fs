@@ -19,9 +19,9 @@ type TestNumber = {
 type DocumentTests() = 
 
     let connect() =
-        Document.connect { Collection.Endpoint = Endpoint.emulator
-                           Collection.Database = guid()
-                           Collection.Name = guid() }
+        Document.connect { Container.Settings.Endpoint = Endpoint.emulator
+                           Container.Settings.Database = guid()
+                           Container.Settings.Name = guid() }
 
     let channel() =
         connect()
@@ -89,13 +89,11 @@ type DocumentTests() =
         writeTo (Position.At overwritten)
         |> ignore
 
-    [<Test>]
-    member x.TestTwoCompetitors() =
-        let compete, readFrom, write =
+    member private x.Compete(firstMsDelays : int->int, secondMsDelays: int->int) =
+        let compete, readFrom =
             let channel = channel()
             Channel.competitor channel,
-            Channel.readerFrom channel,
-            Channel.writer channel
+            Channel.readerFrom channel
 
         let generation (delay:int->int) : int seq =
             compete (Option.defaultValue (Event.create { Value=2 }) >> fun e ->
@@ -106,25 +104,38 @@ type DocumentTests() =
             |> Seq.take 11
             |> Seq.map (Event.data >> fun { Value=x } -> x)
 
-        let results =
-            let getsSlower, getsFaster =
-                (fun i -> 2 * i),
-                (fun i -> Math.Max(1, 2048/i))
-            Seq.consume
-                [
-                    generation getsSlower
-                    //|> Seq.log (printfn "The early bird gets the worm:%d")
-                    generation getsFaster
-                    //|> Seq.log (printfn "The second mouse gets the cheese:%d")
-                ]
-            |> Seq.take 11
-            |> Seq.toList
-
         let expectation : int list =
             [ 4; 8; 16; 32; 64; 128; 256; 512; 1024; 2048; 4096 ]
+            
+        let results : int list =
+            Seq.consume
+                [
+                    generation firstMsDelays
+                    //|> Seq.log (printfn "The early bird gets the worm:%d")
+                    generation secondMsDelays
+                    //|> Seq.log (printfn "The second mouse gets the cheese:%d")
+                ]
+            |> Seq.take expectation.Length
+            |> Seq.toList
+
         Assert.AreEqual(expectation, results)
         Assert.LessOrEqual(
             4096,
             readFrom Position.End
             |> Seq.map (fst >> Event.data >> fun { Value=x } -> x)
             |> Seq.head)
+
+    [<Test>]
+    member x.TestTwoCompetitiorsWhereFirstTwiceAsFast() =
+        x.Compete((fun i -> i), (fun i -> 2*i))
+
+    [<Test>]
+    member x.TestTwoCompetitiorsWhereSecondEventuallyPassesFirst() =
+        x.Compete((fun i -> 2 * i), (fun i -> Math.Max(1, 2048/i)))
+
+    [<Test>]
+    member x.TestTwoCompetitorsNonDeterministically() =
+        let nonDeterministic =
+            let random = new Random()
+            fun i -> random.Next(0, 2*i)
+        x.Compete(nonDeterministic, nonDeterministic)

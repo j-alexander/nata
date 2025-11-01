@@ -2,4 +2,4 @@ FSharp.Data
 Newtonsoft.Json
 FSharp.Core
 System.ValueTuple
-Microsoft.Azure.DocumentDB.Core
+Microsoft.Azure.Cosmos
