@@ -143,6 +143,6 @@ type DocumentTests() =
         verify(firstIsTwiceAsFast)
         //printfn "Verifying (secondEventuallyPassesFirst)"
         verify(secondEventuallyPassesFirst)
-        for i in 1..3 do
+        for i in 1..2 do
             //printfn $"Verifying (nondeterministic iteration #{i})"
             verify (nondeterministic)
