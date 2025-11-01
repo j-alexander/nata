@@ -95,15 +95,15 @@ services:
     container_name: kafka-39
     ports:
       - "9092:9092"
-  eventhub:
-    image: mcr.microsoft.com/azure-messaging/eventhubs-emulator:latest
-    hostname: eventhub
-    container_name: eventhub
-    depends_on:
-      - azurite
-    environment:
-      - ACCEPT_EULA=Y
-      - BLOB_SERVER=azurite
-      - METADATA_SERVER=azurite
-    ports:
-      - "5672:5672"
+#  eventhub:
+#    image: mcr.microsoft.com/azure-messaging/eventhubs-emulator:latest
+#    hostname: eventhub
+#    container_name: eventhub
+#    depends_on:
+#      - azurite
+#    environment:
+#      - ACCEPT_EULA=Y
+#      - BLOB_SERVER=azurite
+#      - METADATA_SERVER=azurite
+#    ports:
+#      - "5672:5672"

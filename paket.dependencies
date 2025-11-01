@@ -3,7 +3,7 @@ source https://www.nuget.org/api/v2/
 nuget Consul
 nuget EventStore.Client ~> 5
 nuget FSharp.Compiler.Service
-nuget FSharp.Core
+nuget FSharp.Core ~> 5
 nuget FSharp.Data
 nuget FSharp.Formatting >= 2.14.4
 nuget FSharp.Formatting.CommandTool
@@ -23,11 +23,11 @@ nuget Microsoft.Owin.Host.HttpListener
 nuget Microsoft.Owin.Hosting
 nuget Newtonsoft.Json
 nuget NLog
-nuget NUnit
+nuget NUnit ~> 3
 nuget NUnit.Console
 nuget NUnit3TestAdapter
 nuget Owin
-nuget RabbitMQ.Client
+nuget RabbitMQ.Client ~> 6
 nuget Suave
 nuget System.ValueTuple
 nuget WebSocket4Net

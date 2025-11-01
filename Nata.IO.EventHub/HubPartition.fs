@@ -4,6 +4,7 @@ open System
 open Microsoft.Azure.EventHubs
 open Nata.Core
 open Nata.IO
+open Nata.IO.EventHub
 
 module HubPartition =
 
