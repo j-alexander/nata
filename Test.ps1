@@ -14,5 +14,5 @@ Write-Host "Mounting $Source into the container as C:\Nata"
 
 $Command = "net start CosmosDB ; Set-Location /Nata ; ./Test-Local.ps1"
 
-docker run --rm -it -v $Volume nata/test PowerShell.exe -NoProfile -Command "$Command"
+docker run --rm --memory=8GB -it -v $Volume nata/test PowerShell.exe -NoProfile -Command "$Command"
 

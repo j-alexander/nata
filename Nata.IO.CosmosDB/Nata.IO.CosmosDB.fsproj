@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net80</TargetFramework>
     <Authors>Jonathan Leaver</Authors>
-    <Copyright>© 2016 Jonathan Leaver</Copyright>
+    <Copyright>© 2025 Jonathan Leaver</Copyright>
     <PackageIconUrl>https://avatars3.githubusercontent.com/u/4975537</PackageIconUrl>
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/j-alexander/nata</PackageProjectUrl>
@@ -15,7 +15,7 @@
   <ItemGroup>
     <None Include="paket.references" />
     <Compile Include="Endpoint.fs" />
-    <Compile Include="Collection.fs" />
+    <Compile Include="Container.fs" />
     <Compile Include="Document.fs" />
     <Compile Include="Query.fs" />
   </ItemGroup>

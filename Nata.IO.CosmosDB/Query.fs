@@ -2,13 +2,9 @@
 
 open System
 open System.IO
-open System.Linq
-open System.Threading.Tasks
-open System.Net
-open Microsoft.Azure.Documents
-open Microsoft.Azure.Documents.Client
-open Microsoft.Azure.Documents.Linq
-open Newtonsoft.Json
+open System.Text
+open Microsoft.Azure.Cosmos
+open FSharp.Data
 
 open Nata.Core
 open Nata.IO
@@ -22,75 +18,86 @@ type ContinuationToken = string
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Query =
+    
+    let private toDocuments (bytes:byte[]) =
+        let json =
+            Encoding.UTF8.GetString bytes
+            |> JsonValue.Parse
+            |> JsonValue.tryGet "Documents"
+        match json with
+        | Some (JsonValue.Array xs) -> Array.map JsonValue.toBytes xs
+        | _ -> raise (new InvalidDataException("Cosmos query response is missing the 'Documents' element."))
+    
+    let private toEvents (documents:seq<byte[]>) =
+        seq {
+            for bytes in documents do
+                let data, metadata =
+                    bytes
+                    |> Document.Metadata.get
+                yield
+                    data
+                    |> Event.create
+                    |> Event.withName metadata.id
+                    |> Event.withCreatedAt metadata._ts
+                    |> Event.withTag metadata._etag
+        }
+    
+    let connectWithParameters : Container.Settings -> Source<Query*Parameters,Bytes,ContinuationToken> =
+        fun container ->
 
-    let connectWithParameters : Collection -> Source<Query*Parameters,Bytes,ContinuationToken> =
-        fun collection ->
-
-            let client, uri = Collection.connect collection
+            let container = Container.connect container
 
             fun (query, parameters) ->
-                let sqlQuerySpec =
-                    let parameters =
-                        parameters
-                        |> Map.toSeq
-                        |> Seq.map (fun (k,v) -> new SqlParameter(k,v))
-                    new SqlQuerySpec(QueryText=query,
-                                     Parameters=new SqlParameterCollection(parameters))
+                let queryDefinition =
+                    parameters
+                    |> Map.toSeq
+                    |> Seq.fold (fun (acc:QueryDefinition) (k,v) ->
+                        acc.WithParameter(k,v)) (new QueryDefinition(query))
 
+                let rec iterate (batchSize:Nullable<int>) token =
+                    seq {
+                        use iterator =
+                            let options = new QueryRequestOptions(MaxItemCount = batchSize)
+                            container.GetItemQueryStreamIterator(queryDefinition, token, options)
+                        let rec loop token =
+                            seq {
+                                if iterator.HasMoreResults then
+                                    let response =
+                                        iterator.ReadNextAsync()
+                                        |> Async.AwaitTask
+                                        |> Async.RunSynchronously               
+                                    let events =
+                                        use stream = new MemoryStream()
+                                        response.Content.CopyTo(stream)
+                                        stream.ToArray()
+                                        |> toDocuments
+                                        |> toEvents
+                                    for event in events do
+                                        yield event, token
+                                    yield! loop response.ContinuationToken
+                            }
+                        yield! loop token
+                    }
+                
                 let read() =
-                    client.CreateDocumentQuery<Document>(uri, sqlQuerySpec)
-                    |> Seq.map (fun document ->
-                        document.ToByteArray()
-                        |> Event.create
-                        |> Event.withCreatedAt document.Timestamp
-                        |> Event.withName document.Id
-                        |> Event.withTag document.ETag)
+                    iterate (Nullable()) null
+                    |> Seq.map fst
 
                 let readFrom =
-                    let rec iterate (query:IDocumentQuery<Document>) token =
-                        seq {
-                            if query.HasMoreResults then
-                                let response =
-                                    query.ExecuteNextAsync<Document>()
-                                    |> Async.AwaitTask
-                                    |> Async.RunSynchronously
-                                yield!
-                                    response
-                                    |> Seq.map (fun document ->
-                                        document.ToByteArray()
-                                        |> Event.create
-                                        |> Event.withCreatedAt document.Timestamp
-                                        |> Event.withName document.Id
-                                        |> Event.withTag document.ETag,
-                                        token)
-                                yield! iterate query response.ResponseContinuation
-                        }
-
-                    let execute token options =
-                        seq {
-                            let query = client.CreateDocumentQuery<Document>(uri, sqlQuerySpec, options).AsDocumentQuery()
-                            yield! iterate query token
-                        }
 
                     let rec start skip =
                         function
                         | Position.After x -> start (skip+1) x
                         | Position.Before x -> start (skip-1) x
+                        | Position.At _ when skip < 0 ->
+                            raise (new NotSupportedException(sprintf "Position cannot rewind by %d" (Math.Abs skip)))
                         | Position.At null
                         | Position.Start ->
-                            if skip <= 0 then
-                                execute null (new FeedOptions(MaxItemCount = Nullable(1)))
-                            else
-                                execute null (new FeedOptions(MaxItemCount = Nullable(1)))
-                                |> Seq.trySkip skip
+                            iterate (Nullable(1)) null
+                            |> Seq.trySkip skip
                         | Position.At token when not (String.IsNullOrEmpty token) ->
-                            if skip < 0 then
-                                raise (new NotSupportedException(sprintf "Position cannot rewind by %d" (Math.Abs skip)))
-                            elif skip = 0 then
-                                execute null (new FeedOptions(MaxItemCount = Nullable(1), RequestContinuation = token))
-                            else
-                                execute null (new FeedOptions(MaxItemCount = Nullable(1), RequestContinuation = token))
-                                |> Seq.trySkip skip
+                            iterate (Nullable(1)) token
+                            |> Seq.trySkip skip
                         | Position.End when skip >= 0 -> Seq.empty
                         | position ->
                             raise (new NotSupportedException(sprintf "Position %A is not supported." position))
@@ -102,7 +109,7 @@ module Query =
                     Nata.IO.ReaderFrom <| readFrom
                 ]
 
-    let connect : Collection -> Source<Query,Bytes,ContinuationToken> =
+    let connect : Container.Settings -> Source<Query,Bytes,ContinuationToken> =
         let queryWithoutParameters =
             (fun (q,p) -> q),
             (fun (q) -> q, Map.empty)

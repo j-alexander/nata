@@ -14,7 +14,7 @@ open Nata.IO.KafkaNet
 [<TestFixture>]
 type ClusterTests() =
 
-    let cluster = ["tcp://127.0.0.1:9092"]
+    let cluster = ["tcp://127.0.0.1:9093"]
 
     // to unit test on a local kafka instance, the following broker
     // settings are required (in ./config/server.properties):

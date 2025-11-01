@@ -76,7 +76,7 @@ module Core =
                             |> Async.StartAsTask
                             :> Task
                     let complete i =
-                        tasks.[i] <- TaskCompletionSource().Task :> Task
+                        tasks.[i] <- TaskCompletionSource().Task
 
                     [ 0 .. n-1 ]
                     |> List.iter receive
@@ -188,7 +188,7 @@ module Core =
 
     module Boolean =
 
-        let ofString = Boolean.TryParse >> function true, x -> Some x | _ -> None
+        let ofString : string -> bool option = Boolean.TryParse >> function true, x -> Some x | _ -> None
         let toString (x:bool) = x.ToString()
 
     module Decimal =
@@ -199,7 +199,7 @@ module Core =
                 Math.Max(left_inclusive, right_inclusive)
             Math.Max(lower, Math.Min(upper, x))
         
-        let ofString = Decimal.TryParse >> function true, x -> Some x | _ -> None
+        let ofString : string -> decimal option = Decimal.TryParse >> function true, x -> Some x | _ -> None
         let toString (x:decimal) = x.ToString()
     
     module Int64 =
@@ -210,7 +210,7 @@ module Core =
                 Math.Max(left_inclusive, right_inclusive)
             Math.Max(lower, Math.Min(upper, x))
         
-        let ofString = Int64.TryParse >> function true, x -> Some x | _ -> None
+        let ofString : string -> int64 option = Int64.TryParse >> function true, x -> Some x | _ -> None
         let toString (x:int64) = x.ToString()
 
     module Int32 =
@@ -221,7 +221,7 @@ module Core =
                 Math.Max(left_inclusive, right_inclusive)
             Math.Max(lower, Math.Min(upper, x))
         
-        let ofString = Int32.TryParse >> function true, x -> Some x | _ -> None
+        let ofString : string -> int32 option = Int32.TryParse >> function true, x -> Some x | _ -> None
         let toString (x:int32) = x.ToString()
 
     module String =

@@ -17,6 +17,9 @@ module Emulator =
             "TableEndpoint=http://"+ip+":10002/dockerstorage;" +
             "AccountName=dockerstorage;" +
             "AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="
+            
+        let localConnectionString  =
+            dockerConnectionString "127.0.0.1"
 
         let exampleDockerConnectionString =
             dockerConnectionString "192.168.137.226"
