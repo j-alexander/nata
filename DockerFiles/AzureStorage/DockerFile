@@ -26,23 +26,18 @@ RUN $File = 'C:\Program Files (x86)\Microsoft SDKs\Azure\Storage Emulator\AzureS
     Set-Content $File $X
 
 # Initialize SQL
-RUN AzureStorageEmulator.exe init -server localhost -forcecreate -inprocess ; \
+RUN AzureStorageEmulator.exe init -server . -forcecreate -inprocess ; \
     AzureStorageEmulator.exe status
 
 # Rebind 10000-2 To All Interfaces
 RUN netsh interface portproxy add v4tov4 listenport=10000 connectaddress=127.0.0.1 connectport=20000 protocol=tcp ; \
     netsh interface portproxy add v4tov4 listenport=10001 connectaddress=127.0.0.1 connectport=20001 protocol=tcp ; \
     netsh interface portproxy add v4tov4 listenport=10002 connectaddress=127.0.0.1 connectport=20002 protocol=tcp
-      
+
 # Azure Storage Tools
-Add http://aka.ms/downloadazcopy /MicrosoftAzureStorageTools.msi
-RUN Start-Process -FilePath 'msiexec.exe'                                             \
-        -ArgumentList '/quiet','/qn','/norestart',                                    \
-                      '/log','\MicrosoftAzureStorageTools.log',                       \
-                      '/i','\MicrosoftAzureStorageTools.msi'                          \
-        -NoNewWindow                                                                  \
-        -Wait                                                                       ; \
-    SetX /M PATH "\"C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy;$env:PATH\""
-        
+ADD https://aka.ms/downloadazcopy-v10-windows /AzCopy.exe
+RUN New-Item -Path 'C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\' -ItemType Directory ; \
+	Move-Item /AzCopy.exe 'C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy\'              ; \
+    SetX /M PATH "\"C:\Program Files (x86)\Microsoft SDKs\Azure\AzCopy;$env:PATH\""      
         
 CMD AzureStorageEmulator.exe start -inprocess

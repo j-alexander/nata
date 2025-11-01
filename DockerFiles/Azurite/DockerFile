@@ -1,0 +1,26 @@
+FROM microsoft/windowsservercore
+
+# Configure Powershell as the Default Shell
+SHELL ["powershell", "-NoProfile", "-Command", "$ErrorActionPreference = 'Stop';"]
+CMD powershell
+
+# Node v24.10.0
+RUN Invoke-WebRequest -Uri https://nodejs.org/dist/v24.10.0/node-v24.10.0-win-x64.zip -Outfile /Node.zip
+RUN Expand-Archive -Path /Node.zip -DestinationPath / ; \
+    Remove-Item -Force /Node.zip                      ; \
+    Move /node-v24.10.0-win-x64 /Node
+    
+# Azurite
+RUN Node/npm install -g azurite
+
+# Data Directory
+RUN New-Item -Path /Data -ItemType Directory
+
+# Accounts
+RUN Write-Host "Configuring dev accounts for both devstoreaccount1 and dockerstorage."                   ; \
+    $DevKey = 'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==' ; \
+    $Accounts = 'dockerstorage:' + $DevKey + ';devstoreaccount1:' + $DevKey                              ; \
+    SetX /M AZURITE_ACCOUNTS "$Accounts"
+
+# Run Service
+CMD /Node/azurite.ps1 --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0 --location /Data

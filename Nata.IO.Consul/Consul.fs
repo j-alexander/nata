@@ -42,7 +42,7 @@ module Client =
         result.Response
         |> Seq.choose (toEvent prefix)
 
-    let write (client:Client) prefix (event:Event<KeyValue>) =
+    let write (client:Client) (prefix:string) (event:Event<KeyValue>) =
         let result =
             event
             |> Event.mapData (fun (k,v) ->

@@ -947,6 +947,102 @@ A snapshot hub retains the most recent event, and provides that event (if availa
 \clearpage
 \section{Nata.Core}
 
+\subsection{Overview}
+
+\noindent \mintinline{fsharp}{Nata.Core} gathers small, reusable building blocks that make day-to-day functional programming more expressive and safe. 
+They emphasize predictable semantics, ergonomic pipelining, and minimal ceremony. 
+You will find tuple helpers for shaping data, sequence operators for time-series and merging, option/null handling, numeric and string utilities, and small bridges between \mintinline{fsharp}{Async} and \mintinline{fsharp}{Task}.
+
+\subsubsection{Design goals}
+\begin{itemize}
+  \item Ergonomic piping: helpers like \mintinline{fsharp}{swap}, \mintinline{fsharp}{mapFst}, and \mintinline{fsharp}{mapSnd} keep pipelines readable.
+  \item Safety by default: null- and exception-safe adapters (\mintinline{fsharp}{Null.toOption}, \mintinline{fsharp}{Option.tryFunction}) reduce accidental partiality.
+  \item Time-series friendly: \mintinline{fsharp}{Seq.mergeBy}, \mintinline{fsharp}{Seq.changesBy}, and \mintinline{fsharp}{Seq.delta} focus on ordered streams.
+  \item Pragmatic interop: small shims for parsing and clamping (\mintinline{fsharp}{*.ofString}, \mintinline{fsharp}{*.between}) and for \mintinline{fsharp}{Task}<->\mintinline{fsharp}{Async}.
+\end{itemize}
+
+\subsubsection{Guided examples}
+
+\paragraph{Tuples and pipelining}
+Shaping events often starts with tuples. Use \mintinline{fsharp}{mapFst} and \mintinline{fsharp}{mapSnd} to transform one side without touching the other.
+\begin{minted}{fsharp}
+    // unpack (Event * Index) into (Data * Index)
+    let unpack : (Event<'a>*'i) -> ('a*'i) =
+        mapFst Event.data
+
+    // look up a sequence of keys via a map, left-to-right
+    let tryFindAll (m:Map<'k,'v>) (keys:seq<'k>) : seq<'v> =
+        keys
+        |> Seq.choose (m |> swap Map.tryFind)
+\end{minted}
+
+\paragraph{Time-series: changes and deltas}
+Filter out consecutive duplicates or compute first-order differences with \mintinline{fsharp}{Seq.changesBy} and \mintinline{fsharp}{Seq.delta}.
+\begin{minted}{fsharp}
+    // keep only changes in closing price
+    let changedCloses : seq<decimal> =
+        closes |> Seq.changesBy id
+
+    // turn a stream of values into pairwise deltas
+    // e.g. [10m; 12m; 11m] -> [2m; -1m]
+    let deltas : seq<decimal> =
+        closes
+        |> Seq.delta
+        |> Seq.choose (fun (last,next) -> last |> Option.map (fun l -> next - l))
+\end{minted}
+
+\paragraph{Merging ordered streams}
+When two feeds are independently ordered (e.g., by timestamp), \mintinline{fsharp}{Seq.mergeBy} preserves overall order without re-sorting.
+\begin{minted}{fsharp}
+    // left and right are (Event * timestamp) streams
+    let mergedData : seq<'a> =
+        Seq.mergeBy snd left right
+        |> Seq.mapFst Event.data
+        |> Seq.map fst  // drop timestamps if desired
+\end{minted}
+
+\paragraph{Options, nulls, and exceptions}
+Prefer options to represent absence. Convert nulls, coalesce fallbacks, and sink exceptions into \mintinline{fsharp}{None} when it’s appropriate.
+\begin{minted}{fsharp}
+    let bigOrder : int option =
+        qty |> Option.whenTrue (fun q -> q > 1000)
+
+    let preferred : string option =
+        someNullableString |> Null.toOption
+
+    let safeParsed : int option =
+        "42" |> Option.tryFunction Int32.Parse
+
+    let chosen : decimal =
+        primary
+        |> Option.coalesce backup
+        |> Option.defaultValue 0m
+\end{minted}
+
+\paragraph{Parsing and clamping}
+Small helpers make validation pipelines explicit and testable.
+\begin{minted}{fsharp}
+    let cappedRatio : decimal option =
+        input
+        |> Decimal.ofString                 // string -> decimal option
+        |> Option.map (Decimal.between (0m, 1m)) // clamp into [0,1]
+\end{minted}
+
+\paragraph{Tasks and async}
+Bridge \mintinline{fsharp}{Task}-based APIs into \mintinline{fsharp}{Async}, or wait safely for results in controlled places.
+\begin{minted}{fsharp}
+    // get an Async<'a> from Task<'a>
+    let asAsync : Async<'a> = Task.waitForResultAsync someTask
+
+    // synchronously wait (e.g., at boundaries)
+    let result : 'a = Task.waitForResult someTask
+
+    // rethrow with original stack trace inside async workflows
+    let rethrow (e:exn) = Async.reraise e
+\end{minted}
+
+\noindent You can combine these primitives to build clear, reliable pipelines that keep domain logic front-and-center while handling the practical edges of real-world data.
+
 \subsection{Package}
 
 \begin{enumerate}
@@ -964,6 +1060,8 @@ A snapshot hub retains the most recent event, and provides that event (if availa
 \end{enumerate}
 
 \subsection{Extensions}
+
+Small, sharp tools that smooth common pipelines: generating identifiers, reshaping tuples, and composing selectors so that domain logic stays readable. The emphasis is on tiny, predictable helpers that slot into larger flows.
 
 \begin{itemize}
 \item generate a unique id, or the bytes of one
@@ -991,22 +1089,54 @@ A snapshot hub retains the most recent event, and provides that event (if availa
         mapFst Event.data
 \end{minted}
 
+\item \mintinline{fsharp}{filterFst} or \mintinline{fsharp}{filterSnd}
+
+\item \mintinline{fsharp}{chooseFst} or \mintinline{fsharp}{chooseSnd}
+
+\paragraph{Mini examples}
+\begin{minted}{fsharp}
+    // transform only the index (snd) in a (data * index) tuple
+    let bumpIndex : ('a * int) -> ('a * int) =
+        mapSnd ((+) 1)
+
+    // filter a list of (key * value) by key only
+    let onlyImportant : ('k * 'v) list -> ('k * 'v) list =
+        List.filter (filterFst isImportant)
+
+    // choose on the first or second element to conditionally keep tuples
+    let keepIfParsedFst : (string * 'b) list -> (int * 'b) list =
+        List.choose (chooseFst (fun s ->
+            match System.Int32.TryParse s with true, v -> Some v | _ -> None))
+
+    let keepIfParsedSnd : ('a * string) list -> ('a * int) list =
+        List.choose (chooseSnd (fun s ->
+            match System.Int32.TryParse s with true, v -> Some v | _ -> None))
+\end{minted}
+\noindent See also \mintinline{fsharp}{Seq.mapFst}/\mintinline{fsharp}{Seq.mapSnd} for sequence variants.
+
 \end{itemize}
 
 \subsubsection{Seq}
 
 \begin{itemize}
 
+\item \mintinline{fsharp}{Seq.tryHead}
+
 \item use \mintinline{fsharp}{Seq.mapFst} or \mintinline{fsharp}{Seq.mapSnd} to transform just the data or index of a seq
 \begin{minted}{fsharp}
     let data = events |> Seq.mapFst Event.data
 \end{minted}
+\noindent See also \mintinline{fsharp}{mapFst}/\mintinline{fsharp}{mapSnd} for tuple variants.
 
-\item similarly use \mintinline{Seq.filterFst}/\mintinline{Seq.filterSnd} or \mintinline{fsharp}{Seq.chooseFst}/\mintinline{fsharp}{Seq.chooseSnd} to select elements by data or index:
+\item similarly use \mintinline{fsharp}{Seq.filterFst}/\mintinline{fsharp}{Seq.filterSnd} or \mintinline{fsharp}{Seq.chooseFst}/\mintinline{fsharp}{Seq.chooseSnd} to select elements by data or index:
 
 \begin{minted}{fsharp}
     events |> Seq.filterFst (Event.data >> isGood)
 \end{minted}
+
+\item \mintinline{fsharp}{Seq.log} \mintinline{fsharp}{Seq.logi}
+
+\item \mintinline{fsharp}{Seq.trySkip}
 
 \item \mintinline{fsharp}{Seq.consume} from multiple sequences as data becomes available
 \begin{minted}{fsharp}
@@ -1014,6 +1144,7 @@ A snapshot hub retains the most recent event, and provides that event (if availa
     |> Seq.consume
     |> Seq.iter calculate // immediately calculates a value from readySeq
 \end{minted}
+\emph{Behavior:} pulls from multiple enumerators concurrently, yields values as they arrive, stops when all are exhausted, rethrows the first exception encountered, and attempts to dispose all enumerators.
 
 \item \mintinline{fsharp}{Seq.merge} pulls from left or right based on whichever value comes first
 \begin{minted}{fsharp}
@@ -1027,8 +1158,60 @@ A snapshot hub retains the most recent event, and provides that event (if availa
         Seq.mergeBy snd leftEvents rightEvents
         |> Seq.map (fst >> Event.data)
 \end{minted}
+\emph{Semantics:} inputs should already be ordered by the projection for correct global ordering; when keys are equal, both elements are yielded (left then right).
+
+\item \mintinline{fsharp}{Seq.changes}
+
+\item \mintinline{fsharp}{Seq.changesBy}
+
+\item \mintinline{fsharp}{Seq.delta}
 
 \end{itemize}
+\emph{Determinism and cost:} \mintinline{fsharp}{Seq.changes}/\mintinline{fsharp}{Seq.changesBy} and \mintinline{fsharp}{Seq.delta} are single-pass, streaming operations that retain only the last projected value.
+
+\paragraph{Guided examples}
+\begin{minted}{fsharp}
+    // trace elements in a stream during diagnostics
+    events
+    |> Seq.log (fun x -> printfn "observed = %A" x)
+    |> Seq.iter ignore
+
+    // trace with index when order matters
+    events
+    |> Seq.logi (fun i x -> printfn "#%d = %A" i x)
+    |> Seq.iter ignore
+
+    // skip the first n elements if they represent a warmup period
+    events
+    |> Seq.trySkip 10
+    |> Seq.iter process
+
+    // merge in order by timestamp
+    let ordered : seq<Event<'a>> =
+        Seq.mergeBy (fun (e,ts) -> ts) left right
+        |> Seq.map fst
+
+    // compute point-in-time differences
+    let diffs : seq<decimal> =
+        values
+        |> Seq.delta
+        |> Seq.choose (fun (last,next) -> last |> Option.map (fun l -> next - l))
+\end{minted}
+
+\paragraph{Small utilities: heads and change detection}
+\begin{minted}{fsharp}
+    // tryHead returns None on empty sequences
+    let firstEvent : Event<'a> option =
+        events |> Seq.tryHead
+
+    // changes keeps first element and any element whose projection differs from the previous one
+    let uniqueValues : seq<'a> =
+        xs |> Seq.changes
+
+    // changesBy allows custom projection (e.g., by key)
+    let uniqueByKey : seq<'a> =
+        xs |> Seq.changesBy (fun x -> x.Key)
+\end{minted}
 
 \subsubsection{Option}
 
@@ -1086,6 +1269,30 @@ A snapshot hub retains the most recent event, and provides that event (if availa
 
 \end{itemize}
 
+\paragraph{Notes and examples}
+\begin{minted}{fsharp}
+    // prefer the first Some; otherwise fall back
+    let chosenUser : User option =
+        primaryUser
+        |> Option.coalesce backupUser
+
+    // compute a fallback only when needed
+    let config : Settings =
+        cached
+        |> Option.coalesceWith (fun () -> loadFromDisk())
+        |> Option.defaultWith (fun () -> defaultSettings())
+
+    // provide a concrete default when both are None
+    let threads : int =
+        None |> Option.defaultValue 4
+
+    // split and join of nested options
+    let a,b = Some (1,2) |> Option.distribute   // Some 1, Some 2
+    let flattened : int option = Some (Some 3) |> Option.join  // Some 3
+\end{minted}
+
+\noindent When failures must preserve error information, prefer \mintinline{fsharp}{Result}; \mintinline{fsharp}{Option.tryFunction} is best when “absence on failure” is the intended signal.
+
 \subsubsection{Null}
 
 \begin{itemize}
@@ -1117,7 +1324,7 @@ Transform \mintinline{fsharp}{Nullable} values, or exchange them for \mintinline
 \end{minted}
 
 \item convert a \mintinline{fsharp}{Nullable.toOption} and get the \mintinline{fsharp}{Nullable.ofOption} values
-\begin{minted}
+\begin{minted}{fsharp}
     let threeOption =
         Nullable 3
         |> Nullable.toOption
@@ -1130,32 +1337,1169 @@ Transform \mintinline{fsharp}{Nullable} values, or exchange them for \mintinline
 
 \end{itemize}
 
+\subsubsection{Boolean}
+
+\begin{itemize}
+\item \mintinline{fsharp}{Boolean.ofString} / \mintinline{fsharp}{Boolean.toString}
+\end{itemize}
+
+\paragraph{Boolean helpers: quick examples}
+\begin{minted}{fsharp}
+    let featureEnabled : bool option = "true"  |> Boolean.ofString  // Some true
+    let asText         : string      = false   |> Boolean.toString  // "False"
+\end{minted}
+
 \subsubsection{Decimal}
+
+\begin{itemize}
+\item \mintinline{fsharp}{Decimal.between}
+\item \mintinline{fsharp}{Decimal.ofString} / \mintinline{fsharp}{Decimal.toString}
+\end{itemize}
 
 \subsubsection{Int64}
 
+\begin{itemize}
+\item \mintinline{fsharp}{Int64.between}
+\item \mintinline{fsharp}{Int64.ofString} / \mintinline{fsharp}{Int64.toString}
+\end{itemize}
+
 \subsubsection{Int32}
+
+\begin{itemize}
+\item \mintinline{fsharp}{Int32.between}
+\item \mintinline{fsharp}{Int32.ofString} / \mintinline{fsharp}{Int32.toString}
+\end{itemize}
+
+\paragraph{Numeric helpers: quick examples}
+\begin{minted}{fsharp}
+    // parse with validation, clamp to a safe range
+    let safePercent : int option =
+        input
+        |> Int32.ofString
+        |> Option.map (Int32.between (0, 100))
+
+    // decimal ratios clamped to [0m, 1m]
+    let ratio : decimal option =
+        s
+        |> Decimal.ofString
+        |> Option.map (Decimal.between (0m, 1m))
+
+    // 64-bit parsing and clamping
+    let maybeId64 : int64 option = "12345" |> Int64.ofString
+    let cappedId64 : int64 option = maybeId64 |> Option.map (Int64.between (0L, 10000L))
+
+    // toString helpers for serialization/logging
+    let iAsText : string = 42           |> Int32.toString
+    let dAsText : string = 12.34m       |> Decimal.toString
+    let lAsText : string = 123456789L   |> Int64.toString
+\end{minted}
 
 \subsubsection{String}
 
+\begin{itemize}
+\item \mintinline{fsharp}{String.replace}
+\item \mintinline{fsharp}{String.remove}
+\item \mintinline{fsharp}{String.contains}
+\item \mintinline{fsharp}{String.containsIgnoreCase}
+\item \mintinline{fsharp}{String.split}
+\item \mintinline{fsharp}{String.trySubstring}
+\item \mintinline{fsharp}{String.tryStartAt}
+\end{itemize}
+
+\paragraph{Null-safe string operations}
+\begin{minted}{fsharp}
+    // case-insensitive search
+    let hasHello : bool =
+        "Hello, World!" |> String.containsIgnoreCase "hello"
+
+    // safe slicing when indices may be out of bounds
+    let middle : string option =
+        "abcdef" |> String.trySubstring 2 3   // Some "cde"
+
+    // tolerant splitting for nullable input
+    let parts : string list =
+        (null:string) |> String.split ','     // []
+
+    // simple edit helpers
+    let masked : string = "abc-123-xyz" |> String.remove "-"
+    let swapped : string = "color"      |> String.replace "or" "our"  // "colour"
+
+    // contains with null-tolerance
+    let hasToken : bool = "a,b,c" |> String.contains "b"
+
+    // safe substring from index to end
+    let tail : string option = "prefix-body" |> String.tryStartAt 7   // Some "body"
+\end{minted}
+\noindent \emph{Null semantics:} \mintinline{fsharp}{String.contains null null} returns true; if either argument is null otherwise, it returns false.
+
+\subsubsection{Async}
+
+\begin{itemize}
+\item \mintinline{fsharp}{Async.reraise}
+\end{itemize}
+
+\subsubsection{Task}
+
+\begin{itemize}
+\item \mintinline{fsharp}{Task.wait}, \mintinline{fsharp}{Task.waitAsync}
+\item \mintinline{fsharp}{Task.waitForResult}, \mintinline{fsharp}{Task.waitForResultAsync}
+\end{itemize}
+
+\paragraph{Concurrency interop}
+\begin{minted}{fsharp}
+    // rethrow inside async with original stack trace
+    let runSafely (work: Async<'a>) : Async<'a> = async {
+        try
+            return! work
+        with e ->
+            Async.reraise e
+            return Unchecked.defaultof<'a> // unreachable
+    }
+
+    // bridge Task<'T> -> Async<'T>, or wait at well-chosen boundaries
+    let fromTask : Async<'a> = Task.waitForResultAsync someTask
+    let result  : 'a        = Task.waitForResult someTask
+
+    // wait asynchronously for Task (no result)
+    do! Task.waitAsync someUnitTask
+
+    // or synchronously (use sparingly, at process boundaries)
+    Task.wait someUnitTask
+\end{minted}
+
 \subsection{Codec}
+
+\noindent A codec is a small, composable pair of pure functions used to translate values back and forth between two representations. It captures both directions explicitly:
+\begin{minted}{fsharp}
+    // A codec is (encode : 'In -> 'Out, decode : 'Out -> 'In)
+    type Codec<'In,'Out> = ('In -> 'Out) * ('Out -> 'In)
+\end{minted}
+This makes codecs pleasant to wire together: you can reverse them when you need the opposite direction, and concatenate them to build multi-step translations that still round-trip.
+
+\subsubsection{Helpers: encoder, decoder, reverse, concatenate}
+\begin{itemize}
+  \item \mintinline{fsharp}{Codec.encoder} and \mintinline{fsharp}{Codec.decoder} project out the first and second function of a codec. These are convenient when you prefer named accessors over tuple deconstruction.
+  \item \mintinline{fsharp}{Codec.reverse} swaps directions, turning a codec \mintinline{fsharp}{'In <-> 'Out} into \mintinline{fsharp}{'Out <-> 'In}.
+  \item \mintinline{fsharp}{Codec.concatenate} composes two codecs end-to-end so you can build \mintinline{fsharp}{'A <-> 'C} from \mintinline{fsharp}{'A <-> 'B} and \mintinline{fsharp}{'B <-> 'C}.
+\end{itemize}
+
+\paragraph{Guided examples}
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    // Pull out the encode/decode functions
+    let encodeInt, decodeInt = Codec.Int32ToString
+    let text : string = encodeInt 42            // "42"
+    let back : int    = decodeInt "not-a-number"// 0 (tolerant default)
+
+    // Reverse a codec when you need the opposite direction
+    let stringToDecimal : Codec<string, decimal> =
+        Codec.reverse Codec.DecimalToString
+
+    let parse : string -> decimal = Codec.encoder stringToDecimal
+    let d1 = parse "12.50"    // 12.50m
+    let d0 = parse "oops"     // 0m (tolerant default)
+
+    // Concatenate to build multi-step codecs (Int32 <-> String <-> Bytes)
+    let Int32ToBytes : Codec<int, byte[]> =
+        Codec.Int32ToString
+        |> Codec.concatenate Codec.StringToBytes
+
+    let toBytes   : int   -> byte[] = Codec.encoder Int32ToBytes
+    let fromBytes : byte[]-> int    = Codec.decoder Int32ToBytes
+
+    let bytes   = toBytes 42
+    let value42 = fromBytes bytes    // 42
+
+    // You can also decompose and pipe directly if you prefer
+    let textAgain : string =
+        42 |> Codec.encoder Codec.Int32ToString
+
+    let safeBool : bool =
+        "TRUE" |> Codec.decoder Codec.BooleanToString  // true
+\end{minted}
+
+\subsubsection{Built-in codecs}
+The following codecs provide practical defaults for everyday work. They are all tolerant of common edge cases and aim to round-trip sensibly.
+
+\paragraph{Identity}
+\begin{itemize}
+  \item \mintinline{fsharp}{Codec.Identity : Codec<'a,'a>} — the no-op codec.
+\end{itemize}
+\begin{minted}{fsharp}
+    let sameA, sameB = Codec.Identity
+    let x = sameA 123   // 123
+    let y = sameB 123   // 123
+\end{minted}
+
+\paragraph{UTF-8 strings and bytes}
+\begin{itemize}
+  \item \mintinline{fsharp}{Codec.StringToBytes : Codec<string, byte[]>}
+  \item \mintinline{fsharp}{Codec.BytesToString : Codec<byte[], string>} (the reverse)
+\end{itemize}
+Semantics: UTF-8 encoding. Null-safe by design — null strings behave like empty text, and null byte arrays behave like empty buffers.
+\begin{minted}{fsharp}
+    let toBytes, toText = Codec.StringToBytes
+
+    let b1 : byte[] = toBytes "hello"  // UTF-8 bytes
+    let s1 : string = toText b1        // "hello"
+
+    let emptyFromNullText : byte[] = toBytes null      // [||]
+    let emptyTextFromNull : string  = toText null      // ""
+\end{minted}
+
+\paragraph{Numbers and booleans (string round-trips)}
+Each numeric/boolean codec maps invalid input to a safe default when decoding from string.
+\begin{itemize}
+  \item \mintinline{fsharp}{Codec.Int32ToString   : Codec<int,    string>} — decode default: \mintinline{fsharp}{0}
+  \item \mintinline{fsharp}{Codec.Int64ToString   : Codec<int64,  string>} — decode default: \mintinline{fsharp}{0L}
+  \item \mintinline{fsharp}{Codec.DecimalToString : Codec<decimal,string>} — decode default: \mintinline{fsharp}{0m}
+  \item \mintinline{fsharp}{Codec.BooleanToString : Codec<bool,   string>} — decode default: \mintinline{fsharp}{false}
+\end{itemize}
+Reverse variants are provided for convenience:
+\begin{itemize}
+  \item \mintinline{fsharp}{Codec.StringToInt32    : Codec<string, int>}
+  \item \mintinline{fsharp}{Codec.StringToInt64    : Codec<string, int64>}
+  \item \mintinline{fsharp}{Codec.StringToDecimal  : Codec<string, decimal>}
+  \item \mintinline{fsharp}{Codec.StringToBoolean  : Codec<string, bool>}
+\end{itemize}
+\begin{minted}{fsharp}
+    // Int32
+    let toText32, fromText32 = Codec.Int32ToString
+    let ok  = fromText32 "123"     // 123
+    let bad = fromText32 "oops"    // 0 (default)
+
+    // Boolean
+    let toBoolText, fromBoolText = Codec.BooleanToString
+    let yes = fromBoolText "true"  // true
+    let no  = fromBoolText "nope"  // false (default)
+
+    // Decimal and Int64 similarly
+    let toTextDec, fromTextDec = Codec.DecimalToString
+    let amt = fromTextDec "9.99"   // 9.99m
+
+    let toText64, fromText64 = Codec.Int64ToString
+    let id  = fromText64 "18446744073709551615" // overflowy text -> 0L default
+\end{minted}
+
+\subsubsection{Composing to meet I/O boundaries}
+Codecs shine at process boundaries: serialize to bytes for storage, reverse for parsing when reading, and keep the round-trip logic centralized.
+\begin{minted}{fsharp}
+    // Build a codec for decimal <-> bytes via string
+    let DecimalToBytes : Codec<decimal, byte[]> =
+        Codec.DecimalToString
+        |> Codec.concatenate Codec.StringToBytes
+
+    // Use it to persist and recover
+    let write : decimal -> byte[] = Codec.encoder DecimalToBytes
+    let read  : byte[]  -> decimal = Codec.decoder DecimalToBytes
+
+    let persisted = write 12.34m
+    let restored  = read persisted    // 12.34m
+\end{minted}
+
+\paragraph{Notes}
+\begin{itemize}
+  \item Decoding is intentionally forgiving in the built-in codecs (e.g., invalid numeric text falls back to a neutral value). If you need strict parsing, consider validating prior to decode or wrapping with a stricter adapter.
+  \item \mintinline{fsharp}{Codec.reverse} and \mintinline{fsharp}{Codec.concatenate} preserve the spirit of reversible transformations while making multi-step encodings ergonomic.
+\end{itemize}
 
 \subsection{JsonValue}
 
+\noindent A small interop layer around \mintinline{fsharp}{FSharp.Data.JsonValue} that focuses on:
+\begin{itemize}
+  \item parsing and safe navigation (\mintinline{fsharp}{tryParse}, \mintinline{fsharp}{tryGet}/\mintinline{fsharp}{get}, \mintinline{fsharp}{properties}/\mintinline{fsharp}{keys}/\mintinline{fsharp}{values})
+  \item converting to/from compact text and bytes (\mintinline{fsharp}{toString}/\mintinline{fsharp}{ofString}, \mintinline{fsharp}{toBytes}/\mintinline{fsharp}{ofBytes})
+  \item bridging JSON to domain types (\mintinline{fsharp}{toType<'T>}/\mintinline{fsharp}{ofType<'T>}) with pragmatic converters for options, tuples, and discriminated unions
+  \item composable codecs for common round-trips
+\end{itemize}
+
+\subsubsection{Parse and navigate}
+
+\begin{minted}{fsharp}
+    open FSharp.Data
+    open Nata.Core.JsonValue
+
+    let text = """{ "name": "Ada", "age": 36, "tags": ["math","code"] }"""
+
+    // tolerant parse: None if invalid JSON
+    let parsed : JsonValue option = text |> JsonValue.tryParse
+
+    // required property (throws if missing)
+    let name : JsonValue =
+        parsed
+        |> Option.defaultWith (fun () -> failwith "invalid json")
+        |> JsonValue.get "name"
+
+    // optional property
+    let nickname : JsonValue option =
+        parsed
+        |> Option.bind (JsonValue.tryGet "nickname")
+
+    // list structure
+    let keys   : string[]    = parsed.Value |> JsonValue.keys
+    let values : JsonValue[] = parsed.Value |> JsonValue.values
+\end{minted}
+
+\paragraph{Notes}
+\begin{itemize}
+  \item \mintinline{fsharp}{get} assumes the property exists and will throw if it doesn't; use \mintinline{fsharp}{tryGet} when absence is acceptable.
+  \item \mintinline{fsharp}{toString} emits compact JSON (no pretty formatting) to keep byte-wise round-trips stable.
+\end{itemize}
+
+\subsubsection{Strings and bytes}
+
+\begin{minted}{fsharp}
+    open Nata.Core.JsonValue
+
+    let json : JsonValue = JsonValue.ofString """{ "n": 3 }"""
+
+    // JsonValue <-> string
+    let asText : string   = json |> JsonValue.toString
+    let back   : JsonValue = asText |> JsonValue.ofString
+
+    // JsonValue <-> bytes (UTF-8)
+    let asBytes : byte[]  = json |> JsonValue.toBytes
+    let back2   : JsonValue = asBytes |> JsonValue.ofBytes
+\end{minted}
+
+\subsubsection{Types and converters}
+
+\noindent You can translate between JSON and domain types via \mintinline{fsharp}{toType<'T>} and \mintinline{fsharp}{ofType<'T>}. Converters are provided so that common F\# shapes serialize naturally:
+\begin{itemize}
+  \item \textbf{Options} serialize their contained value or null (e.g., \mintinline{fsharp}{Some 3} $\rightarrow$ \mintinline{fsharp}{3}, \mintinline{fsharp}{None} $\rightarrow$ \mintinline{fsharp}{null}).
+  \item \textbf{Tuples} serialize as JSON arrays (e.g., \mintinline{fsharp}{(1,"a")} $\rightarrow$ \mintinline{fsharp}{[1,"a"]}).
+  \item \textbf{Simple unions (no fields)} serialize as their case name by default. Unions with data appear in a canonical \mintinline{fsharp}{{"Case": "...","Fields":[...]}} form.
+\end{itemize}
+
+\begin{minted}{fsharp}
+    open Nata.Core.JsonValue
+
+    // simple record round-trip
+    type User = { Id:int; Name:string }
+
+    let asUserJson : JsonValue = { Id=1; Name="Ada" } |> JsonValue.ofType
+    let userBack   : User      = asUserJson |> JsonValue.toType
+
+    // unions with data use the Case/Fields shape
+    type NumberOrText = | Number of int | Text of string
+
+    let sample : NumberOrText = Text "hello"
+    let jsonDU : JsonValue = sample |> JsonValue.ofType
+    let backDU : NumberOrText = jsonDU |> JsonValue.toType
+\end{minted}
+
+\subsubsection{Codecs: compose round-trips}
+
+\noindent The \mintinline{fsharp}{JsonValue.Codec} submodule exposes codecs to assemble end-to-end pipelines:
+\begin{itemize}
+  \item \mintinline{fsharp}{JsonValueToString} / \mintinline{fsharp}{StringToJsonValue}
+  \item \mintinline{fsharp}{JsonValueToBytes}  / \mintinline{fsharp}{BytesToJsonValue}
+  \item \mintinline{fsharp}{createTypeToJsonValue<'T>} / \mintinline{fsharp}{createJsonValueToType<'T>}
+  \item \mintinline{fsharp}{createTypeToString<'T>} / \mintinline{fsharp}{createStringToType<'T>}
+  \item \mintinline{fsharp}{createTypeToBytes<'T>} / \mintinline{fsharp}{createBytesToType<'T>}
+\end{itemize}
+
+\paragraph{Guided examples}
+\begin{minted}{fsharp}
+    open Nata.Core
+    open Nata.Core.JsonValue
+
+    // 1) User preferences <-> string
+    type UserPreference = { Theme:string; ReceiveEmails:bool }
+
+    let prefToText, prefOfText : Codec<UserPreference, string> =
+        JsonValue.Codec.createTypeToString()
+
+    let originalPref = { Theme = "dark"; ReceiveEmails = true }
+
+    let savedText   : string          = originalPref |> Codec.encoder prefToText
+    let restoredPref: UserPreference  = savedText     |> Codec.decoder prefToText
+
+    assert (restoredPref = originalPref)
+
+    // 2) Shopping cart line <-> bytes
+    type CartLine = { Sku:string; Qty:int; Price:decimal }
+
+    let lineToBytes, lineOfBytes : Codec<CartLine, byte[]> =
+        JsonValue.Codec.createTypeToBytes()
+
+    let line    = { Sku="ABC-123"; Qty=2; Price=9.99m }
+    let payload : byte[] = line |> Codec.encoder lineToBytes
+    let back    : CartLine = payload |> Codec.decoder lineToBytes
+
+    assert (back = line)
+
+    // 3) Small JSON blobs in pipelines
+    //    (compact text and UTF-8 bytes)
+    let compact : string =
+        """{ "id": 42, "name": "Ada" }"""
+        |> JsonValue.ofString
+        |> JsonValue.toString   // compact, stable
+
+    let blob : byte[] =
+        """{ "ok": true }"""
+        |> JsonValue.ofString
+        |> JsonValue.toBytes
+
+    let asJson : JsonValue = blob |> JsonValue.ofBytes
+\end{minted}
+
+\paragraph{Small example JSON for a discriminated union}
+\begin{minted}{fsharp}
+    // unions without fields become their case name; with fields they use Case/Fields
+    type Status = Ok | Error of string
+
+    let asJson : JsonValue = Error "invalid input" |> JsonValue.ofType
+    // {
+    //   "Case": "Error",
+    //   "Fields": [ "invalid input" ]
+    // }
+\end{minted}
+
 \subsection{DateTime}
 
+\noindent UTC-first helpers for epoch math, tolerant parsing, JSON interop, and composable codecs. The emphasis is on predictable round-trips and clear intent when moving across process and storage boundaries.
+
+\subsubsection{Overview}
+\begin{itemize}
+  \item Convert dates to and from Unix time:
+    \begin{itemize}
+      \item \mintinline{fsharp}{toUnixSeconds}/\mintinline{fsharp}{ofUnixSeconds}
+      \item \mintinline{fsharp}{toUnixMilliseconds}/\mintinline{fsharp}{ofUnixMilliseconds}
+    \end{itemize}
+  \item Normalize between time zones:
+    \begin{itemize}
+      \item \mintinline{fsharp}{toUtc}/\mintinline{fsharp}{toLocal}, \mintinline{fsharp}{ofOffset}
+    \end{itemize}
+  \item Tolerant parsing:
+    \begin{itemize}
+      \item \mintinline{fsharp}{ofString : string -> DateTime option}
+    \end{itemize}
+  \item JSON bridge:
+    \begin{itemize}
+      \item \mintinline{fsharp}{toJsonValue}/\mintinline{fsharp}{ofJsonValue} using ISO 8601 round-trip format
+    \end{itemize}
+  \item Resolution helpers to floor timestamps to a boundary:
+    \begin{itemize}
+      \item \mintinline{fsharp}{Resolution.year}/\mintinline{fsharp}{month}/\mintinline{fsharp}{day}/\mintinline{fsharp}{hour}/\mintinline{fsharp}{minute}/\mintinline{fsharp}{second}/\mintinline{fsharp}{ms}
+    \end{itemize}
+  \item Codecs for composable round-trips:
+    \begin{itemize}
+      \item DateTime \(\leftrightarrow\) Unix seconds/milliseconds, JSON, and compact JSON text
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Guided examples}
+
+\paragraph{Unix time (seconds and milliseconds)}
+Convert to integral time since the Unix epoch and back. Conversions run through UTC to avoid surprises.
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    let nowUtc : System.DateTime = System.DateTime.UtcNow
+
+    // seconds since 1970-01-01T00:00:00Z
+    let s : DateTime.Unix = DateTime.toUnixSeconds nowUtc
+    let backFromS : System.DateTime = DateTime.ofUnixSeconds s
+
+    // milliseconds since epoch
+    let ms : DateTime.Unix = DateTime.toUnixMilliseconds nowUtc
+    let backFromMs : System.DateTime = DateTime.ofUnixMilliseconds ms
+\end{minted}
+\emph{Semantics:} seconds/milliseconds are measured from the UTC epoch; integer casts use the usual truncation semantics for fractional values.
+
+\paragraph{Offsets and local/UTC conversions}
+Bridge from \mintinline{fsharp}{DateTimeOffset}, and normalize explicitly when you cross boundaries where time zones matter.
+\begin{minted}{fsharp}
+    let fromOffset (dto:System.DateTimeOffset) : System.DateTime =
+        dto |> DateTime.ofOffset   // dto.UtcDateTime
+
+    let roundTripLocal (x:System.DateTime) : System.DateTime =
+        x |> DateTime.toLocal |> DateTime.toUtc
+\end{minted}
+
+\paragraph{Tolerant parsing, JSON interop}
+Parse text when it’s acceptable to fail with \mintinline{fsharp}{None}. Encode as JSON using an ISO 8601 round-trip string.
+\begin{minted}{fsharp}
+    open FSharp.Data
+    open Nata.Core.JsonValue
+
+    let parsed : System.DateTime option =
+        "2023-04-05T12:34:56Z" |> DateTime.ofString
+
+    // DateTime <-> JsonValue
+    let asJson : JsonValue =
+        System.DateTime(2023,4,5,12,34,56,System.DateTimeKind.Utc)
+        |> DateTime.toJsonValue
+
+    let back : System.DateTime =
+        asJson |> DateTime.ofJsonValue
+
+    // compact JSON text for transport/logging
+    let compact : string =
+        asJson |> JsonValue.toString   // e.g., "\"2023-04-05T12:34:56.0000000Z\""
+\end{minted}
+\emph{Notes:} \mintinline{fsharp}{toJsonValue} emits an ISO 8601 round-trip string (format specifier \mintinline{fsharp}{"o"}) inside a JSON string; \mintinline{fsharp}{JsonValue.toString} returns compact JSON (so quotes are included for JSON strings).
+
 \subsubsection{DateTime.Resolution}
+Floor timestamps to a chosen boundary while preserving the original \mintinline{fsharp}{DateTimeKind} (UTC or Local).
+\begin{minted}{fsharp}
+    let sample =
+        System.DateTime(2023, 4, 5, 12, 34, 56, 789, System.DateTimeKind.Utc)
+
+    let atYear   = sample |> DateTime.Resolution.year   // 2023-01-01T00:00:00.000Z
+    let atMonth  = sample |> DateTime.Resolution.month  // 2023-04-01T00:00:00.000Z
+    let atDay    = sample |> DateTime.Resolution.day    // 2023-04-05T00:00:00.000Z
+    let atHour   = sample |> DateTime.Resolution.hour   // 2023-04-05T12:00:00.000Z
+    let atMinute = sample |> DateTime.Resolution.minute // 2023-04-05T12:34:00.000Z
+    let atSecond = sample |> DateTime.Resolution.second // 2023-04-05T12:34:56.000Z
+    let atMs     = sample |> DateTime.Resolution.ms     // 2023-04-05T12:34:56.789Z
+\end{minted}
+\emph{Semantics:} each function zeroes lower-order components (e.g., \mintinline{fsharp}{minute} keeps year/month/day/hour and sets minute’s lower parts to zero). These are useful for binning, windowing, and summarization.
 
 \subsubsection{DateTime.Codec}
+Composable codecs for common round-trips. These pair naturally with the general \mintinline{fsharp}{Codec} and \mintinline{fsharp}{JsonValue.Codec} helpers elsewhere in this document.
+\begin{minted}{fsharp}
+    open Nata.Core
+    open Nata.Core.JsonValue
+
+    // DateTime <-> Unix seconds
+    let toSec, ofSec = DateTime.Codec.DateTimeToUnixSeconds
+    let secValue : DateTime.Unix = System.DateTime.UtcNow |> Codec.encoder toSec
+    let fromSec  : System.DateTime = secValue |> Codec.decoder toSec
+
+    // DateTime <-> Unix milliseconds
+    let toMs, ofMs = DateTime.Codec.DateTimeToUnixMilliseconds
+
+    // DateTime <-> JsonValue
+    let toJson, ofJson = DateTime.Codec.DateTimeToJson
+
+    // DateTime <-> compact JSON text
+    // (note: this is JSON text of a JSON string value, e.g. "\"...Z\"")
+    let toText, ofText = DateTime.Codec.DateTimeToString
+
+    let serialized : string =
+        System.DateTime(2023,1,1,0,0,0,System.DateTimeKind.Utc)
+        |> Codec.encoder toText
+
+    let restored : System.DateTime =
+        serialized |> Codec.decoder toText
+
+    // End-to-end: DateTime <-> bytes (via JSON)
+    let DateTimeToBytes : Codec<System.DateTime, byte[]> =
+        DateTime.Codec.DateTimeToJson
+        |> Codec.concatenate JsonValue.Codec.JsonValueToBytes
+
+    let payload : byte[] =
+        System.DateTime.UtcNow |> Codec.encoder DateTimeToBytes
+
+    let roundTripped : System.DateTime =
+        payload |> Codec.decoder DateTimeToBytes
+\end{minted}
+\emph{Notes:} the text/bytes codecs intentionally use compact JSON for consistency with other JSON-based codecs; reverse them when you need the opposite direction, or concatenate with additional codecs to meet I/O boundaries cleanly.
 
 \subsection{Patterns}
 
+\noindent Small, purposeful active patterns make parsing-at-the-boundary feel natural. They turn tolerant conversions into readable matches so that pipelines stay declarative while handling the messy edges of real-world data.
+
+\subsubsection{Overview}
+The following partial patterns are available:
+\begin{itemize}
+  \item \mintinline{fsharp}{( |Nullable|_| ) : System.Nullable<'T> -> 'T option} — bridge from \mintinline{fsharp}{Nullable<'T>} into \mintinline{fsharp}{option}.
+  \item \mintinline{fsharp}{( |Boolean|_| ) : string -> bool option} — match text that parses to a boolean.
+  \item \mintinline{fsharp}{( |Decimal|_| ) : string -> decimal option} — match text that parses to a decimal.
+  \item \mintinline{fsharp}{( |Integer32|_| ) : string -> int option} — match text that parses to Int32.
+  \item \mintinline{fsharp}{( |Integer64|_| ) : string -> int64 option} — match text that parses to Int64.
+  \item \mintinline{fsharp}{( |DateTime|_| ) : string -> System.DateTime option} — match text that parses to a timestamp.
+  \item \mintinline{fsharp}{( |JsonValue|_| ) : string -> JsonValue option} — match text that parses to JSON.
+  \item \mintinline{fsharp}{( |AggregateException|_| ) : exn -> exn option} — unwrap an \mintinline{fsharp}{AggregateException} to its inner exception.
+  \item \mintinline{fsharp}{( |AbsoluteUri|_| ) : string -> System.Uri option} — match absolute URIs.
+  \item \mintinline{fsharp}{( |RelativeUri|_| ) : string -> System.Uri option} — match relative URIs.
+  \item \mintinline{fsharp}{( |Uri|_| ) : string -> System.Uri option} — match URIs of either kind.
+\end{itemize}
+
+\paragraph{Why patterns?}
+At ingestion points (files, queues, sockets, webhooks) you often receive untyped text. Active patterns let you route and normalize that input succinctly:
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    let handle (line:string) =
+        match line with
+        | JsonValue json ->
+            // structured payload; proceed to domain decode
+            json |> JsonValue.toString |> printfn "json=%s"
+        | Integer64 id ->
+            // numeric id in text form
+            printfn "id=%d" id
+        | AbsoluteUri uri ->
+            // fetch or enqueue work for this resource
+            printfn "uri=%O" uri
+        | Boolean flag ->
+            printfn "flag=%b" flag
+        | _ ->
+            printfn "unrecognized: %s" line
+\end{minted}
+
+\subsubsection{Guided examples}
+\paragraph{Batch lines into typed records}
+Normalize a CSV-like feed where each field may be missing or malformed; only keep fully-parsed rows.
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    type Order = { UserId:int64; At:System.DateTime; Amount:decimal }
+
+    let tryOrder (line:string) : Order option =
+        match line.Split(',') with
+        | [| Integer64 userId; DateTime at; Decimal amount |] ->
+            Some { UserId = userId; At = at; Amount = amount }
+        | _ -> None
+
+    let parsed : seq<Order> =
+        lines |> Seq.choose tryOrder
+\end{minted}
+
+\paragraph{Nullable interop (databases, external SDKs)}
+Turn \mintinline{fsharp}{Nullable<'T>} into options without ceremony.
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    let discountOption : decimal option =
+        match row.NullableDiscount with
+        | Nullable d -> Some d
+        | _ -> None
+\end{minted}
+
+\paragraph{URIs in routing and partitioning}
+Accept both relative and absolute targets, or insist on absolute when necessary.
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    let route (target:string) =
+        match target with
+        | AbsoluteUri uri -> sprintf "fetch-remote:%O" uri
+        | RelativeUri uri -> sprintf "fetch-local:%O" uri
+        | _               -> "drop"
+
+    [ "/inbox/a.json"; "https://example.com/x"; "???"]
+    |> List.map route
+    // ["fetch-local:/inbox/a.json"; "fetch-remote:https://example.com/x"; "drop"]
+\end{minted}
+
+\paragraph{Surface the real error from tasks}
+Unwrap \mintinline{fsharp}{AggregateException} so handlers can match on the underlying exception type.
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    let handleError (e:exn) =
+        match e with
+        | AggregateException inner ->
+            printfn "inner: %s" inner.Message
+        | _ ->
+            printfn "error: %s" e.Message
+\end{minted}
+
+\paragraph{Streaming JSON with tolerant fallbacks}
+Allow mixed payloads: compact JSON blob or a single numeric metric as text.
+\begin{minted}{fsharp}
+    open Nata.Core
+    open Nata.Core.JsonValue
+
+    type Payload = Metric of decimal | Doc of JsonValue
+
+    let classify (s:string) : Payload option =
+        match s with
+        | JsonValue json -> Some (Doc json)
+        | Decimal d      -> Some (Metric d)
+        | _              -> None
+
+    let results : seq<Payload> =
+        inputs |> Seq.choose classify
+\end{minted}
+
+\subsubsection{Notes}
+\begin{itemize}
+  \item All patterns are partial: a non-match simply falls through to the next case.
+  \item Numeric, boolean, and date parsing rely on standard \mintinline{fsharp}{TryParse} semantics.
+  \item \mintinline{fsharp}{JsonValue} uses a tolerant JSON parser; compact JSON text is convenient for logging and transport.
+  \item URI patterns distinguish absolute vs. relative using \mintinline{fsharp}{System.Uri.TryCreate} with the corresponding \mintinline{fsharp}{UriKind}.
+  \item Prefer patterns when routing by shape; prefer functions/codecs when you need explicit, composable transformations in a pipeline.
+\end{itemize}
+
 \subsection{GZip}
+
+\noindent Lightweight helpers for working with gzip-compressed, line-oriented text. The emphasis is on streaming: you can write an unbounded sequence of lines to a compressed sink, or lazily read large archives without loading them into memory. This is a practical fit for log pipelines, newline-delimited JSON, CSV snapshots, and other append-friendly feeds.
+
+\paragraph{Overview}
+\begin{itemize}
+  \item Text encoding: UTF-8, one logical line per element (\mintinline{fsharp}{WriteLine}/\mintinline{fsharp}{ReadLine}).
+  \item Streaming semantics: \mintinline{fsharp}{read} returns a lazy \mintinline{fsharp}{seq<string>} that decompresses on demand.
+  \item Back-pressure friendly: \mintinline{fsharp}{write} flushes per line so long-running producers keep bounded buffers.
+  \item Resource ownership: the underlying stream/file is disposed when the gzip layer is disposed (see notes).
+\end{itemize}
 
 \subsubsection{GZip.Stream}
 
+\paragraph{Signatures}
+\begin{minted}{fsharp}
+    open System.IO
+
+    // write a sequence of lines into a target stream as gzip
+    val write : target:Stream -> lines:seq<string> -> unit
+
+    // lazily read lines from a gzip source stream
+    val read  : source:Stream -> seq<string>
+\end{minted}
+
+\paragraph{Write: compress a live feed to a stream}
+\begin{minted}{fsharp}
+    open System
+    open System.IO
+    open Nata.Core
+
+    // imagine a long-running sequence (metrics, logs, ids, ...)
+    let lines : seq<string> =
+        seq {
+            for i in 1 .. 1_000_000 do
+                yield sprintf "%d,%O" i DateTime.UtcNow
+        }
+
+    use target = new MemoryStream() // any writable stream (file, network, memory)
+    GZip.Stream.write target lines
+
+    // bytes are gzip-compressed; rewind to inspect
+    target.Position <- 0L
+    let compressedSize = target.Length
+\end{minted}
+
+\paragraph{Read: process large gzip content lazily}
+\begin{minted}{fsharp}
+    open System
+    open System.IO
+    open Nata.Core
+
+    // given a gzip payload in memory (or any readable stream),
+    // deserialize without loading all lines at once
+    let process (source:Stream) =
+        for line in GZip.Stream.read source do
+            // parse & handle each line
+            match line.Split ',' with
+            | [| count; timestamp |] -> ()
+            | _ -> ()
+
+    // example with MemoryStream
+    use buffer = new MemoryStream()
+    GZip.Stream.write buffer (seq { for i in 1 .. 1000 -> string i })
+    buffer.Position <- 0L
+    process buffer
+\end{minted}
+
+\paragraph{Newline-delimited JSON (NDJSON) pipelines}
+\begin{minted}{fsharp}
+    open System.IO
+    open Nata.Core
+    open Nata.Core.JsonValue
+
+    // write NDJSON to a gzip stream
+    let writeJson (target:Stream) (values:seq<'T>) =
+        values
+        |> Seq.map (JsonValue.ofType >> JsonValue.toString) // compact one-line JSON
+        |> GZip.Stream.write target
+
+    // read NDJSON from a gzip stream
+    let readJson<'T> (source:Stream) : seq<'T> =
+        source
+        |> GZip.Stream.read
+        |> Seq.choose (JsonValue.tryParse >> Option.map JsonValue.toType<'T>)
+\end{minted}
+
+\emph{Semantics and notes:}
+\begin{itemize}
+  \item The returned sequence from \mintinline{fsharp}{read} is lazy. Enumeration performs on-the-fly decompression; the gzip and underlying streams are disposed when enumeration completes or the enumerator is disposed.
+  \item \mintinline{fsharp}{write} flushes after each line to keep buffers small. This favors long-running producers; if you batch large amounts, consider shaping input into larger chunks if throughput is critical.
+  \item Resource ownership: the gzip layer closes the underlying stream when done. If you need to keep the underlying stream open for further work, write to or read from a dedicated stream instance.
+\end{itemize}
+
 \subsubsection{GZip.File}
 
+\paragraph{Signatures}
+\begin{minted}{fsharp}
+    open System.IO
+
+    // write lines to a .gz file (creates or overwrites from the beginning)
+    val write : target:FileInfo -> lines:seq<string> -> unit
+
+    // lazily read lines from a .gz file
+    val read  : source:FileInfo -> seq<string>
+\end{minted}
+
+\paragraph{Write: archive a daily feed}
+\begin{minted}{fsharp}
+    open System
+    open System.IO
+    open Nata.Core
+
+    let today = DateTime.UtcNow.ToString("yyyyMMdd")
+    let file  = FileInfo(sprintf "events-%s.gz" today)
+
+    let events : seq<string> =
+        seq {
+            yield "started"
+            for i in 1 .. 100_000 do yield sprintf "tick=%d" i
+            yield "stopped"
+        }
+
+    GZip.File.write file events
+\end{minted}
+
+\paragraph{Read: stream from disk without loading it all}
+\begin{minted}{fsharp}
+    open System.IO
+    open Nata.Core
+
+    let scan (gz:FileInfo) =
+        gz
+        |> GZip.File.read
+        |> Seq.filter (fun line -> line.Contains "ERROR")
+        |> Seq.iter (printfn "error: %s")
+
+    scan (FileInfo "service.log.gz")
+\end{minted}
+
+\emph{File behavior and notes:}
+\begin{itemize}
+  \item Reading is lazy: lines are decompressed as you iterate. This allows you to process multi-GB gzip files with bounded memory.
+  \item Writing opens the file for writing from the beginning. If a file already exists and your new compressed output is shorter than the old content, trailing bytes may remain on disk. Prefer writing to a fresh path (e.g., rotate by date/time) or delete the existing file before writing when you need a clean overwrite.
+  \item Both \mintinline{fsharp}{write} and \mintinline{fsharp}{read} manage their file streams internally and dispose them when complete.
+\end{itemize}
+
+\paragraph{Common scenarios}
+\begin{itemize}
+  \item Log compaction: persist operational logs as newline-delimited text into daily \mintinline{fsharp}{.gz} files; read them back lazily for reporting.
+  \item Data exchange: ship NDJSON snapshots to object storage; downstream jobs stream-decompress and decode line-by-line.
+  \item Long-running streams: keep a process emitting metrics where each line is immediately flushed into a rolling \mintinline{fsharp}{.gz} file to bound memory while retaining good compression.
+\end{itemize}
+
+\subsection{BloomFilter}
+
+\noindent A Bloom filter is a compact, probabilistic set optimized for fast membership checks. It trades exactness for space and speed: it can yield false positives (``probably seen''), but never false negatives after you add an element. In practice, this is ideal for skip-lists, de-duplication, and pre-filtering high-volume streams.
+
+\paragraph{Overview}
+\begin{itemize}
+  \item Immutability: operations return a new filter so you can keep prior snapshots when needed.
+  \item Union: combine knowledge from multiple filters in O(n) over their bitsets (sizes must match).
+  \item Presets: \mintinline{fsharp}{small} ($\sim$2M bits), \mintinline{fsharp}{medium} ($\sim$20M bits), \mintinline{fsharp}{large} ($\sim$200M bits) cover common scales.
+  \item Common uses: de-duplicate events, suppress repeated requests, pre-filter expensive lookups, throttle idempotent sinks.
+\end{itemize}
+
+\subsubsection{Quick start}
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    // start with a medium filter by default
+    let f0 : BloomFilter = BloomFilter.empty
+
+    // record a few keys (any string works: ids, hashes, URIs, ...)
+    let f1 = f0 |> BloomFilter.add "user:ada"
+    let f2 = f1 |> BloomFilter.add "user:alan"
+
+    // membership: "probably seen"
+    let seenAda   : bool = BloomFilter.contains "user:ada" f2       // true
+    let seenGrace : bool = BloomFilter.contains "user:grace" f2     // false (very likely)
+\end{minted}
+
+\subsubsection{De-duplicate a live feed}
+When processing real-world streams (logs, webhooks, crawls), it’s common to receive duplicates. A Bloom filter lets you drop repeats without holding the full set in memory.
+
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    // keep only the first occurrence of each id
+    let dedupe (ids:seq<string>) : seq<string> =
+        let folder (f, kept) id =
+            if BloomFilter.contains id f then f, kept
+            else BloomFilter.add id f, id :: kept
+        ids
+        |> Seq.fold folder (BloomFilter.small, [])
+        |> snd
+        |> List.rev
+\end{minted}
+
+You can slot this directly after a gzip reader or JSON parser to sanitize upstream feeds before heavier work.
+
+\begin{minted}{fsharp}
+    open System.IO
+    open Nata.Core
+    open Nata.Core.GZip
+    open Nata.Core.JsonValue
+
+    // NDJSON in, unique ids out
+    let uniqueIdsFromGzip (source:Stream) : seq<string> =
+        source
+        |> GZip.Stream.read
+        |> Seq.choose (JsonValue.tryParse
+                       >> Option.bind (JsonValue.tryGet "id")
+                       >> Option.map string)
+        |> dedupe
+\end{minted}
+
+\subsubsection{Union across shards}
+If multiple workers or shards maintain their own filters, you can merge them to get the aggregate “seen” view. All inputs must use the same size preset.
+
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    let merged : BloomFilter =
+        [ shardA; shardB; shardC ]    // each is a BloomFilter of the same size
+        |> List.reduce BloomFilter.union
+
+    let likelySeen = BloomFilter.contains "object:42" merged
+\end{minted}
+
+\subsubsection{Composite keys and multi-checks}
+Model “seen today” or “seen this user and this session” by composing stable string keys. Use \mintinline{fsharp}{containsAll} for conjunction and \mintinline{fsharp}{containsAny} for disjunction.
+
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    // key by day + user for a coarse time window
+    let keyOf (at:System.DateTime) (user:string) =
+        sprintf "%s|%s" (at.ToString "yyyyMMdd") user
+
+    let seenToday (f:BloomFilter) (user:string) (at:System.DateTime) : bool =
+        BloomFilter.contains (keyOf at user) f
+
+    // multi-checks: all or any tokens present
+    let hasAll  (f:BloomFilter) (tokens:string list) : bool = BloomFilter.containsAll tokens f
+    let hasAny  (f:BloomFilter) (tokens:string list) : bool = BloomFilter.containsAny tokens f
+\end{minted}
+
+\subsubsection{Rolling windows}
+Instead of exact expiry, rotate filters on a cadence (hourly/daily) to bound false positives over time. This works well when combined with upstream time-normalization helpers.
+
+\begin{minted}{fsharp}
+    open Nata.Core
+
+    // create a fresh filter at the start of each day; carry on as usual
+    let freshFilterFor (at:System.DateTime) : BloomFilter =
+        let yyyyMMdd = at.ToString "yyyyMMdd"
+        // e.g., use yyyyMMdd as a key to pick/reset the active filter in storage
+        BloomFilter.medium
+\end{minted}
+
+\paragraph{Notes}
+\begin{itemize}
+  \item False positives are possible by design; false negatives are not (once added).
+  \item If false positives become frequent, choose a larger preset or rotate filters more often.
+  \item \mintinline{fsharp}{union} requires filters created with the same size. Mixing sizes is not supported.
+  \item Keys are plain strings: prefer stable, canonical encodings (e.g., lowercase IDs, normalized URIs).
+\end{itemize}
+
+\subsection{SHA256}
+
+\noindent A compact, fully-immutable implementation of SHA-256 for day-to-day functional work. It favors simple, predictable composition: inputs are plain bytes or UTF-8 text; outputs are either raw digest bytes or lower-case hex strings. There is no internal state, no disposable resources, no hidden I/O — which makes it pleasant to use in pipelines, tests, and reference comparisons.
+
+\paragraph{Signatures}
+\begin{minted}{fsharp}
+open Nata.Core
+
+// pure digests (no I/O, no mutation)
+val hashBytes        : byte[]  -> byte[]  // 32-byte digest
+val hash             : byte[]  -> string  // 64-char hex (lowercase)
+val hashUTF8Bytes    : string  -> byte[]  // UTF-8 -> digest bytes
+val hashUTF8         : string  -> string  // UTF-8 -> hex
+
+// platform-backed comparison helpers (useful for verification)
+val referenceBytes     : byte[]  -> byte[]
+val reference          : byte[]  -> string
+val referenceUTF8Bytes : string  -> byte[]
+val referenceUTF8      : string  -> string
+\end{minted}
+
+\paragraph{Quick start}
+\begin{minted}{fsharp}
+open System.Text
+open Nata.Core
+
+// hash raw bytes
+let digestHex : string =
+    "abc" |> Encoding.UTF8.GetBytes |> SHA256.hash
+
+// convenient UTF-8 helpers
+let fox : string =
+    "The quick brown fox jumps over the lazy dog"
+    |> SHA256.hashUTF8
+// "d7a8fbb3...c9e592"
+
+// verify against the platform reference
+let same : bool =
+    let bytes = Encoding.UTF8.GetBytes "hello"
+    (SHA256.hash bytes) = (SHA256.reference bytes)
+\end{minted}
+
+\paragraph{Why an immutable implementation?}
+Immutability keeps the surface area honest: the same input yields the same output every time. With no resources to manage—no streams to dispose, no hidden buffers—the functions drop cleanly into folds, maps, and parallel evaluations. This makes them ideal for verification as well: you can place a pure digest beside a platform digest and reason about differences without incidental state. As a bonus, the implementation is a readable reference for the algorithm itself, a portable baseline you can trust when threading hashes through larger pipelines.
+
+\paragraph{Notes}
+\begin{itemize}
+  \item Hex output is lower-case; digest bytes are exactly 32 bytes.
+  \item \mintinline{fsharp}{hashUTF8}/\mintinline{fsharp}{hashUTF8Bytes} always use UTF-8 for text input.
+  \item For maximum throughput on large single buffers, prefer the platform implementation; for composable, audit-friendly pipelines and tests, the immutable implementation shines.
+  \item Stable input representations matter: prefer canonical JSON (compact, ordered) or explicit binary layouts when the digest must be an id.
+\end{itemize}
+
+\clearpage
+\section{Nata.Fun}
+
+\subsection{JsonPath}
+
+Real-world data almost always arrives as JSON: telemetry, logs, events, API responses, and so on. In practice, we rarely need the whole document every time. Instead, we reach into it and pull out just the parts we need to compute, route, enrich, or persist. Nata provides two complementary ways to do this:
+
+\begin{itemize}
+  \item A string-based JsonPath API for selecting tokens across many JSON documents (excellent for streams).
+  \item A JsonValue-based API for selecting values inside a parsed FSharp.Data \mintinline{fsharp}{JsonValue} (excellent for in-memory traversals and slicing).
+\end{itemize}
+
+In other words: if you have a sequence of JSON strings, use the string-based helpers; if you have a parsed \mintinline{fsharp}{JsonValue}, use the JsonValue helpers.
+
+\paragraph{Query syntax at a glance}
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\textbf{Pattern} & \textbf{Meaning} \\
+\hline
+\mintinline{fsharp}{.name} & Exact property descent \\
+\mintinline{fsharp}{..name} & Recursive descent (match here and deeper) \\
+\mintinline{fsharp}{"*"} & A wildcard property name \\
+\mintinline{fsharp}{[*]} & All array elements \\
+\mintinline{fsharp}{[0,2,-1]} & Literal indices (negatives count from the end) \\
+\mintinline{fsharp}{[start:finish:step]} & Slice; start/finish optional; step defaults to 1 \\
+\mintinline{fsharp}{..lines[*].sku} & Combine segments to traverse structure \\
+\end{tabular}
+\end{center}
+
+\subsubsection{Selecting from strings with JsonPath}
+
+When you have a sequence of JSON strings—say from files, HTTP responses, a message bus, or a queue—you can query each document with a JsonPath expression and collect the results.
+
+At the core is \mintinline{fsharp}{strings}:
+
+\begin{minted}{fsharp}
+open Nata.Fun.JsonPath
+
+// Select all matching tokens as strings for a single json document
+let names : string list =
+    Query.strings "$.customers[*].name" json
+\end{minted}
+
+Some very common patterns:
+
+- First or default: return a single value (or empty string) if present.
+\begin{minted}{fsharp}
+let id : string = Query.first "$.customer.id" json
+\end{minted}
+
+- Fields: lift multiple paths together in order, preserving positional correspondence.
+\begin{minted}{fsharp}
+let keys = [ "$.orderId"; "$.customer.id"; "$.total" ]
+let row : string list = Query.fields keys json
+\end{minted}
+
+- Streams: collect across a sequence of JSON documents.
+\begin{minted}{fsharp}
+// Suppose 'events' is seq<string> of incoming JSON messages
+let allSkus : string seq =
+    Query.find "$..lines[*].sku" events
+\end{minted}
+
+- Distinct: deduplicate values (useful for keys, tags, or categories).
+\begin{minted}{fsharp}
+let distinctUserIds : string seq =
+    events |> Query.find "$.user.id" |> Seq.distinct
+// or equivalently:
+let distinctUserIds2 : string seq =
+    events |> Query.findDistinct "$.user.id"
+\end{minted}
+
+- Tabular extraction: project many values per document in a stable order.
+\begin{minted}{fsharp}
+let cols = [ "$.ts"; "$.level"; "$.message" ]
+let rows : string list seq =
+    Query.findFields cols events // seq of [ ts; level; message ]
+
+let csvLines : string seq =
+    Query.findFieldsCsv cols events // seq of "ts,level,message"
+\end{minted}
+
+Why this matters: streams of operational data regularly need light shaping before they can be folded, joined, or written to storage. These helpers are zero-ceremony ways to normalize fields, pick identifiers, and wire up quick dashboards or sinks.
+
+\paragraph{Typical uses}
+\begin{itemize}
+  \item Pull the first available value: \mintinline{fsharp}{Query.first "\$.payload.correlationId" json}
+  \item Extract every occurrence across nested arrays: \mintinline{fsharp}{Query.find "\$..metrics[*].name" stream}
+  \item Build CSV lines on the fly for archival or quick inspection: \mintinline{fsharp}{Query.findFieldsCsv [ "\$.t"; "\$.id"; "\$.value" ] stream}
+\end{itemize}
+
+\subsubsection{Selecting from JsonValue with structural traversal}
+
+Sometimes your pipeline already holds parsed \mintinline{fsharp}{JsonValue} values—perhaps due to upstream validation, schema checks, or prior projections. Using the syntax summarized above, the JsonValue module provides a structural, automata-driven traversal well-suited to recursive descent and array slicing.
+
+Core functions:
+
+\begin{minted}{fsharp}
+open Nata.Fun.JsonPath
+open Nata.Fun.JsonPath.JsonValue
+open FSharp.Data
+
+let sample = JsonValue.Parse """
+{
+  "orders": [
+    { "id": "A1", "lines": [ { "sku":"X", "qty":2 }, { "sku":"Y", "qty":1 } ] },
+    { "id": "B2", "lines": [ { "sku":"X", "qty":3 }, { "sku":"Z", "qty":4 } ] }
+  ]
+}
+"""
+
+// Collect all matches as a sequence of JsonValue
+let skus : JsonValue seq =
+    JsonValue.findSeq "..lines[*].sku" sample
+
+// Get just the first match (throws if none)
+let firstOrderId : JsonValue =
+    JsonValue.find ".orders[0].id" sample
+
+// Get as a list (useful for tests or small results)
+let lastLinesPerOrder : JsonValue list =
+    JsonValue.findList ".orders[*].lines[-1]" sample
+
+// Try-find (safe option)
+let maybeThirdOrder : JsonValue option =
+    JsonValue.tryFind ".orders[2]" sample
+\end{minted}
+
+This is particularly helpful when you want to use slicing semantics that are natural for arrays:
+
+\begin{itemize}
+  \item Last element: \mintinline{fsharp}{[-1]}
+  \item First N elements: \mintinline{fsharp}{[0:N]}
+  \item Every other element: \mintinline{fsharp}{[::2]}
+  \item A window: \mintinline{fsharp}{[start:finish:step]}
+\end{itemize}
+
+\paragraph{Typical uses}
+\begin{itemize}
+  \item Fetch the last line item per order: \mintinline{fsharp}{JsonValue.findSeq ".orders[*].lines[-1]" json}
+  \item Recursively pick all occurrences of a property: \mintinline{fsharp}{JsonValue.findSeq "..correlationId" json}
+  \item Slice efficiently without materializing entire arrays: \mintinline{fsharp}{JsonValue.findSeq ".frames[100:200:5]" json}
+\end{itemize}
+
+\subsubsection{Choosing between the two}
+
+\begin{itemize}
+  \item You have a stream of raw JSON strings: favor \mintinline{fsharp}{Query.find} and friends (\mintinline{fsharp}{strings}, \mintinline{fsharp}{first}, \mintinline{fsharp}{fields}, \mintinline{fsharp}{findFields}, \mintinline{fsharp}{findFieldsCsv}). These compose naturally with \mintinline{fsharp}{Seq} and work well for quick projections and exports.
+  \item You already have \mintinline{fsharp}{JsonValue}: favor \mintinline{fsharp}{JsonValue.findSeq/find/findList/tryFind}, especially when you want recursive descent or array slicing/negative indexing behavior.
+\end{itemize}
+
+Both approaches complement the broader Nata patterns: extract what you need, project or fold it deterministically, and keep your pipelines small, pure, and observable.
 
 
 \clearpage
