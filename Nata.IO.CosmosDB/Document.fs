@@ -124,7 +124,6 @@ module Document =
                 let rec readFrom position =
                     seq {
                         yield!
-                            //container.ReadItemAsync(id, new PartitionKey(id))
                             container.ReadItemStreamAsync(id,new PartitionKey(id))
                             |> Async.AwaitTask
                             |> Async.Catch
