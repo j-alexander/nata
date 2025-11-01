@@ -106,7 +106,7 @@ type DocumentTests() =
             |> Seq.take 11
             |> Seq.map (Event.data >> fun { Value=x } -> x)
 
-        let results =
+        let results : int list =
             let getsSlower, getsFaster =
                 (fun i -> 2 * i),
                 (fun i -> Math.Max(1, 2048/i))
@@ -120,9 +120,11 @@ type DocumentTests() =
             |> Seq.take 11
             |> Seq.toList
 
+        //let results =
+        //  [ 4; 8; 16; 32; 64; 128; 256;   4;  512;    8;   16 ]
         let expectation : int list =
             [ 4; 8; 16; 32; 64; 128; 256; 512; 1024; 2048; 4096 ]
-        Assert.AreEqual(expectation, results)
+        Assert.AreEqual(expectation, results) // TODO: FAIL
         Assert.LessOrEqual(
             4096,
             readFrom Position.End

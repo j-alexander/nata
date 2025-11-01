@@ -1,5 +1,6 @@
 ﻿namespace Nata.IO.CosmosDB
 
+open Nata.Core.Patterns
 open Microsoft.Azure.Cosmos
 
 type Id = string
@@ -23,24 +24,31 @@ module Container =
           Settings.Database = database
           Settings.Name = container }
 
-    let internal connect (container:Settings) =
+    let internal connect { Endpoint={ Url=url
+                                      Key=key } as endpoint
+                           Database=database
+                           Name=name} =
 
-        let properties = new ContainerProperties(container.Name, "/id")
+        let properties = new ContainerProperties(name, "/id")
 
-        let client = new CosmosClient(container.Endpoint.Url.AbsoluteUri, container.Endpoint.Key)
+        let client =
+            if (Endpoint.emulator = endpoint) then
+                new CosmosClient($"AccountEndpoint={url.AbsoluteUri};AccountKey={key};DisableServerCertificateValidation=True")
+            else
+                new CosmosClient(url.AbsoluteUri, key)
 
         let databaseResponse =
-            client.CreateDatabaseIfNotExistsAsync(container.Database)
+            client.CreateDatabaseIfNotExistsAsync(database)
             |> Async.AwaitTask
             |> Async.RunSynchronously
         let database =
-            client.GetDatabase(container.Database)
+            client.GetDatabase(database)
 
         let documentCollectionResponse =
             database.CreateContainerIfNotExistsAsync(properties)
             |> Async.AwaitTask
             |> Async.RunSynchronously
         let container =
-            database.GetContainer(container.Name)
+            database.GetContainer(name)
 
         container
