@@ -89,60 +89,53 @@ type DocumentTests() =
         writeTo (Position.At overwritten)
         |> ignore
 
+    member private x.Compete(firstMsDelays : int->int, secondMsDelays: int->int) =
+        let compete, readFrom =
+            let channel = channel()
+            Channel.competitor channel,
+            Channel.readerFrom channel
+
+        let generation (delay:int->int) : int seq =
+            compete (Option.defaultValue (Event.create { Value=2 }) >> fun e ->
+                let input = Event.data e
+                let output = { Value = input.Value * 2 }
+                Thread.Sleep(delay input.Value)
+                Event.create output)
+            |> Seq.take 11
+            |> Seq.map (Event.data >> fun { Value=x } -> x)
+
+        let expectation : int list =
+            [ 4; 8; 16; 32; 64; 128; 256; 512; 1024; 2048; 4096 ]
+            
+        let results : int list =
+            Seq.consume
+                [
+                    generation firstMsDelays
+                    //|> Seq.log (printfn "The early bird gets the worm:%d")
+                    generation secondMsDelays
+                    //|> Seq.log (printfn "The second mouse gets the cheese:%d")
+                ]
+            |> Seq.take expectation.Length
+            |> Seq.toList
+
+        Assert.AreEqual(expectation, results)
+        Assert.LessOrEqual(
+            4096,
+            readFrom Position.End
+            |> Seq.map (fst >> Event.data >> fun { Value=x } -> x)
+            |> Seq.head)
+
     [<Test>]
-    member x.TestTwoCompetitors() =
-            
-        let verify (firstMsDelays, secondMsDelays) =
-            let compete, readFrom =
-                let channel = channel()
-                Channel.competitor channel,
-                Channel.readerFrom channel
-  
-            let generation (delay:int->int) : int seq =
-                compete (Option.defaultValue (Event.create { Value=2 }) >> fun e ->
-                    let input = Event.data e
-                    let output = { Value = input.Value * 2 }
-                    Thread.Sleep(delay input.Value)
-                    Event.create output)
-                |> Seq.take 11
-                |> Seq.map (Event.data >> fun { Value=x } -> x)
+    member x.TestTwoCompetitiorsWhereFirstTwiceAsFast() =
+        x.Compete((fun i -> i), (fun i -> 2*i))
 
-            let expectation : int list =
-                [ 4; 8; 16; 32; 64; 128; 256; 512; 1024; 2048; 4096 ]
-                
-            let results : int list =
-                Seq.consume
-                    [
-                        generation firstMsDelays
-                        //|> Seq.log (printfn "The early bird gets the worm:%d")
-                        generation secondMsDelays
-                        //|> Seq.log (printfn "The second mouse gets the cheese:%d")
-                    ]
-                |> Seq.take expectation.Length
-                |> Seq.toList
+    [<Test>]
+    member x.TestTwoCompetitiorsWhereSecondEventuallyPassesFirst() =
+        x.Compete((fun i -> 2 * i), (fun i -> Math.Max(1, 2048/i)))
 
-            Assert.AreEqual(expectation, results)
-            Assert.LessOrEqual(
-                4096,
-                readFrom Position.End
-                |> Seq.map (fst >> Event.data >> fun { Value=x } -> x)
-                |> Seq.head)
-    
-        let firstIsTwiceAsFast =
-            (fun i -> i),
-            (fun i -> 2*i)
-        let secondEventuallyPassesFirst = 
-            (fun i -> 2 * i),
-            (fun i -> Math.Max(1, 2048/i))
-        let nondeterministic =
+    [<Test>]
+    member x.TestTwoCompetitorsNonDeterministically() =
+        let nonDeterministic =
             let random = new Random()
-            (fun i -> random.Next(0, 2*i)),
-            (fun i -> random.Next(0, 2*i))
-            
-        //printfn "Verifying (firstIsTwiceAsFast)"
-        verify(firstIsTwiceAsFast)
-        //printfn "Verifying (secondEventuallyPassesFirst)"
-        verify(secondEventuallyPassesFirst)
-        for i in 1..2 do
-            //printfn $"Verifying (nondeterministic iteration #{i})"
-            verify (nondeterministic)
+            fun i -> random.Next(0, 2*i)
+        x.Compete(nonDeterministic, nonDeterministic)

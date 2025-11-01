@@ -40,12 +40,14 @@ services:
       - "5672:5672"
       - "15672:15672"
   cosmosdb:
-    image: "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator"
+    # local data viewer available on http://localhost:1234 
+    image: "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview"
     hostname: cosmosdb
     container_name: cosmosdb
     environment:
       - AZURE_COSMOS_EMULATOR_IP_ADDRESS_OVERRIDE=127.0.0.1
     ports:
+      - "1234:1234"
       - "8081:8081"
       - "8900:8900"
       - "8901:8901"

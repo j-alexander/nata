@@ -30,10 +30,11 @@ module Container =
                            Name=name} =
 
         let properties = new ContainerProperties(name, "/id")
-
         let client =
+            let options = new CosmosClientOptions()
+            options.ConnectionMode <- ConnectionMode.Gateway
             if (Endpoint.emulator = endpoint) then
-                new CosmosClient($"AccountEndpoint={url.AbsoluteUri};AccountKey={key};DisableServerCertificateValidation=True")
+                new CosmosClient($"AccountEndpoint={url.AbsoluteUri};AccountKey={key};DisableServerCertificateValidation=True", options)
             else
                 new CosmosClient(url.AbsoluteUri, key)
 
