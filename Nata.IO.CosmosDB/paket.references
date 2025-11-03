@@ -1,5 +1,5 @@
 FSharp.Data
 Newtonsoft.Json
 FSharp.Core
-System.ValueTuple
 Microsoft.Azure.Cosmos
+System.ValueTuple

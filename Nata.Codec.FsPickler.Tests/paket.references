@@ -3,7 +3,6 @@ FsPickler.Json
 FSharp.Data
 FSharp.Core
 Newtonsoft.Json
-System.ValueTuple
 NUnit
 NUnit.Console
 NUnit3TestAdapter
