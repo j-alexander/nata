@@ -8,5 +8,4 @@ kafunk
 Consul
 FSharp.Core
 EventStore.Client
-System.ValueTuple
 Microsoft.Azure.Cosmos

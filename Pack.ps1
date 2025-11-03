@@ -19,4 +19,4 @@ Please provide a version in the format: major.minor.patch (e.g., 1.2.27)
     exit 1
 }
 
-dotnet pack -c Release -o ./nuget /p:PackageVersion=$version /p:AssemblyVersion=$version /p:AssemblyFileVersion=$version
+dotnet pack -c Release -o ./nuget /p:PackageVersion=$version /p:AssemblyVersion=$version /p:AssemblyFileVersion=$version /p:CI=true

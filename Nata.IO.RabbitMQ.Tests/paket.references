@@ -3,6 +3,5 @@ Newtonsoft.Json
 RabbitMQ.Client
 NUnit
 FSharp.Core
-System.ValueTuple
 NUnit3TestAdapter
 Microsoft.NET.Test.Sdk

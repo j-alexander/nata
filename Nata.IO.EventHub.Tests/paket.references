@@ -2,7 +2,7 @@ FSharp.Data
 Newtonsoft.Json
 NUnit
 FSharp.Core
-System.ValueTuple
 Microsoft.Azure.EventHubs
 NUnit3TestAdapter
 Microsoft.NET.Test.Sdk
+System.ValueTuple

@@ -12,12 +12,10 @@ module Logging =
 
     type EventStoreNLogLogger(log:Logger) =
 
-        let format f a = String.Format(f,a)
-
         interface ILogger with
-            member x.Debug(f,a)   = log.Debug(format f a)
-            member x.Debug(e,f,a) = log.Debug(e,format f a)
-            member x.Error(f,a)   = log.Error(format f a)
-            member x.Error(e,f,a) = log.Error(e,format f a)
-            member x.Info(f,a)    = log.Info(format f a)
-            member x.Info(e,f,a)  = log.Info(e,format f a)
+            member _.Debug(f: string, args: obj[])                = log.Debug(f, args)
+            member _.Debug(ex: Exception, f: string, args: obj[]) = log.Debug(ex, f, args)
+            member _.Error(f: string, args: obj[])                = log.Error(f, args)
+            member _.Error(ex: Exception, f: string, args: obj[]) = log.Error(ex, f, args)
+            member _.Info(f: string, args: obj[])                 = log.Info(f, args)
+            member _.Info(ex: Exception, f: string, args: obj[])  = log.Info(ex, f, args)

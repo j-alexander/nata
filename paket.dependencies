@@ -1,4 +1,5 @@
 source https://www.nuget.org/api/v2/
+framework: net481, netstandard2.0, netcoreapp3.1, net8.0, net9.0
 
 nuget Consul
 nuget EventStore.Client ~> 5
@@ -29,6 +30,5 @@ nuget NUnit3TestAdapter
 nuget Owin
 nuget RabbitMQ.Client ~> 6
 nuget Suave
-nuget System.ValueTuple
 nuget WebSocket4Net
 nuget WindowsAzure.Storage
