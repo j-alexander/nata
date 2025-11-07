@@ -3,12 +3,8 @@ framework: net481, netstandard2.0, netcoreapp3.1, net8.0, net9.0
 
 nuget Consul
 nuget EventStore.Client ~> 5
-nuget FSharp.Compiler.Service
 nuget FSharp.Core
 nuget FSharp.Data
-nuget FSharp.Formatting >= 2.14.4
-nuget FSharp.Formatting.CommandTool
-nuget FSharpVSPowerTools.Core
 nuget FsPickler
 nuget FsPickler.Json
 nuget kafka-net-for-dotnet-core
