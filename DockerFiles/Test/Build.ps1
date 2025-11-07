@@ -1,1 +1,0 @@
-docker build --memory=8GB --tag nata/test .\

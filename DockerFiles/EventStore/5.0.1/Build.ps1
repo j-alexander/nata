@@ -1,1 +1,0 @@
-docker build --tag nata/eventstore:5.0.1 .\
