@@ -21,7 +21,6 @@ nuget Microsoft.Owin.Hosting
 nuget Newtonsoft.Json
 nuget NLog
 nuget NUnit ~> 3
-nuget NUnit.Console
 nuget NUnit3TestAdapter
 nuget Owin
 nuget RabbitMQ.Client ~> 6

@@ -2,6 +2,5 @@ FSharp.Core
 FSharp.Data
 Newtonsoft.Json
 NUnit
-NUnit.Console
 NUnit3TestAdapter
 Microsoft.NET.Test.Sdk
